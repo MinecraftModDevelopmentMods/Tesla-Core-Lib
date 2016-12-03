@@ -1,0 +1,14 @@
+[{
+  "modid": "teslacorelib",
+  "name": "Tesla Core Lib",
+  "description": "just another electric machines lib",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Face_of_Cat"],
+  "credits": "The Forge, FML guys and my wife.",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}]
