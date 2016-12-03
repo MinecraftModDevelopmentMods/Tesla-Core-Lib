@@ -1,44 +1,125 @@
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
         maven { url = "http://files.minecraftforge.net/maven" }
+        maven { url = "http://repo.maven.apache.org/maven2" }
+        maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
     }
 }
-apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: "net.minecraftforge.gradle.forge"
+apply plugin: "maven-publish"
+apply plugin: "maven"
 
-archivesBaseName = "teslacorelib"
-version = "1.0"
+archivesBaseName = "tesla-core-lib"
 group = "net.ndrei.$archivesBaseName" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+
+version = "${project.minecraft_version}-${project.mod_version}"
+if (project.hasProperty('mod_suffix')) {
+    version += "-${project.mod_suffix}"
+    if ((project.mod_suffix == 'snapshot') && !project.hasProperty('mavenLocalPath')) {
+        version += "_" + getDate()
+    }
+}
 
 compileJava {
     sourceCompatibility = targetCompatibility = "1.8"
 }
 
 minecraft {
-    version = "1.11-13.19.0.2178"
+    version = "${minecraft_version}-${forge_version}"
+    mappings = "${mcp_version}"
     runDir = "run"
-    
-    mappings = "snapshot_20161202"
+    makeObfSourceJar = false
+}
+
+configurations {
+    compile.extendsFrom exportedCompile
+    deployerJars
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'http://maven.epoxide.xyz' }
+    maven { url 'http://maven.ndrei.net' }
+    mavenLocal()
 }
 
 dependencies {
+    compile "net.darkhax.tesla:Tesla:1.11-1.3.0.51:deobf"
+    deployerJars 'org.apache.maven.wagon:wagon-ftp:2.2'
 }
 
-processResources
-{
+processResources {
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
 
     from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-                
+        include '**/*.info'
+        include '**/*.properties'
+
+        // replace version and mcversion
         expand 'version':project.version, 'mcversion':project.minecraft.version
     }
-        
+
     from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
+        exclude '**/*.info'
+        exclude '**/*.properties'
     }
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+task deobfJar(type: Jar) {
+    from sourceSets.main.output
+    classifier = 'deobf'
+}
+
+artifacts {
+    archives sourceJar, deobfJar
+}
+
+uploadArchives {
+    if (project.hasProperty('mavenFTPServer') && project.hasProperty('mavenFTPUser') && project.hasProperty('mavenFTPPassword')) {
+        repositories.mavenDeployer {
+            dependsOn build, deobfJar, sourcesJar
+            configuration = configurations.deployerJars
+            repository(url: project.mavenFTPServer) {
+                authentication(userName: project.mavenFTPUser, password: mavenFTPPassword)
+            }
+        }
+    }
+}
+uploadArchives.dependsOn build, sourcesJar, deobfJar
+
+if (project.hasProperty('mavenLocalPath')) {
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+
+                artifact sourcesJar
+                artifact deobfJar
+            }
+        }
+
+        repositories {
+            maven {
+                // change to point to your repo, e.g. http://my.org/repo
+                url project.mavenLocalPath
+            }
+        }
+    }
+}
+
+
+def getDate() {
+    def date = new Date()
+    def formattedDate = date.format('yyyyMMdd') // HHmmss')
+    return formattedDate
 }
