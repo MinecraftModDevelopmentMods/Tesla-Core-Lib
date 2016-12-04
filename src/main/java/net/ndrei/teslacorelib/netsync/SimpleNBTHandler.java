@@ -17,7 +17,7 @@ public class SimpleNBTHandler implements IMessageHandler<SimpleNBTMessage, Simpl
             if ((message != null) && (message.getPos() != null) && (Minecraft.getMinecraft().world != null)) {
                 TileEntity entity = Minecraft.getMinecraft().world.getTileEntity(message.getPos());
                 if ((entity != null) && (entity instanceof ISimpleNBTMessageHandler)) {
-                    TeslaCoreLib.logger.info("processing message for '" + entity.toString() + "':: " + message.getCompound().toString());
+                    // TeslaCoreLib.logger.info("processing message for '" + entity.toString() + "':: " + message.getCompound().toString());
                     return ((ISimpleNBTMessageHandler)entity).handleMessage(message);
                 }
             }
