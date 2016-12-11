@@ -1,12 +1,14 @@
 package net.ndrei.teslacorelib.tileentity;
 
 import com.google.common.collect.Lists;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraftforge.common.capabilities.Capability;
 import net.ndrei.teslacorelib.TeslaCoreLib;
+import net.ndrei.teslacorelib.block.OrientedBlock;
 import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities;
 import net.ndrei.teslacorelib.capabilities.hud.HudInfoLine;
 import net.ndrei.teslacorelib.capabilities.hud.IHudInfoProvider;
@@ -46,6 +48,14 @@ public abstract class ElectricTileEntity extends TileEntity implements ITickable
                 ElectricTileEntity.this.forceSync();
             }
         };
+    }
+
+    protected EnumFacing getFacing() {
+        IBlockState state = this.getWorld().getBlockState(this.getPos());
+        if (state.getBlock() instanceof OrientedBlock) {
+            return state.getValue(OrientedBlock.FACING);
+        }
+        return EnumFacing.NORTH;
     }
 
     //region energy            methods
@@ -168,9 +178,7 @@ public abstract class ElectricTileEntity extends TileEntity implements ITickable
 
     @Override
     public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing) {
-//        EnumFacing machineFacing = this.testBlockState()
-//                ? this.getWorld().getBlockState(this.getPos()).getValue(BaseOrientedBlock.FACING)
-//                : null;
+//        EnumFacing machineFacing = this.getFacing();
 //        Boolean isFront = (machineFacing != null) && (machineFacing == facing);
 
         if ((this.energyStorage != null) && this.energyStorage.hasCapability(capability, facing)) {
@@ -185,9 +193,7 @@ public abstract class ElectricTileEntity extends TileEntity implements ITickable
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing) {
-//        EnumFacing machineFacing = this.testBlockState()
-//                ? this.getWorld().getBlockState(this.getPos()).getValue(BaseOrientedBlock.FACING)
-//                : null;
+//        EnumFacing machineFacing = this.getFacing();
 //        Boolean isFront = (machineFacing != null) && (machineFacing == facing);
 
         if (capability == TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
@@ -220,24 +226,33 @@ public abstract class ElectricTileEntity extends TileEntity implements ITickable
 
     @Override
     public void update() {
-        this.workTick++;
-        if (this.workTick > this.lastWorkTicks) {
-            this.lastWorkTicks = this.getWorkTicks();
-            this.workTick = 0;
+        if (this.outOfPower) {
+            int energy = this.getEnergyForWork();
+            if (this.energyStorage.getEnergyStored() >= energy) {
+                this.outOfPower = false;
+                this.forceSync();
+            }
+        }
 
-            if (!this.getWorld().isRemote) {
+        if (!this.outOfPower) {
+            this.workTick++;
+
+            if (this.workTick > this.lastWorkTicks) {
+                this.lastWorkTicks = this.getWorkTicks();
+                this.workTick = 0;
+
                 int energy = this.getEnergyForWork();
                 if (this.energyStorage.getEnergyStored() >= energy) {
-                    this.outOfPower = false;
-                    float work = this.performWork();
-                    if (work > 0) {
-                        this.energyStorage.workPerformed(energy, work);
+                    if (!this.getWorld().isRemote) {
+                        float work = this.performWork();
+                        if (work > 0) {
+                            this.energyStorage.workPerformed(energy, work);
+                        }
+                    } else {
+                        this.outOfPower = true;
                     }
+                    this.forceSync();
                 }
-                else {
-                    this.outOfPower = true;
-                }
-                this.forceSync();
             }
         }
 
@@ -252,13 +267,4 @@ public abstract class ElectricTileEntity extends TileEntity implements ITickable
 
     @SuppressWarnings("WeakerAccess")
     protected abstract float performWork();
-
-//    public boolean canInteractWith(EntityPlayer playerIn) {
-//        // If we are too far away from this tile entity you cannot use it
-//        return !isInvalid() && playerIn.getDistanceSq(pos.add(0.5D, 0.5D, 0.5D)) <= 64D;
-//    }
-
-//    protected boolean testBlockState() {
-//        return (this.getWorld().getBlockState(this.getPos()).getBlock() instanceof BaseOrientedBlock);
-//    }
 }

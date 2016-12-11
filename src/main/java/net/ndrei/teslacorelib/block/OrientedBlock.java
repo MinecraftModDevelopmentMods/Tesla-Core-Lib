@@ -96,6 +96,7 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
     }
 
     @SuppressWarnings("WeakerAccess")
+    @SideOnly(Side.CLIENT)
     protected TileEntitySpecialRenderer<T> getSpecialRenderer() {
         return new HudInfoRenderer<>();
     }
