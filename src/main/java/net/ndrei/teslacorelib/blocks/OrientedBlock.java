@@ -1,4 +1,4 @@
-package net.ndrei.teslacorelib.block;
+package net.ndrei.teslacorelib.blocks;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockHorizontal;
@@ -34,6 +34,8 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.ndrei.teslacorelib.TeslaCoreLib;
 import net.ndrei.teslacorelib.Utils;
+import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities;
+import net.ndrei.teslacorelib.capabilities.container.IGuiContainerProvider;
 import net.ndrei.teslacorelib.render.HudInfoRenderer;
 
 /**
@@ -115,8 +117,8 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand,
                                     EnumFacing side, float hitX, float hitY, float hitZ) {
         TileEntity te = world.getTileEntity(pos);
-        if ((te != null) && (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null))) {
-            IFluidHandler tank = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null);
+        if ((te != null) && (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side))) {
+            IFluidHandler tank = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side);
             ItemStack bucket = player.getHeldItem(hand);
             if (!bucket.isEmpty() && (tank != null) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null))) {
                 IFluidHandler handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
@@ -134,7 +136,14 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
             }
         }
 
-        return super.onBlockActivated(world, pos, state, player, hand, side, hitX, hitY, hitZ);
+        if (super.onBlockActivated(world, pos, state, player, hand, side, hitX, hitY, hitZ)) {
+            return true;
+        }
+
+        if (!world.isRemote) {
+            player.openGui(TeslaCoreLib.instance, 42, world, pos.getX(), pos.getY(), pos.getZ());
+        }
+        return true;
     }
 
     @Override

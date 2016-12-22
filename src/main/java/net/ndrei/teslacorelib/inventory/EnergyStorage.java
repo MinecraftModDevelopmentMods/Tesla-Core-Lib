@@ -1,10 +1,11 @@
-package net.ndrei.teslacorelib.tileentity;
+package net.ndrei.teslacorelib.inventory;
 
 import mekanism.api.energy.IStrictEnergyAcceptor;
 import net.darkhax.tesla.api.ITeslaConsumer;
 import net.darkhax.tesla.api.ITeslaHolder;
 import net.darkhax.tesla.api.ITeslaProducer;
 import net.darkhax.tesla.capability.TeslaCapabilities;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
@@ -14,6 +15,7 @@ import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
+import net.ndrei.teslacorelib.capabilities.inventory.ISidedItemHandlerConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,11 +40,20 @@ public class EnergyStorage implements ITeslaConsumer, ITeslaHolder, ITeslaProduc
     private long inputRate;
     private long outputRate;
 
+    private EnumDyeColor color;
+
+    private ISidedItemHandlerConfig sidedConfig = null;
+
     @SuppressWarnings("WeakerAccess")
-    public EnergyStorage(long maxStoredEnergy, long inputRate, long outputRate) {
+    public EnergyStorage(EnumDyeColor color, long maxStoredEnergy, long inputRate, long outputRate) {
+        this.color = color;
         this.capacity = maxStoredEnergy;
         this.inputRate = Math.max(0, inputRate);
         this.outputRate = Math.max(0, outputRate);
+    }
+
+    public EnumDyeColor getColor() {
+        return this.color;
     }
 
     @SuppressWarnings("unused")
@@ -263,7 +274,6 @@ public class EnergyStorage implements ITeslaConsumer, ITeslaHolder, ITeslaProduc
 
     @Override
     public NBTTagCompound serializeNBT() {
-
         final NBTTagCompound dataTag = new NBTTagCompound();
         dataTag.setLong("TeslaPower", this.stored);
 //        dataTag.setLong("TeslaCapacity", this.capacity);
@@ -300,19 +310,14 @@ public class EnergyStorage implements ITeslaConsumer, ITeslaHolder, ITeslaProduc
 
     @Override
     public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-        // TODO: get proper facing from a base block
-//        EnumFacing machineFacing = this.testBlockState()
-//                ? this.getWorld().getBlockState(this.getPos()).getValue(BaseOrientedBlock.FACING)
-//                : null;
-//        Boolean isFront = (machineFacing != null) && (machineFacing == facing);
-        boolean isFront = false;
-
-        if (!isFront && (capability == CapabilityEnergy.ENERGY)) {
-            return true;
-        } else if (Loader.isModLoaded("tesla") && this.hasTeslaCapability(capability, facing, isFront)) {
-            return true;
-        } else if (Loader.isModLoaded("Mekanism") && !isFront && Objects.equals(capability.getName(), "mekanism.api.energy.IStrictEnergyAcceptor")) {
-            return true; // TODO: not sure if this is the best way :S
+        if ((this.sidedConfig != null) && (this.color != null) && this.sidedConfig.isSideSet(this.color, facing)) {
+            if (capability == CapabilityEnergy.ENERGY) {
+                return true;
+            } else if (Loader.isModLoaded("tesla") && this.hasTeslaCapability(capability)) {
+                return true;
+            } else if (Loader.isModLoaded("Mekanism") && Objects.equals(capability.getName(), "mekanism.api.energy.IStrictEnergyAcceptor")) {
+                return true; // TODO: not sure if this is the best way :S
+            }
         }
 
         return false;
@@ -322,37 +327,40 @@ public class EnergyStorage implements ITeslaConsumer, ITeslaHolder, ITeslaProduc
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-        // TODO: get proper facing from a base block
-//        EnumFacing machineFacing = this.testBlockState()
-//                ? this.getWorld().getBlockState(this.getPos()).getValue(BaseOrientedBlock.FACING)
-//                : null;
-//        Boolean isFront = (machineFacing != null) && (machineFacing == facing);
-        boolean isFront = false;
-
-        if (!isFront && (capability == CapabilityEnergy.ENERGY)) {
-            return (T)this;
-        }
-        else if (Loader.isModLoaded("tesla") && this.hasTeslaCapability(capability, facing, isFront)) {
-            return (T)this;
-        }
-        else if (Loader.isModLoaded("Mekanism") && !isFront && Objects.equals(capability.getName(), "mekanism.api.energy.IStrictEnergyAcceptor")) {
-            return (T)this;
+        if ((this.sidedConfig != null) && (this.color != null) && this.sidedConfig.isSideSet(this.color, facing)) {
+            if (capability == CapabilityEnergy.ENERGY) {
+                return (T) this;
+            } else if (Loader.isModLoaded("tesla") && this.hasTeslaCapability(capability)) {
+                return (T) this;
+            } else if (Loader.isModLoaded("Mekanism") && Objects.equals(capability.getName(), "mekanism.api.energy.IStrictEnergyAcceptor")) {
+                return (T) this;
+            }
         }
 
         return null;
     }
 
     @Optional.Method(modid = "tesla")
-    private boolean hasTeslaCapability(Capability<?> capability, EnumFacing facing, boolean isFront) {
-        if (!isFront) {
-            if (capability == TeslaCapabilities.CAPABILITY_HOLDER) {
-                return true;
-            } else if ((this.getInputRate() > 0) && (capability == TeslaCapabilities.CAPABILITY_CONSUMER)) {
-                return true;
-            } else if ((this.getOutputRate() > 0) && (capability == TeslaCapabilities.CAPABILITY_PRODUCER)) {
-                return true;
-            }
+    private boolean hasTeslaCapability(Capability<?> capability) {
+        if (capability == TeslaCapabilities.CAPABILITY_HOLDER) {
+            return true;
+        } else if ((this.getInputRate() > 0) && (capability == TeslaCapabilities.CAPABILITY_CONSUMER)) {
+            return true;
+        } else if ((this.getOutputRate() > 0) && (capability == TeslaCapabilities.CAPABILITY_PRODUCER)) {
+            return true;
         }
+
         return false;
+    }
+
+    public void setSidedConfig(ISidedItemHandlerConfig sidedConfig) {
+        if (this.sidedConfig == sidedConfig) {
+            return;
+        }
+
+        this.sidedConfig = sidedConfig;
+        if (this.sidedConfig != null) {
+            this.sidedConfig.addColoredInfo("Energy", this.getColor());
+        }
     }
 }

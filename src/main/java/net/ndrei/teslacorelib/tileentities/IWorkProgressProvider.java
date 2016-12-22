@@ -1,4 +1,4 @@
-package net.ndrei.teslacorelib.tileentity;
+package net.ndrei.teslacorelib.tileentities;
 
 /**
  * Created by CF on 2016-12-03.

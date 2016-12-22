@@ -32,7 +32,9 @@ minecraft {
     version = "${minecraft_version}-${forge_version}"
     mappings = "${mcp_version}"
     runDir = "run"
-    makeObfSourceJar = false
+
+    replace "@@VERSION@@", project.mod_version
+    replaceIn "TeslaCoreLib.java"
 }
 
 configurations {

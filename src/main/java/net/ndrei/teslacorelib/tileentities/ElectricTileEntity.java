@@ -1,17 +1,30 @@
-package net.ndrei.teslacorelib.tileentity;
+package net.ndrei.teslacorelib.tileentities;
 
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.*;
+import net.minecraft.inventory.Container;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ITickable;
 import net.minecraftforge.common.capabilities.Capability;
 import net.ndrei.teslacorelib.TeslaCoreLib;
-import net.ndrei.teslacorelib.block.OrientedBlock;
+import net.ndrei.teslacorelib.blocks.OrientedBlock;
 import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities;
+import net.ndrei.teslacorelib.capabilities.container.IGuiContainerProvider;
 import net.ndrei.teslacorelib.capabilities.hud.HudInfoLine;
 import net.ndrei.teslacorelib.capabilities.hud.IHudInfoProvider;
+import net.ndrei.teslacorelib.capabilities.inventory.SidedItemHandlerConfig;
+import net.ndrei.teslacorelib.containers.BasicTeslaContainer;
+import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer;
+import net.ndrei.teslacorelib.gui.IGuiContainerPiece;
+import net.ndrei.teslacorelib.gui.TeslaEnergyLevelPiece;
+import net.ndrei.teslacorelib.inventory.EnergyStorage;
 import net.ndrei.teslacorelib.netsync.ISimpleNBTMessageHandler;
 import net.ndrei.teslacorelib.netsync.SimpleNBTMessage;
 
@@ -22,7 +35,8 @@ import java.util.List;
 /**
  * Created by CF on 2016-12-03.
  */
-public abstract class ElectricTileEntity extends TileEntity implements ITickable, IWorkProgressProvider, IHudInfoProvider, ISimpleNBTMessageHandler {
+public abstract class ElectricTileEntity extends TileEntity implements
+        ITickable, IWorkProgressProvider, IHudInfoProvider, ISimpleNBTMessageHandler, IGuiContainerProvider {
     private static final int SYNC_ON_TICK = 20;
     private int syncTick = SYNC_ON_TICK;
 
@@ -37,17 +51,21 @@ public abstract class ElectricTileEntity extends TileEntity implements ITickable
     @SuppressWarnings("WeakerAccess")
     protected boolean outOfPower = false;
 
+    protected SidedItemHandlerConfig sideConfig;
+
     @SuppressWarnings("unused")
     protected ElectricTileEntity(int typeId) {
         this.typeId = typeId;
+        this.sideConfig = new SidedItemHandlerConfig();
 
-        this.energyStorage = new EnergyStorage(this.getMaxEnergy(), this.getEnergyInputRate(), this.getEnergyOutputRate()) {
+        this.energyStorage = new EnergyStorage(EnumDyeColor.CYAN, this.getMaxEnergy(), this.getEnergyInputRate(), this.getEnergyOutputRate()) {
             @Override
             public void onChanged() {
                 ElectricTileEntity.this.markDirty();
                 ElectricTileEntity.this.forceSync();
             }
         };
+        this.energyStorage.setSidedConfig(this.sideConfig);
     }
 
     protected EnumFacing getFacing() {
@@ -176,14 +194,37 @@ public abstract class ElectricTileEntity extends TileEntity implements ITickable
 
     //region capability & info methods
 
+    protected EnumFacing orientFacing(EnumFacing facing) {
+        if (facing == null) {
+            return null;
+        }
+
+        if ((facing == EnumFacing.UP) || (facing == EnumFacing.DOWN)) {
+            return facing;
+        }
+
+        EnumFacing machineFacing = this.getFacing();
+        if (machineFacing == EnumFacing.EAST) {
+            return facing.rotateY();
+        }
+        if (machineFacing == EnumFacing.SOUTH) {
+            return facing.getOpposite(); // .rotateY().rotateY();
+        }
+        if (machineFacing == EnumFacing.WEST) {
+            return facing.rotateYCCW();
+        }
+        return facing;
+    }
+
     @Override
     public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing) {
-//        EnumFacing machineFacing = this.getFacing();
-//        Boolean isFront = (machineFacing != null) && (machineFacing == facing);
+        facing = this.orientFacing(facing);
 
-        if ((this.energyStorage != null) && this.energyStorage.hasCapability(capability, facing)) {
+        if (capability == TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
             return true;
-        } else if (capability == TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
+        } else if (capability == TeslaCoreCapabilities.CAPABILITY_GUI_CONTAINER) {
+            return true;
+        } else if ((this.energyStorage != null) && this.energyStorage.hasCapability(capability, facing)) {
             return true;
         }
 
@@ -193,10 +234,11 @@ public abstract class ElectricTileEntity extends TileEntity implements ITickable
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing) {
-//        EnumFacing machineFacing = this.getFacing();
-//        Boolean isFront = (machineFacing != null) && (machineFacing == facing);
+        facing = this.orientFacing(facing);
 
         if (capability == TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
+            return (T) this;
+        } else if (capability == TeslaCoreCapabilities.CAPABILITY_GUI_CONTAINER) {
             return (T) this;
         } else if (this.energyStorage != null) {
             T c = this.energyStorage.getCapability(capability, facing);
@@ -267,4 +309,27 @@ public abstract class ElectricTileEntity extends TileEntity implements ITickable
 
     @SuppressWarnings("WeakerAccess")
     protected abstract float performWork();
+
+    @Override
+    public BasicTeslaContainer getContainer(int id, EntityPlayer player) {
+        return new BasicTeslaContainer<>(this, player);
+    }
+
+    @Override
+    public BasicTeslaGuiContainer getGuiContainer(int id, EntityPlayer player) {
+        return new BasicTeslaGuiContainer<>(id, this.getContainer(id, player), this);
+    }
+
+    @Override
+    public List<IGuiContainerPiece> getGuiContainerPieces(BasicTeslaGuiContainer container) {
+        List<IGuiContainerPiece> pieces = Lists.newArrayList();
+        pieces.add(new TeslaEnergyLevelPiece(7, 25, this.energyStorage));
+        return pieces;
+    }
+
+    @Override
+    public List<Slot> getSlots(BasicTeslaContainer container) {
+        List<Slot> slots = Lists.newArrayList();
+        return slots;
+    }
 }
