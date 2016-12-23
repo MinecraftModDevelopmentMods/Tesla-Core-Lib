@@ -2,6 +2,7 @@ package net.ndrei.teslacorelib.capabilities.inventory;
 
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.EnumFacing;
+import net.ndrei.teslacorelib.inventory.BoundingRectangle;
 import net.ndrei.teslacorelib.inventory.ColoredItemHandlerInfo;
 
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
  */
 public interface ISidedItemHandlerConfig {
     List<ColoredItemHandlerInfo> getColoredInfo();
-    void addColoredInfo(String name, EnumDyeColor color);
+    void addColoredInfo(String name, EnumDyeColor color, BoundingRectangle highlight);
     void addColoredInfo(ColoredItemHandlerInfo info);
 
     List<EnumFacing> getSidesForColor(EnumDyeColor color);

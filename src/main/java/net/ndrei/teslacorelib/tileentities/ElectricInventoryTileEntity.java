@@ -1,22 +1,23 @@
 package net.ndrei.teslacorelib.tileentities;
 
 import com.google.common.collect.Lists;
-import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.SlotItemHandler;
+import net.ndrei.teslacorelib.TeslaCoreLib;
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer;
 import net.ndrei.teslacorelib.containers.FilteredSlot;
 import net.ndrei.teslacorelib.containers.IContainerSlotsProvider;
 import net.ndrei.teslacorelib.gui.*;
+import net.ndrei.teslacorelib.inventory.BoundingRectangle;
 import net.ndrei.teslacorelib.inventory.ColoredContainedItemInventory;
 import net.ndrei.teslacorelib.inventory.SidedItemHandler;
+import net.ndrei.teslacorelib.netsync.SimpleNBTMessage;
 
 import java.util.List;
 
@@ -32,8 +33,13 @@ public abstract class ElectricInventoryTileEntity extends ElectricTileEntity {
 
         this.inventory = new SidedItemHandler(super.sideConfig);
 
-        this.energyItems = new ItemStackHandler(2);
-        this.inventory.addItemHandler(new ColoredContainedItemInventory(EnumDyeColor.LIGHT_BLUE, "Energy Items", this.energyItems) {
+        this.energyItems = new ItemStackHandler(2) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                ElectricInventoryTileEntity.this.markDirty();
+            }
+        };
+        this.inventory.addItemHandler(new ColoredContainedItemInventory(EnumDyeColor.CYAN, "Energy Items", this.energyItems) {
             @Override
             public boolean canInsertItem(int slot, ItemStack stack) {
                 return ElectricInventoryTileEntity.this.canInsertEnergyItem(slot, stack);
@@ -64,6 +70,7 @@ public abstract class ElectricInventoryTileEntity extends ElectricTileEntity {
                 return pieces;
             }
         });
+        this.sideConfig.addColoredInfo("Energy Items", EnumDyeColor.CYAN, new BoundingRectangle(25, 25, 18, 54));
     }
 
     private boolean canInsertEnergyItem(int slot, ItemStack stack) {
@@ -81,7 +88,7 @@ public abstract class ElectricInventoryTileEntity extends ElectricTileEntity {
 
         NBTTagCompound nbt = this.energyItems.serializeNBT();
         if (nbt != null) {
-            compound.setTag("inv_light_blue", nbt);
+            compound.setTag("inv_energy_items", nbt);
         }
 
         return compound;
@@ -91,9 +98,21 @@ public abstract class ElectricInventoryTileEntity extends ElectricTileEntity {
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
 
-        if (compound.hasKey("inv_light_blue", Constants.NBT.TAG_COMPOUND)) {
-            this.energyItems.deserializeNBT(compound.getCompoundTag("inv_light_blue"));
+        if (compound.hasKey("inv_energy_items", Constants.NBT.TAG_COMPOUND)) {
+            this.energyItems.deserializeNBT(compound.getCompoundTag("inv_energy_items"));
         }
+    }
+
+    @Override
+    protected SimpleNBTMessage processClientMessage(String messageType, NBTTagCompound compound) {
+        if ((messageType != null) && messageType.equals("TOGGLE_SIDE")) {
+            EnumDyeColor color = EnumDyeColor.byMetadata(compound.getInteger("color"));
+            EnumFacing facing = EnumFacing.getFront(compound.getInteger("side"));
+            TeslaCoreLib.logger.info("Processing message " + messageType + " on server: " + color + " " + facing);
+            this.sideConfig.toggleSide(color, facing);
+            this.markDirty();
+        }
+        return null;
     }
 
     @Override
@@ -101,7 +120,9 @@ public abstract class ElectricInventoryTileEntity extends ElectricTileEntity {
         List<IGuiContainerPiece> pieces = Lists.newArrayList();
         pieces.add(new TeslaEnergyLevelPiece(7, 25, this.energyStorage));
         pieces.add(new PlayerInventoryBackground(7, 101, 162, 54));
-        pieces.add(new SideConfigurator(7, 81, 162, 18, this.sideConfig));
+        SideConfigurator configurator = new SideConfigurator(7, 101, 162, 54, this.sideConfig, this);
+        pieces.add(configurator);
+        pieces.add(new SideConfigSelector(7, 81, 162, 18, this.sideConfig, configurator));
 
         for(int i = 0; i < this.inventory.getInventories(); i++) {
             IItemHandler handler = this.inventory.getInventory(i);

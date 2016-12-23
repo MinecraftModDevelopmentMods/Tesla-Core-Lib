@@ -19,6 +19,7 @@ import net.ndrei.teslacorelib.capabilities.inventory.ISidedItemHandlerConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.swing.text.Highlighter;
 import java.util.Objects;
 
 /**
@@ -353,14 +354,14 @@ public class EnergyStorage implements ITeslaConsumer, ITeslaHolder, ITeslaProduc
         return false;
     }
 
-    public void setSidedConfig(ISidedItemHandlerConfig sidedConfig) {
+    public void setSidedConfig(ISidedItemHandlerConfig sidedConfig, BoundingRectangle highlight) {
         if (this.sidedConfig == sidedConfig) {
             return;
         }
 
         this.sidedConfig = sidedConfig;
         if (this.sidedConfig != null) {
-            this.sidedConfig.addColoredInfo("Energy", this.getColor());
+            this.sidedConfig.addColoredInfo("Energy", this.getColor(), highlight);
         }
     }
 }

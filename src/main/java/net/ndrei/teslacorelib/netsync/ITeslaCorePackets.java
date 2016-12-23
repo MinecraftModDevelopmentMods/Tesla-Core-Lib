@@ -7,4 +7,5 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
  */
 public interface ITeslaCorePackets {
     void send(IMessage message);
+    void sendToServer(IMessage message);
 }

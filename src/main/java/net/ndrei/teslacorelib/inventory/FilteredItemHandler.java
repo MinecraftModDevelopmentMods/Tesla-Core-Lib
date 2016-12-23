@@ -1,8 +1,10 @@
 package net.ndrei.teslacorelib.inventory;
 
+import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
+import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 
@@ -64,20 +66,24 @@ public class FilteredItemHandler implements IFilteredItemHandler {
 
     @Override
     public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
-        ItemStack existing = this.getStackInSlot(slot);
-        if (!existing.isEmpty()) {
-            throw new RuntimeException("That slot is not empty!");
-        }
+//        ItemStack existing = this.getStackInSlot(slot);
+//        if (ItemStack.areItemStacksEqual(stack, existing)) {
+//            return;
+//        }
 
-        if (!stack.isEmpty() && !this.canInsertItem(slot, stack)) {
-            throw new RuntimeException("That slot does not accept that stack!");
-        }
+//        if (!existing.isEmpty()) {
+//            throw new RuntimeException("That slot is not empty!");
+//        }
+
+//        if (!stack.isEmpty() && !this.canInsertItem(slot, stack)) {
+//            throw new RuntimeException("That slot does not accept that stack!");
+//        }
 
         if (this.handler instanceof IItemHandlerModifiable) {
             ((IItemHandlerModifiable)this.handler).setStackInSlot(slot, stack);
         }
-        else if (!stack.isEmpty()) {
-            this.insertItem(slot, stack, false);
+        else {
+            throw new RuntimeException("Inner item handler is not modifiable.");
         }
     }
 }

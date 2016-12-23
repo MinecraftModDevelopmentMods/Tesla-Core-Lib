@@ -1,6 +1,7 @@
 package net.ndrei.teslacorelib.tileentities;
 
 import com.google.common.collect.Lists;
+import net.darkhax.tesla.Tesla;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.EntityPlayer;
@@ -8,11 +9,13 @@ import net.minecraft.inventory.*;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ITickable;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.Constants;
 import net.ndrei.teslacorelib.TeslaCoreLib;
 import net.ndrei.teslacorelib.blocks.OrientedBlock;
 import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities;
@@ -24,6 +27,7 @@ import net.ndrei.teslacorelib.containers.BasicTeslaContainer;
 import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer;
 import net.ndrei.teslacorelib.gui.IGuiContainerPiece;
 import net.ndrei.teslacorelib.gui.TeslaEnergyLevelPiece;
+import net.ndrei.teslacorelib.inventory.BoundingRectangle;
 import net.ndrei.teslacorelib.inventory.EnergyStorage;
 import net.ndrei.teslacorelib.netsync.ISimpleNBTMessageHandler;
 import net.ndrei.teslacorelib.netsync.SimpleNBTMessage;
@@ -58,14 +62,14 @@ public abstract class ElectricTileEntity extends TileEntity implements
         this.typeId = typeId;
         this.sideConfig = new SidedItemHandlerConfig();
 
-        this.energyStorage = new EnergyStorage(EnumDyeColor.CYAN, this.getMaxEnergy(), this.getEnergyInputRate(), this.getEnergyOutputRate()) {
+        this.energyStorage = new EnergyStorage(EnumDyeColor.LIGHT_BLUE, this.getMaxEnergy(), this.getEnergyInputRate(), this.getEnergyOutputRate()) {
             @Override
             public void onChanged() {
                 ElectricTileEntity.this.markDirty();
                 ElectricTileEntity.this.forceSync();
             }
         };
-        this.energyStorage.setSidedConfig(this.sideConfig);
+        this.energyStorage.setSidedConfig(this.sideConfig, new BoundingRectangle(7, 25, 18, 54));
     }
 
     protected EnumFacing getFacing() {
@@ -151,6 +155,11 @@ public abstract class ElectricTileEntity extends TileEntity implements
         this.workTick = compound.getInteger("tick_work");
         this.syncTick = compound.getInteger("tick_sync");
         this.outOfPower = compound.getBoolean("out_of_power");
+
+        if (compound.hasKey("side_config", Constants.NBT.TAG_LIST)) {
+            NBTTagList list = compound.getTagList("side_config", Constants.NBT.TAG_COMPOUND);
+            this.sideConfig.deserializeNBT(list);
+        }
     }
 
     @Override
@@ -163,22 +172,40 @@ public abstract class ElectricTileEntity extends TileEntity implements
         compound.setInteger("tick_lastWork", this.lastWorkTicks);
         compound.setInteger("tick_sync", this.syncTick);
         compound.setBoolean("out_of_power", this.outOfPower);
+
+        compound.setTag("side_config", this.sideConfig.serializeNBT());
+
         return compound;
     }
 
     private NBTTagCompound writeToNBT() {
+        NBTTagCompound compound = this.setupSpecialNBTMessage(null);
+        return this.writeToNBT(compound);
+    }
+
+    public NBTTagCompound setupSpecialNBTMessage(String messageType) {
         NBTTagCompound compound = new NBTTagCompound();
         compound.setInteger("__tetId", this.getEntityTypeId());
-        return this.writeToNBT(compound);
+        if ((messageType != null) && (messageType.length() > 0)) {
+            compound.setString("__messageType", messageType);
+        }
+        return compound;
     }
 
     @Override
     public SimpleNBTMessage handleMessage(SimpleNBTMessage message) {
-        if (this.getWorld().isRemote) {
-            NBTTagCompound compound = (message == null) ? null : message.getCompound();
-            if (compound != null) {
-                int tetId = compound.getInteger("__tetId");
-                if (tetId == this.getEntityTypeId()) {
+        NBTTagCompound compound = (message == null) ? null : message.getCompound();
+        if (compound != null) {
+            int tetId = compound.getInteger("__tetId");
+            if (tetId == this.getEntityTypeId()) {
+                if (compound.hasKey("__messageType", Constants.NBT.TAG_STRING)) {
+                    String messageType = compound.getString("__messageType");
+                    if (this.getWorld().isRemote) {
+                        return this.processServerMessage(messageType, compound);
+                    } else {
+                        return this.processClientMessage(messageType, compound);
+                    }
+                } else if (this.getWorld().isRemote) {
                     this.processServerMessage(compound);
                 }
             }
@@ -189,6 +216,9 @@ public abstract class ElectricTileEntity extends TileEntity implements
     protected void processServerMessage(NBTTagCompound compound) {
         this.readFromNBT(compound);
     }
+
+    protected SimpleNBTMessage processServerMessage(String messageType, NBTTagCompound compound) { return null; }
+    protected SimpleNBTMessage processClientMessage(String messageType, NBTTagCompound compound) { return null; }
 
     //endregion
 

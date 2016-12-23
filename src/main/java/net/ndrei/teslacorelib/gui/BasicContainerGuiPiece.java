@@ -63,6 +63,10 @@ public abstract class BasicContainerGuiPiece implements IGuiContainerPiece {
     }
 
     @Override
+    public void drawMiddleLayer(BasicTeslaGuiContainer container, int guiX, int guiY, float partialTicks, int mouseX, int mouseY) {
+    }
+
+    @Override
     public void drawForegroundLayer(BasicTeslaGuiContainer container, int guiX, int guiY, int mouseX, int mouseY) {
     }
 

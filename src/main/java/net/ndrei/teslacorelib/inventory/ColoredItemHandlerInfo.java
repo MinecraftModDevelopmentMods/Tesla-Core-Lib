@@ -8,10 +8,16 @@ import net.minecraft.item.EnumDyeColor;
 public final class ColoredItemHandlerInfo {
     private String name;
     private EnumDyeColor color;
+    private BoundingRectangle highlight;
 
     public ColoredItemHandlerInfo(String name, EnumDyeColor color) {
         this.name = name;
         this.color = color;
+    }
+
+    public ColoredItemHandlerInfo(String name, EnumDyeColor color, BoundingRectangle highlight) {
+        this(name, color);
+        this.highlight = highlight;
     }
 
     public EnumDyeColor getColor() {
@@ -21,4 +27,6 @@ public final class ColoredItemHandlerInfo {
     public String getName() {
         return this.name;
     }
+
+    public BoundingRectangle getHighlight() { return this.highlight; }
 }

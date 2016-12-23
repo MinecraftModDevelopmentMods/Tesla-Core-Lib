@@ -22,5 +22,10 @@ public class TeslaCorePackets implements ITeslaCorePackets {
     public void send(IMessage message) {
         this.wrapper.sendToAll(message);
     }
+
+    @Override
+    public void sendToServer(IMessage message) {
+        this.wrapper.sendToServer(message);
+    }
 }
 

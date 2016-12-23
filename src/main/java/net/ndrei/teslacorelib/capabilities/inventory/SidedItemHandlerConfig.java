@@ -8,6 +8,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.ndrei.teslacorelib.inventory.BoundingRectangle;
 import net.ndrei.teslacorelib.inventory.ColoredItemHandlerInfo;
 
 import java.util.HashMap;
@@ -44,6 +45,22 @@ public class SidedItemHandlerConfig implements ISidedItemHandlerConfig, INBTSeri
         return false;
     }
 
+    public boolean toggleSide(EnumDyeColor color, EnumFacing side) {
+        if (this.facesConfig.containsKey(color)) {
+            List<EnumFacing> list = this.facesConfig.get(color);
+            if ((list != null) && list.contains(side)) {
+                list.remove(side);
+            } else if (list != null) {
+                list.add(side);
+            } else /*if (list == null)*/ {
+                this.setSidesForColor(color, Lists.newArrayList(side));
+            }
+        } else {
+            this.setSidesForColor(color, Lists.newArrayList(side));
+        }
+        return this.isSideSet(color, side);
+    }
+
     @Override
     public List<ColoredItemHandlerInfo> getColoredInfo() {
         return (this.information == null) ? Lists.newArrayList() : this.information;
@@ -53,8 +70,8 @@ public class SidedItemHandlerConfig implements ISidedItemHandlerConfig, INBTSeri
         this.information = info;
     }
 
-    public void addColoredInfo(String name, EnumDyeColor color) {
-        this.addColoredInfo(new ColoredItemHandlerInfo(name, color));
+    public void addColoredInfo(String name, EnumDyeColor color, BoundingRectangle highlight) {
+        this.addColoredInfo(new ColoredItemHandlerInfo(name, color, highlight));
     }
 
     public void addColoredInfo(ColoredItemHandlerInfo info) {
@@ -94,7 +111,7 @@ public class SidedItemHandlerConfig implements ISidedItemHandlerConfig, INBTSeri
         for(int k = 0; k < keys.length; k++) {
             NBTTagCompound nbt = new NBTTagCompound();
 
-            nbt.setInteger("color", keys[0].getMetadata());
+            nbt.setInteger("color", keys[k].getMetadata());
             NBTTagList sides = new NBTTagList();
             for(EnumFacing facing: this.facesConfig.get(keys[k])) {
                 sides.appendTag(new NBTTagInt(facing.getIndex()));

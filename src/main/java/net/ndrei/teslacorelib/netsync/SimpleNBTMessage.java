@@ -30,6 +30,7 @@ public class SimpleNBTMessage implements IMessage {
     }
 
     public BlockPos getPos() { return this.pos; }
+    public int getDimension() { return this.dimension; }
     public NBTTagCompound getCompound() { return this.compound; }
 
     @Override

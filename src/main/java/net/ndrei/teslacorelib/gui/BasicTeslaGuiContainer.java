@@ -1,12 +1,19 @@
 package net.ndrei.teslacorelib.gui;
 
 import com.google.common.collect.Lists;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.inventory.Container;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.client.config.GuiUtils;
 import net.ndrei.teslacorelib.TeslaCoreLib;
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer;
 import net.ndrei.teslacorelib.tileentities.ElectricTileEntity;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.List;
@@ -63,17 +70,37 @@ public class BasicTeslaGuiContainer<T extends ElectricTileEntity> extends GuiCon
         this.drawTexturedModalRect(super.guiLeft, super.guiTop, 0, 0, super.getXSize(), super.getYSize());
 
         for(IGuiContainerPiece piece : this.pieces) {
+            if (!piece.isVisible()) {
+                continue;
+            }
+
             piece.drawBackgroundLayer(this, super.guiLeft, super.guiTop, partialTicks, mouseX, mouseY);
+        }
+
+        for(IGuiContainerPiece piece : this.pieces) {
+            if (!piece.isVisible()) {
+                continue;
+            }
+
+            piece.drawMiddleLayer(this, super.guiLeft, super.guiTop, partialTicks, mouseX, mouseY);
         }
     }
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         for(IGuiContainerPiece piece : this.pieces) {
+            if (!piece.isVisible()) {
+                continue;
+            }
+
             piece.drawForegroundLayer(this, super.guiLeft, super.guiTop, mouseX, mouseY);
         }
 
         for(IGuiContainerPiece piece : this.pieces) {
+            if (!piece.isVisible()) {
+                continue;
+            }
+
             piece.drawForegroundTopLayer(this, super.guiLeft, super.guiTop, mouseX, mouseY);
         }
     }
@@ -83,7 +110,7 @@ public class BasicTeslaGuiContainer<T extends ElectricTileEntity> extends GuiCon
         super.mouseClicked(mouseX, mouseY, mouseButton);
 
         for(IGuiContainerPiece piece : this.pieces) {
-            if (BasicContainerGuiPiece.isInside(this, piece, mouseX, mouseY)) {
+            if (piece.isVisible() && BasicContainerGuiPiece.isInside(this, piece, mouseX, mouseY)) {
                 piece.mouseClicked(this, mouseX, mouseY, mouseButton);
             }
         }
@@ -98,6 +125,15 @@ public class BasicTeslaGuiContainer<T extends ElectricTileEntity> extends GuiCon
     }
 
     public void drawFilledRect(int x, int y, int width, int height, int color) {
-        this.drawGradientRect(x, y, x + width, y + height, color, color);
+        super.drawGradientRect(x, y, x + width, y + height, color, color);
+    }
+
+    public void drawFilledRect(int x, int y, int width, int height, int color, int strokeColor) {
+        this.drawFilledRect(x, y, width, height, color);
+
+        super.drawHorizontalLine(x, x + width - 1, y, strokeColor);
+        super.drawVerticalLine(x, y, y + height - 1, strokeColor);
+        super.drawVerticalLine(x + width - 1, y, y + height - 1, strokeColor);
+        super.drawHorizontalLine(x, x + width - 1, y + height - 1, strokeColor);
     }
 }
