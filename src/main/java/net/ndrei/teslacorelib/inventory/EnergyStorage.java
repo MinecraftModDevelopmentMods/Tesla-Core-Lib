@@ -19,7 +19,6 @@ import net.ndrei.teslacorelib.capabilities.inventory.ISidedItemHandlerConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.swing.text.Highlighter;
 import java.util.Objects;
 
 /**

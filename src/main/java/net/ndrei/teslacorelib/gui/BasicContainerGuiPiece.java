@@ -1,7 +1,5 @@
 package net.ndrei.teslacorelib.gui;
 
-import net.minecraft.client.gui.inventory.GuiContainer;
-
 /**
  * Created by CF on 2016-12-21.
  */

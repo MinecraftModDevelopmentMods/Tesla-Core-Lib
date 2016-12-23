@@ -1,8 +1,6 @@
 package net.ndrei.teslacorelib.inventory;
 
 import com.google.common.collect.Lists;
-import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
@@ -13,7 +11,6 @@ import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer;
 import net.ndrei.teslacorelib.gui.IGuiContainerPiece;
 import net.ndrei.teslacorelib.gui.IGuiContainerPiecesProvider;
 
-import java.awt.*;
 import java.util.List;
 
 /**

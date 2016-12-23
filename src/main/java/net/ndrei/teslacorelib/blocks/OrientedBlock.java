@@ -34,8 +34,6 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.ndrei.teslacorelib.TeslaCoreLib;
 import net.ndrei.teslacorelib.Utils;
-import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities;
-import net.ndrei.teslacorelib.capabilities.container.IGuiContainerProvider;
 import net.ndrei.teslacorelib.render.HudInfoRenderer;
 
 /**

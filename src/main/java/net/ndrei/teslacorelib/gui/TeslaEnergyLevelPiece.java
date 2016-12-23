@@ -3,7 +3,6 @@ package net.ndrei.teslacorelib.gui;
 import com.google.common.collect.Lists;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import net.darkhax.tesla.lib.PowerBar;
-import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 import net.ndrei.teslacorelib.inventory.EnergyStorage;

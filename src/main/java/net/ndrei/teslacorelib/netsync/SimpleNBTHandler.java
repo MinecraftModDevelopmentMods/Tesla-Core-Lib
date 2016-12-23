@@ -2,12 +2,10 @@ package net.ndrei.teslacorelib.netsync;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.ndrei.teslacorelib.TeslaCoreLib;
 
 /**
  * Created by CF on 2016-12-03.

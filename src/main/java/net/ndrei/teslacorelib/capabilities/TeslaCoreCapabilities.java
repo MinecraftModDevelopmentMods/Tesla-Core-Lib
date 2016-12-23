@@ -1,9 +1,6 @@
 package net.ndrei.teslacorelib.capabilities;
 
-import com.google.common.collect.Lists;
-import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumActionResult;

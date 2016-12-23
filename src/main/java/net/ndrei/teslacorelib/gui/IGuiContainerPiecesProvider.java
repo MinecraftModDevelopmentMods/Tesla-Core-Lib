@@ -1,7 +1,5 @@
 package net.ndrei.teslacorelib.gui;
 
-import net.minecraft.client.gui.inventory.GuiContainer;
-
 import java.util.List;
 
 /**

@@ -6,7 +6,9 @@ import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.ndrei.teslacorelib.TeslaCoreLib;
@@ -19,6 +21,7 @@ import net.ndrei.teslacorelib.inventory.ColoredContainedItemInventory;
 import net.ndrei.teslacorelib.inventory.SidedItemHandler;
 import net.ndrei.teslacorelib.netsync.SimpleNBTMessage;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -152,5 +155,24 @@ public abstract class ElectricInventoryTileEntity extends ElectricTileEntity {
         }
 
         return slots;
+    }
+
+    @Override
+    public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing) {
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            EnumFacing oriented = this.orientFacing(facing);
+            int[] slots = this.inventory.getSlotsForFace(oriented);
+            return ((slots != null) && (slots.length > 0));
+        }
+        return super.hasCapability(capability, facing);
+    }
+
+    @Override
+    public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing) {
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            EnumFacing oriented = this.orientFacing(facing);
+            return (T)this.inventory.getSideWrapper(oriented);
+        }
+        return super.getCapability(capability, facing);
     }
 }
