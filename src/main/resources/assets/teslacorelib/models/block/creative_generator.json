@@ -1,0 +1,6 @@
+{
+  "parent": "teslacorelib:block/generator",
+  "textures": {
+    "north": "teslacorelib:blocks/generator-front-creative"
+  }
+}

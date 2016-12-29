@@ -1,0 +1,6 @@
+{
+  "parent": "teslacorelib:block/machine",
+  "textures": {
+    "north": "teslacorelib:blocks/machine-front-test"
+  }
+}

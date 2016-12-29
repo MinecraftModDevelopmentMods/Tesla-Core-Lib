@@ -2,9 +2,6 @@ package net.ndrei.teslacorelib.gui;
 
 import com.google.common.collect.Lists;
 import com.mojang.realmsclient.gui.ChatFormatting;
-import net.darkhax.tesla.lib.PowerBar;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.Optional;
 import net.ndrei.teslacorelib.inventory.EnergyStorage;
 
 import java.util.List;
@@ -27,10 +24,10 @@ public class TeslaEnergyLevelPiece extends BasicContainerGuiPiece {
         container.drawTexturedRect(this.getLeft(), this.getTop(),
                 1, 189, this.getWidth(), this.getHeight());
 
-        if (Loader.isModLoaded("tesla")) {
+        /*if (Loader.isModLoaded("tesla")) {
             this.renderTeslaBackground(container, guiX, guiY);
         }
-        else if (this.energyStorage != null) {
+        else*/ if (this.energyStorage != null) {
             int power = (this.energyStorage.getEnergyStored() * (this.getHeight() - 6)) / this.energyStorage.getMaxEnergyStored();
 
             container.drawTexturedRect(this.getLeft() + 2, this.getTop() + 2, 20, 191, this.getWidth() - 4, this.getHeight() - 4);
@@ -38,22 +35,31 @@ public class TeslaEnergyLevelPiece extends BasicContainerGuiPiece {
         }
     }
 
-    @Optional.Method(modid = "tesla")
-    private void renderTeslaBackground(BasicTeslaGuiContainer container, int guiX, int guiY) {
-        if (this.energyStorage != null) {
-            PowerBar bar = new PowerBar(container,
-                    guiX + super.getLeft() + 2,  guiY + this.getTop() + 2,
-                    PowerBar.BackgroundType.LIGHT);
-            bar.draw(this.energyStorage);
-        }
-    }
+//    @Optional.Method(modid = "tesla")
+//    private void renderTeslaBackground(BasicTeslaGuiContainer container, int guiX, int guiY) {
+//        if (this.energyStorage != null) {
+//            PowerBar bar = new PowerBar(container,
+//                    guiX + super.getLeft() + 2,  guiY + this.getTop() + 2,
+//                    PowerBar.BackgroundType.LIGHT);
+//            bar.draw(this.energyStorage);
+//        }
+//    }
 
     @Override
     public void drawForegroundTopLayer(BasicTeslaGuiContainer container, int guiX, int guiY, int mouseX, int mouseY) {
         if (super.isInside(container, mouseX, mouseY) && (this.energyStorage != null)) {
             List<String> lines = Lists.newArrayList();
+            lines.add(String.format("%sStored Energy", ChatFormatting.DARK_PURPLE));
             lines.add(String.format("%s%,d T %sof", ChatFormatting.AQUA, this.energyStorage.getEnergyStored(), ChatFormatting.DARK_GRAY));
             lines.add(String.format("%s%,d T", ChatFormatting.RESET, this.energyStorage.getMaxEnergyStored()));
+
+            long tick = this.energyStorage.getLastTickEnergy(), average = this.energyStorage.getAverageEnergyPerTick();
+            lines.add(String.format("%s%,d T %s(%s%,d T%s)",
+                    (average < 0) ? ChatFormatting.RED : ChatFormatting.BLUE, average,
+                    ChatFormatting.RESET,
+                    (tick < 0) ? ChatFormatting.RED : ChatFormatting.BLUE, tick,
+                    ChatFormatting.RESET
+            ));
             container.drawTooltip(lines, mouseX - guiX, mouseY - guiY);
         }
     }

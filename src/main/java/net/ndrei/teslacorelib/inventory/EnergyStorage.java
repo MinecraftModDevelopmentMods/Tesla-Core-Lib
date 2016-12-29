@@ -1,5 +1,6 @@
 package net.ndrei.teslacorelib.inventory;
 
+import com.google.common.collect.Lists;
 import mekanism.api.energy.IStrictEnergyAcceptor;
 import net.darkhax.tesla.api.ITeslaConsumer;
 import net.darkhax.tesla.api.ITeslaHolder;
@@ -19,6 +20,7 @@ import net.ndrei.teslacorelib.capabilities.inventory.ISidedItemHandlerConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -33,7 +35,7 @@ import java.util.Objects;
         @Optional.Interface(iface = "net.darkhax.tesla.api.ITeslaProducer", modid = "tesla"),
         @Optional.Interface(iface = "mekanism.api.energy.IStrictEnergyAcceptor", modid = "Mekanism")
 })
-public class EnergyStorage implements ITeslaConsumer, ITeslaHolder, ITeslaProducer, IStrictEnergyAcceptor, IEnergyStorage, INBTSerializable<NBTTagCompound>, ICapabilityProvider {
+public class EnergyStorage implements ITeslaConsumer, ITeslaHolder, ITeslaProducer, IStrictEnergyAcceptor, IEnergyStorage, INBTSerializable<NBTTagCompound>, ICapabilityProvider, IEnergyStatistics {
     private long stored = 0;
     private long capacity = 0;
 
@@ -44,8 +46,13 @@ public class EnergyStorage implements ITeslaConsumer, ITeslaHolder, ITeslaProduc
 
     private ISidedItemHandlerConfig sidedConfig = null;
 
+    private long statStored = 0;
+    private long statAverage = 0;
+    private long statTick = 0;
+    private List<Long> statTicks = Lists.newArrayList();
+
     @SuppressWarnings("WeakerAccess")
-    public EnergyStorage(EnumDyeColor color, long maxStoredEnergy, long inputRate, long outputRate) {
+    public EnergyStorage(long maxStoredEnergy, long inputRate, long outputRate) {
         this.color = color;
         this.capacity = maxStoredEnergy;
         this.inputRate = Math.max(0, inputRate);
@@ -75,6 +82,14 @@ public class EnergyStorage implements ITeslaConsumer, ITeslaHolder, ITeslaProduc
     @SuppressWarnings("WeakerAccess")
     public long takePower(long energy) {
         return this.takePower(energy, false, true);
+    }
+
+    public boolean isFull() {
+        return (this.getCapacity() == this.getStoredPower());
+    }
+
+    public boolean isEmpty() {
+        return (this.getStoredPower() == 0);
     }
 
     //region forge energy
@@ -276,9 +291,9 @@ public class EnergyStorage implements ITeslaConsumer, ITeslaHolder, ITeslaProduc
     public NBTTagCompound serializeNBT() {
         final NBTTagCompound dataTag = new NBTTagCompound();
         dataTag.setLong("TeslaPower", this.stored);
-//        dataTag.setLong("TeslaCapacity", this.capacity);
-//        dataTag.setLong("TeslaInput", this.inputRate);
-//        dataTag.setLong("TeslaOutput", this.outputRate);
+        dataTag.setLong("TeslaCapacity", this.capacity);
+        dataTag.setLong("TeslaInput", this.inputRate);
+        dataTag.setLong("TeslaOutput", this.outputRate);
 
         return dataTag;
     }
@@ -288,14 +303,14 @@ public class EnergyStorage implements ITeslaConsumer, ITeslaHolder, ITeslaProduc
         long originalStored = this.stored;
         this.stored = nbt.getLong("TeslaPower");
 
-//        if (nbt.hasKey("TeslaCapacity"))
-//            this.capacity = nbt.getLong("TeslaCapacity");
-//
-//        if (nbt.hasKey("TeslaInput"))
-//            this.inputRate = nbt.getLong("TeslaInput");
-//
-//        if (nbt.hasKey("TeslaOutput"))
-//            this.outputRate = nbt.getLong("TeslaOutput");
+        if (nbt.hasKey("TeslaCapacity"))
+            this.capacity = nbt.getLong("TeslaCapacity");
+
+        if (nbt.hasKey("TeslaInput"))
+            this.inputRate = nbt.getLong("TeslaInput");
+
+        if (nbt.hasKey("TeslaOutput"))
+            this.outputRate = nbt.getLong("TeslaOutput");
 
         if (this.stored > this.getCapacity())
             this.stored = this.getCapacity();
@@ -353,14 +368,40 @@ public class EnergyStorage implements ITeslaConsumer, ITeslaHolder, ITeslaProduc
         return false;
     }
 
-    public void setSidedConfig(ISidedItemHandlerConfig sidedConfig, BoundingRectangle highlight) {
+    public void setSidedConfig(EnumDyeColor color, ISidedItemHandlerConfig sidedConfig, BoundingRectangle highlight) {
         if (this.sidedConfig == sidedConfig) {
             return;
         }
 
         this.sidedConfig = sidedConfig;
+        this.color = color;
         if (this.sidedConfig != null) {
             this.sidedConfig.addColoredInfo("Energy", this.getColor(), highlight);
         }
+    }
+
+    public void processStatistics() {
+        this.statTick = this.stored - this.statStored;
+        this.statStored = this.stored;
+
+        this.statTicks.add(this.statTick);
+        while(this.statTicks.size() > 10) {
+            this.statTicks.remove(0);
+        }
+        long sum = 0;
+        for(long l : this.statTicks) {
+            sum += l;
+        }
+        this.statAverage = sum / this.statTicks.size();
+    }
+
+    @Override
+    public long getLastTickEnergy() {
+        return this.statTick;
+    }
+
+    @Override
+    public long getAverageEnergyPerTick() {
+        return this.statAverage;
     }
 }

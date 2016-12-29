@@ -23,9 +23,11 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -115,18 +117,19 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand,
                                     EnumFacing side, float hitX, float hitY, float hitZ) {
         TileEntity te = world.getTileEntity(pos);
-        if ((te != null) && (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side))) {
-            IFluidHandler tank = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side);
+        if ((te != null) && (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null))) {
+            IFluidHandler tank = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null);
             ItemStack bucket = player.getHeldItem(hand);
             if (!bucket.isEmpty() && (tank != null) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null))) {
-                IFluidHandler handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
-                FluidStack fluid = (handler != null) ? handler.drain(1000, false) : null;
-                if ((fluid != null) && (fluid.amount > 0)) {
+                IFluidHandlerItem handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
+                FluidStack fluid = (handler != null) ? handler.drain(Fluid.BUCKET_VOLUME, false) : null;
+                if ((fluid != null) && (fluid.amount == Fluid.BUCKET_VOLUME)) {
                     int filled = tank.fill(fluid, false);
-                    if (filled == fluid.amount) {
+                    if (filled == Fluid.BUCKET_VOLUME) {
                         tank.fill(fluid, true);
                         if (!player.capabilities.isCreativeMode) {
                             handler.drain(filled, true);
+                            player.setHeldItem(hand, handler.getContainer());
                         }
                     }
                     return true;
@@ -184,5 +187,21 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
             }
         }
         super.breakBlock(worldIn, pos, state);
+    }
+
+    @Override
+    public boolean rotateBlock(World world, BlockPos pos, EnumFacing axis) {
+        IBlockState state = world.getBlockState(pos);
+        if (state.getBlock() == this) {
+            TileEntity tileEntity = world.getTileEntity(pos);
+            state = state.withProperty(OrientedBlock.FACING, state.getValue(OrientedBlock.FACING).rotateY());
+            world.setBlockState(pos, state);
+            if (tileEntity != null) {
+                tileEntity.validate();
+                world.setTileEntity(pos, tileEntity);
+            }
+            return true;
+        }
+        return false;
     }
 }

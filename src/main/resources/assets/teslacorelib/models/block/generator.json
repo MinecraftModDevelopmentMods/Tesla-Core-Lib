@@ -1,0 +1,11 @@
+{
+  "parent": "teslacorelib:block/machine",
+  "textures": {
+    "particle": "teslacorelib:blocks/generator-front",
+    "north": "teslacorelib:blocks/generator-front",
+    "west": "teslacorelib:blocks/generator-right",
+    "east": "teslacorelib:blocks/generator-left",
+    "south": "teslacorelib:blocks/generator-back",
+    "up": "teslacorelib:blocks/generator-top"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "particle": "teslacorelib:blocks/machine-front",
+    "north": "teslacorelib:blocks/machine-front",
+    "west": "teslacorelib:blocks/machine-right",
+    "east": "teslacorelib:blocks/machine-left",
+    "south": "teslacorelib:blocks/machine-back",
+    "up": "teslacorelib:blocks/machine-top",
+    "down": "teslacorelib:blocks/machine-bottom"
+  }
+}

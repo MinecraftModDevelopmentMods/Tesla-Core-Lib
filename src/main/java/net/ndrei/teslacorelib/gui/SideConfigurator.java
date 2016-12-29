@@ -7,7 +7,7 @@ import net.ndrei.teslacorelib.TeslaCoreLib;
 import net.ndrei.teslacorelib.capabilities.inventory.SidedItemHandlerConfig;
 import net.ndrei.teslacorelib.inventory.ColoredItemHandlerInfo;
 import net.ndrei.teslacorelib.netsync.SimpleNBTMessage;
-import net.ndrei.teslacorelib.tileentities.ElectricInventoryTileEntity;
+import net.ndrei.teslacorelib.tileentities.ElectricTileEntity;
 
 import java.util.List;
 
@@ -16,11 +16,11 @@ import java.util.List;
  */
 public class SideConfigurator extends BasicContainerGuiPiece {
     private SidedItemHandlerConfig sidedConfig;
-    private ElectricInventoryTileEntity entity;
+    private ElectricTileEntity entity;
 
     private int selectedInventory = -1;
 
-    public SideConfigurator(int left, int top, int width, int height, SidedItemHandlerConfig sidedConfig, ElectricInventoryTileEntity entity) {
+    public SideConfigurator(int left, int top, int width, int height, SidedItemHandlerConfig sidedConfig, ElectricTileEntity entity) {
         super(left, top, width, height);
 
         this.sidedConfig = sidedConfig;

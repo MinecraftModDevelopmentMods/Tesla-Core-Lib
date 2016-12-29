@@ -159,7 +159,7 @@ public class BasicTeslaContainer<T extends ElectricTileEntity> extends Container
     }
 
     public void showPlayerInventory() {
-        if (this.player != null) {
+        if ((this.playerSlots == 0) && (this.player != null)) {
             this.playerSlots = this.addPlayerInventory(this.player);
         }
     }

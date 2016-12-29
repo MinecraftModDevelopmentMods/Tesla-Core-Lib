@@ -5,13 +5,23 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.IFluidTank;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 import net.ndrei.teslacorelib.TeslaCoreLib;
 import net.ndrei.teslacorelib.blocks.OrientedBlock;
 import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities;
@@ -19,37 +29,35 @@ import net.ndrei.teslacorelib.capabilities.container.IGuiContainerProvider;
 import net.ndrei.teslacorelib.capabilities.hud.HudInfoLine;
 import net.ndrei.teslacorelib.capabilities.hud.IHudInfoProvider;
 import net.ndrei.teslacorelib.capabilities.inventory.SidedItemHandlerConfig;
+import net.ndrei.teslacorelib.capabilities.wrench.ITeslaWrenchHandler;
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer;
-import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer;
-import net.ndrei.teslacorelib.gui.IGuiContainerPiece;
-import net.ndrei.teslacorelib.gui.TeslaEnergyLevelPiece;
-import net.ndrei.teslacorelib.inventory.BoundingRectangle;
-import net.ndrei.teslacorelib.inventory.EnergyStorage;
+import net.ndrei.teslacorelib.containers.FilteredSlot;
+import net.ndrei.teslacorelib.containers.IContainerSlotsProvider;
+import net.ndrei.teslacorelib.gui.*;
+import net.ndrei.teslacorelib.inventory.*;
+import net.ndrei.teslacorelib.items.TeslaWrench;
 import net.ndrei.teslacorelib.netsync.ISimpleNBTMessageHandler;
 import net.ndrei.teslacorelib.netsync.SimpleNBTMessage;
 
 import javax.annotation.Nonnull;
-import java.awt.*;
 import java.util.List;
 
 /**
  * Created by CF on 2016-12-03.
  */
 public abstract class ElectricTileEntity extends TileEntity implements
-        ITickable, IWorkProgressProvider, IHudInfoProvider, ISimpleNBTMessageHandler, IGuiContainerProvider {
+        ITickable, IHudInfoProvider, ISimpleNBTMessageHandler, IGuiContainerProvider, ITeslaWrenchHandler {
     private static final int SYNC_ON_TICK = 20;
     private int syncTick = SYNC_ON_TICK;
 
-    private int lastWorkTicks = 0;
-    private int workTick = 0;
-
     @SuppressWarnings("WeakerAccess")
     protected EnergyStorage energyStorage;
+    private SidedItemHandler itemHandler;
+
+    private SidedFluidHandler fluidHandler;
+    private ItemStackHandler fluidItems = null;
 
     private int typeId; // used for message sync
-
-    @SuppressWarnings("WeakerAccess")
-    protected boolean outOfPower = false;
 
     protected SidedItemHandlerConfig sideConfig;
 
@@ -57,16 +65,138 @@ public abstract class ElectricTileEntity extends TileEntity implements
     protected ElectricTileEntity(int typeId) {
         this.typeId = typeId;
         this.sideConfig = new SidedItemHandlerConfig();
+        this.itemHandler = new SidedItemHandler(this.sideConfig);
+        this.fluidHandler = new SidedFluidHandler(this.sideConfig);
 
-        this.energyStorage = new EnergyStorage(EnumDyeColor.LIGHT_BLUE, this.getMaxEnergy(), this.getEnergyInputRate(), this.getEnergyOutputRate()) {
+        this.energyStorage = new EnergyStorage(this.getMaxEnergy(), this.getEnergyInputRate(), this.getEnergyOutputRate()) {
             @Override
             public void onChanged() {
                 ElectricTileEntity.this.markDirty();
                 ElectricTileEntity.this.forceSync();
             }
         };
-        this.energyStorage.setSidedConfig(this.sideConfig, new BoundingRectangle(7, 25, 18, 54));
+
+        this.initializeInventories();
+        this.ensureFluidItems();
     }
+
+    //region inventory         methods
+
+    protected void initializeInventories() {
+        this.energyStorage.setSidedConfig(EnumDyeColor.LIGHT_BLUE, this.sideConfig, this.getEnergyBoundingBox());
+    }
+
+    protected void addInventory(IItemHandler handler) {
+        if (handler == null) {
+            return;
+        }
+        this.itemHandler.addItemHandler(handler);
+
+        if ((handler instanceof ColoredItemHandler)) {
+            ColoredItemHandler colored = (ColoredItemHandler)handler;
+            if ((colored.getColor() != null) && (colored.getBoundingBox() != null)) {
+                this.sideConfig.addColoredInfo(colored.getName(), colored.getColor(), colored.getBoundingBox());
+            }
+        }
+    }
+
+    protected BoundingRectangle getEnergyBoundingBox() {
+        return new BoundingRectangle(7, 25, 18, 54);
+    }
+
+    //endregion
+
+    //region fluid tank        methods
+
+    protected IFluidTank addFluidTank(Fluid filter, int capacity, EnumDyeColor color, String name, BoundingRectangle boundingBox) {
+        ColoredFluidHandler tank = this.fluidHandler.addTank(filter, capacity, color, name, boundingBox);
+
+        if ((color != null) && (name != null) && (name.length() > 0) && (boundingBox != null)) {
+            this.sideConfig.addColoredInfo(name, color, boundingBox);
+        }
+
+        return tank.getInnerTank();
+    }
+
+    protected void addFluidTank(IFluidTank tank, BoundingRectangle box) {
+        if (tank == null) {
+            return;
+        }
+        this.fluidHandler.addTank(tank);
+
+        if ((tank instanceof ColoredFluidHandler) && (box != null)) {
+            ColoredFluidHandler colored  = (ColoredFluidHandler)tank;
+            this.sideConfig.addColoredInfo(colored.getName(), colored.getColor(), box);
+        }
+    }
+
+
+    protected EnumDyeColor getColorForFluidInventory() {
+        return EnumDyeColor.SILVER;
+    }
+
+    protected void ensureFluidItems() {
+        if ((this.fluidHandler == null) || (this.fluidHandler.tankCount() == 0)) {
+            return;
+        }
+
+        if (this.fluidItems == null) {
+            EnumDyeColor color = this.getColorForFluidInventory();
+            if (color != null) {
+                int x = 0, y = 0;
+                for(IFluidTank tank : this.fluidHandler.getTanks()) {
+                    if (tank instanceof ColoredFluidHandler) {
+                        BoundingRectangle box = ((ColoredFluidHandler) tank).getBoundingBox();
+                        if (box != null) {
+                            x = Math.max(x, box.getRight());
+                            y = box.getTop();
+                        }
+                    }
+                }
+
+                this.fluidItems = new ItemStackHandler(2);
+                this.addInventory(new ColoredItemHandler(this.fluidItems, color, "Fluid Containers", new BoundingRectangle(x, y, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT)) {
+                    @Override
+                    public boolean canInsertItem(int slot, ItemStack stack) {
+                        return (slot == 0) && ElectricTileEntity.this.fluidHandler.acceptsFluidFrom(stack);
+                    }
+
+                    @Override
+                    public boolean canExtractItem(int slot) {
+                        return (slot != 0);
+                    }
+
+                    @Override
+                    public List<Slot> getSlots(BasicTeslaContainer container) {
+                        List<Slot> slots = super.getSlots(container);
+
+                        BoundingRectangle box = this.getBoundingBox();
+                        if (box != null) {
+                            slots.add(new FilteredSlot(this.getItemHandlerForContainer(), 0, box.getLeft() + 1, box.getTop() + 1));
+                            slots.add(new FilteredSlot(this.getItemHandlerForContainer(), 1, box.getLeft() + 1, box.getTop() + 1 + 36));
+                        }
+
+                        return slots;
+                    }
+
+                    @Override
+                    public List<IGuiContainerPiece> getGuiContainerPieces(BasicTeslaGuiContainer container) {
+                        List<IGuiContainerPiece> pieces = super.getGuiContainerPieces(container);
+
+                        BoundingRectangle box = this.getBoundingBox();
+                        if (box != null) {
+                            pieces.add(new BasicRenderedGuiPiece(box.getLeft(), box.getTop(), 18, 54,
+                                    BasicTeslaGuiContainer.MACHINE_BACKGROUND, 78, 189));
+                        }
+
+                        return pieces;
+                    }
+                });
+            }
+        }
+    }
+
+    //endregion
 
     protected EnumFacing getFacing() {
         IBlockState state = this.getWorld().getBlockState(this.getPos());
@@ -101,37 +231,6 @@ public abstract class ElectricTileEntity extends TileEntity implements
     }
 
     //endregion
-    //region work              methods
-
-    @SuppressWarnings("WeakerAccess")
-    protected int getWorkTicks() {
-        return 40;
-    }
-
-    @SuppressWarnings("WeakerAccess")
-    protected int getEnergyForWork() {
-        return 800;
-    }
-
-    @Override
-    public int getJobTicks() {
-        return this.lastWorkTicks;
-    }
-
-    @Override
-    public float getJobProgress() {
-        if (this.getJobTicks() <= 0) {
-            return 0;
-        }
-        return (float) Math.min(this.getJobTicks(), Math.max(0, this.workTick)) / (float) this.getJobTicks();
-    }
-
-    @Override
-    public boolean hasJob() {
-        return (this.lastWorkTicks >= 0);
-    }
-
-    //endregion
 
     //region storage & sync    methods
 
@@ -146,11 +245,14 @@ public abstract class ElectricTileEntity extends TileEntity implements
         if (compound.hasKey("energy")) {
             this.energyStorage.deserializeNBT(compound.getCompoundTag("energy"));
         }
+        if (compound.hasKey("fluids")) {
+            this.fluidHandler.deserializeNBT(compound.getCompoundTag("fluids"));
+        }
+        if (compound.hasKey("fluidItems") && (this.fluidItems != null)) {
+            this.fluidItems.deserializeNBT(compound.getCompoundTag("fluidItems"));
+        }
 
-        this.lastWorkTicks = compound.getInteger("tick_lastWork");
-        this.workTick = compound.getInteger("tick_work");
         this.syncTick = compound.getInteger("tick_sync");
-        this.outOfPower = compound.getBoolean("out_of_power");
 
         if (compound.hasKey("side_config", Constants.NBT.TAG_LIST)) {
             NBTTagList list = compound.getTagList("side_config", Constants.NBT.TAG_COMPOUND);
@@ -163,11 +265,12 @@ public abstract class ElectricTileEntity extends TileEntity implements
         compound = super.writeToNBT(compound);
 
         compound.setTag("energy", this.energyStorage.serializeNBT());
+        compound.setTag("fluids", this.fluidHandler.serializeNBT());
+        if (this.fluidItems != null) {
+            compound.setTag("fluidItems", this.fluidItems.serializeNBT());
+        }
 
-        compound.setInteger("tick_work", this.workTick);
-        compound.setInteger("tick_lastWork", this.lastWorkTicks);
         compound.setInteger("tick_sync", this.syncTick);
-        compound.setBoolean("out_of_power", this.outOfPower);
 
         compound.setTag("side_config", this.sideConfig.serializeNBT());
 
@@ -205,6 +308,9 @@ public abstract class ElectricTileEntity extends TileEntity implements
                     this.processServerMessage(compound);
                 }
             }
+            else {
+                TeslaCoreLib.logger.info("Unknown message for __tetId: " + tetId + " : " + compound.toString());
+            }
         }
         return null;
     }
@@ -214,7 +320,17 @@ public abstract class ElectricTileEntity extends TileEntity implements
     }
 
     protected SimpleNBTMessage processServerMessage(String messageType, NBTTagCompound compound) { return null; }
-    protected SimpleNBTMessage processClientMessage(String messageType, NBTTagCompound compound) { return null; }
+    protected SimpleNBTMessage processClientMessage(String messageType, NBTTagCompound compound) {
+        if ((messageType != null) && messageType.equals("TOGGLE_SIDE")) {
+            EnumDyeColor color = EnumDyeColor.byMetadata(compound.getInteger("color"));
+            EnumFacing facing = EnumFacing.getFront(compound.getInteger("side"));
+//            TeslaCoreLib.logger.info("Processing message " + messageType + " on server: " + color + " " + facing);
+            this.sideConfig.toggleSide(color, facing);
+            this.markDirty();
+        }
+
+        return null;
+    }
 
     //endregion
 
@@ -233,7 +349,7 @@ public abstract class ElectricTileEntity extends TileEntity implements
         if (machineFacing == EnumFacing.EAST) {
             return facing.rotateY();
         }
-        if (machineFacing == EnumFacing.SOUTH) {
+        if (machineFacing == EnumFacing.NORTH) {
             return facing.getOpposite(); // .rotateY().rotateY();
         }
         if (machineFacing == EnumFacing.WEST) {
@@ -246,11 +362,19 @@ public abstract class ElectricTileEntity extends TileEntity implements
     public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing) {
         facing = this.orientFacing(facing);
 
-        if (capability == TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            EnumFacing oriented = this.orientFacing(facing);
+            int[] slots = this.itemHandler.getSlotsForFace(oriented);
+            return ((slots != null) && (slots.length > 0));
+        } else if (capability == TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
             return true;
         } else if (capability == TeslaCoreCapabilities.CAPABILITY_GUI_CONTAINER) {
             return true;
+        } else if (capability == TeslaCoreCapabilities.CAPABILITY_WRENCH) {
+            return true;
         } else if ((this.energyStorage != null) && this.energyStorage.hasCapability(capability, facing)) {
+            return true;
+        } else if ((this.fluidHandler != null) && this.fluidHandler.hasCapability(capability, facing)) {
             return true;
         }
 
@@ -262,12 +386,26 @@ public abstract class ElectricTileEntity extends TileEntity implements
     public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing) {
         facing = this.orientFacing(facing);
 
-        if (capability == TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            EnumFacing oriented = this.orientFacing(facing);
+            return (T)this.itemHandler.getSideWrapper(oriented);
+        } else if (capability == TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
             return (T) this;
         } else if (capability == TeslaCoreCapabilities.CAPABILITY_GUI_CONTAINER) {
             return (T) this;
-        } else if (this.energyStorage != null) {
+        } else if (capability == TeslaCoreCapabilities.CAPABILITY_WRENCH) {
+            return (T) this;
+        }
+
+        if (this.energyStorage != null) {
             T c = this.energyStorage.getCapability(capability, facing);
+            if (c != null) {
+                return c;
+            }
+        }
+
+        if (this.fluidHandler != null) {
+            T c = this.fluidHandler.getCapability(capability, facing);
             if (c != null) {
                 return c;
             }
@@ -279,62 +417,37 @@ public abstract class ElectricTileEntity extends TileEntity implements
     @Override
     public List<HudInfoLine> getHUDLines() {
         List<HudInfoLine> list = Lists.newArrayList();
+        return list;
+    }
 
-        if (this.outOfPower) {
-            list.add(new HudInfoLine(Color.RED,
-                    new Color(255, 0, 0, 42),
-                    "out of power")
-                    .setTextAlignment(HudInfoLine.TextAlignment.CENTER));
+    @Override
+    public EnumActionResult onWrenchUse(TeslaWrench wrench,
+                                 EntityPlayer player, World world, BlockPos pos, EnumHand hand,
+                                 EnumFacing facing, float hitX, float hitY, float hitZ) {
+        if ((world == null) || !world.equals(this.getWorld()) || (pos == null) || !pos.equals(this.getPos())) {
+            return EnumActionResult.PASS;
         }
 
-        return list;
+        if (!this.getWorld().isRemote) {
+            // client side
+            TeslaCoreLib.logger.info("WRENCH!!");
+            if (this.getBlockType() instanceof OrientedBlock) {
+                return this.getBlockType().rotateBlock(this.getWorld(), this.getPos(), EnumFacing.UP)
+                        ? EnumActionResult.SUCCESS
+                        : EnumActionResult.PASS;
+            }
+        }
+//        else  {
+//            // server side
+//            TeslaCoreLib.logger.info("WRENCH!!");
+//        }
+
+        return EnumActionResult.PASS;
     }
 
     //endregion
 
-    @Override
-    public void update() {
-        if (this.outOfPower) {
-            int energy = this.getEnergyForWork();
-            if (this.energyStorage.getEnergyStored() >= energy) {
-                this.outOfPower = false;
-                this.forceSync();
-            }
-        }
-
-        if (!this.outOfPower) {
-            this.workTick++;
-
-            if (this.workTick > this.lastWorkTicks) {
-                this.lastWorkTicks = this.getWorkTicks();
-                this.workTick = 0;
-
-                int energy = this.getEnergyForWork();
-                if (this.energyStorage.getEnergyStored() >= energy) {
-                    if (!this.getWorld().isRemote) {
-                        float work = this.performWork();
-                        if (work > 0) {
-                            this.energyStorage.workPerformed(energy, work);
-                        }
-                    } else {
-                        this.outOfPower = true;
-                    }
-                    this.forceSync();
-                }
-            }
-        }
-
-        if (!this.getWorld().isRemote) {
-            this.syncTick++;
-            if (this.syncTick >= SYNC_ON_TICK) {
-                TeslaCoreLib.network.send(new SimpleNBTMessage(this, this.writeToNBT()));
-                this.syncTick = 0;
-            }
-        }
-    }
-
-    @SuppressWarnings("WeakerAccess")
-    protected abstract float performWork();
+    //#region gui / containers  nethods
 
     @Override
     public BasicTeslaContainer getContainer(int id, EntityPlayer player) {
@@ -349,13 +462,88 @@ public abstract class ElectricTileEntity extends TileEntity implements
     @Override
     public List<IGuiContainerPiece> getGuiContainerPieces(BasicTeslaGuiContainer container) {
         List<IGuiContainerPiece> pieces = Lists.newArrayList();
-        pieces.add(new TeslaEnergyLevelPiece(7, 25, this.energyStorage));
+
+        BoundingRectangle energyBox = this.getEnergyBoundingBox();
+        if (energyBox != null) {
+            pieces.add(new TeslaEnergyLevelPiece(energyBox.getLeft(), energyBox.getTop(), this.energyStorage));
+        }
+
+        pieces.add(new PlayerInventoryBackground(7, 101, 162, 54));
+        SideConfigurator configurator = new SideConfigurator(7, 101, 162, 54, this.sideConfig, this);
+        pieces.add(configurator);
+        pieces.add(new SideConfigSelector(7, 81, 162, 18, this.sideConfig, configurator));
+
+        for(int i = 0; i < this.itemHandler.getInventories(); i++) {
+            IItemHandler handler = this.itemHandler.getInventory(i);
+            if(handler instanceof IGuiContainerPiecesProvider) {
+                List<IGuiContainerPiece> childPieces = ((IGuiContainerPiecesProvider)handler).getGuiContainerPieces(container);
+                if ((childPieces != null) && (childPieces.size() > 0)) {
+                    pieces.addAll(childPieces);
+                }
+            }
+        }
+
+        List<IGuiContainerPiece> fluidPieces = this.fluidHandler.getGuiContainerPieces(container);
+        if ((fluidPieces != null) && (fluidPieces.size() > 0)) {
+            pieces.addAll(fluidPieces);
+        }
+
         return pieces;
     }
 
     @Override
     public List<Slot> getSlots(BasicTeslaContainer container) {
         List<Slot> slots = Lists.newArrayList();
+
+        for(int i = 0; i < this.itemHandler.getInventories(); i++) {
+            IItemHandler handler = this.itemHandler.getInventory(i);
+            if(handler instanceof IContainerSlotsProvider) {
+                List<Slot> childSlots = ((IContainerSlotsProvider)handler).getSlots(container);
+                if ((childSlots != null) && (childSlots.size() > 0)) {
+                    slots.addAll(childSlots);
+                }
+            }
+        }
+
         return slots;
     }
+
+    //#endregion
+
+    @Override
+    public final void update() {
+        this.protectedUpdate();
+        this.energyStorage.processStatistics();
+
+        if (this.fluidItems != null) {
+            ItemStack stack = this.fluidItems.getStackInSlot(0);
+            if (!stack.isEmpty() && this.fluidHandler.acceptsFluidFrom(stack)) {
+                ItemStack result = this.fluidHandler.fillFluidFrom(stack);
+                if (!ItemStack.areItemStacksEqual(stack, result)) {
+                    this.fluidItems.setStackInSlot(0, result);
+                    this.discardUsedFluidItem();
+                }
+            } else if (!stack.isEmpty()) {
+                this.discardUsedFluidItem();
+            }
+        }
+
+        if (!this.getWorld().isRemote) {
+            this.syncTick++;
+            if (this.syncTick >= SYNC_ON_TICK) {
+                TeslaCoreLib.network.send(new SimpleNBTMessage(this, this.writeToNBT()));
+                this.syncTick = 0;
+            }
+        }
+    }
+
+    private void discardUsedFluidItem() {
+        if (this.fluidItems != null) {
+            ItemStack source = this.fluidItems.getStackInSlot(0);
+            ItemStack result = this.fluidItems.insertItem(1, source, false);
+            this.fluidItems.setStackInSlot(0, result);
+        }
+    }
+
+    protected void protectedUpdate() { }
 }

@@ -28,7 +28,7 @@ public class SideConfigSelector extends BasicContainerGuiPiece {
         List<ColoredItemHandlerInfo> colors = this.sidedConfig.getColoredInfo();
         if ((colors != null) && (colors.size() > 0)) {
             container.bindDefaultTexture();
-            for (int i = 0; (i < colors.size()) && (i < 9); i++) {
+            for (int i = 0; (i < colors.size()) && (i < 8); i++) {
                 container.drawTexturedRect(
                         this.getLeft() + 2 + i * 18, this.getTop() + 2,
                         (i == this.selectedInventory) ? 128 : 110, 210, 14, 14);
@@ -48,7 +48,7 @@ public class SideConfigSelector extends BasicContainerGuiPiece {
             if ((localY >= 2) && (localY <= 14)) {
                 int localX = mouseX - guiX - this.getLeft();
                 int index = localX / 18;
-                if ((index != this.selectedInventory) && (index >= 0) && (index < colors.size()) && (colors.get(index).getHighlight() != null)) {
+                if ((index != this.selectedInventory) && (index >= 0) && (index < colors.size()) && (index < 8) && (colors.get(index).getHighlight() != null)) {
                     localX = localX - index * 18;
                     if ((localX >= 2) && (localX <= 14)) {
                         BoundingRectangle box = colors.get(index).getHighlight();
@@ -76,7 +76,7 @@ public class SideConfigSelector extends BasicContainerGuiPiece {
                 int localX = mouseX - guiX - this.getLeft();
                 int index = localX / 18;
                 List<ColoredItemHandlerInfo> colors = this.sidedConfig.getColoredInfo();
-                if ((index >= 0) && (index < colors.size()) && (colors.get(index).getHighlight() != null)) {
+                if ((index >= 0) && (index < colors.size()) && (index < 8) && (colors.get(index).getHighlight() != null)) {
                     localX = localX - index * 18;
                     if ((localX >= 2) && (localX <= 14)) {
                         String label = colors.get(index).getName();
@@ -101,7 +101,7 @@ public class SideConfigSelector extends BasicContainerGuiPiece {
                 int localX = mouseX - container.getGuiLeft() - this.getLeft();
                 int index = localX / 18;
                 List<ColoredItemHandlerInfo> colors = this.sidedConfig.getColoredInfo();
-                if ((index != oldIndex) && (index >= 0) && (index < colors.size()) && (colors.get(index).getHighlight() != null)) {
+                if ((index != oldIndex) && (index >= 0) && (index < colors.size()) && (index < 8) && (colors.get(index).getHighlight() != null)) {
                     localX = localX - index * 18;
                     if ((localX >= 2) && (localX <= 14)) {
                         this.selectedInventory = index;

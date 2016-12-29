@@ -7,6 +7,6 @@ import net.ndrei.teslacorelib.blocks.OrientedBlock;
  */
 public final class TeslaCoreUITestBlock extends OrientedBlock<TeslaCoreUITestEntity> {
     public TeslaCoreUITestBlock() {
-        super("TCLTB", TeslaCoreUITestEntity.class);
+        super("test_machine", TeslaCoreUITestEntity.class);
     }
 }

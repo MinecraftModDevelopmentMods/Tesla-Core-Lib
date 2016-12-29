@@ -14,6 +14,7 @@ import net.ndrei.teslacorelib.gui.TeslaCoreGuiProxy;
 import net.ndrei.teslacorelib.items.TeslaWrench;
 import net.ndrei.teslacorelib.netsync.ITeslaCorePackets;
 import net.ndrei.teslacorelib.netsync.TeslaCorePackets;
+import net.ndrei.teslacorelib.test.CreativeGeneratorBlock;
 import net.ndrei.teslacorelib.test.TeslaCoreUITestBlock;
 import org.apache.logging.log4j.Logger;
 
@@ -44,6 +45,7 @@ public class TeslaCoreLib
 
     public static TeslaWrench wrench;
     public static TeslaCoreUITestBlock testBlock;
+    public static CreativeGeneratorBlock generatorBlock;
 
     @Mod.EventHandler
     @SuppressWarnings("unused")
@@ -57,6 +59,10 @@ public class TeslaCoreLib
         TeslaCoreLib.testBlock.register();
         TeslaCoreLib.testBlock.setCreativeTab(TeslaCoreLib.creativeTab);
 
+        TeslaCoreLib.generatorBlock = new CreativeGeneratorBlock();
+        TeslaCoreLib.generatorBlock.register();
+        TeslaCoreLib.generatorBlock.setCreativeTab(TeslaCoreLib.creativeTab);
+
         if (event.getSide() == Side.CLIENT) {
             ModelLoader.setCustomModelResourceLocation(
                     TeslaCoreLib.wrench,
@@ -64,6 +70,7 @@ public class TeslaCoreLib
                     new ModelResourceLocation(TeslaCoreLib.wrench.getRegistryName(), "inventory")
             );
             TeslaCoreLib.testBlock.registerRenderer();
+            TeslaCoreLib.generatorBlock.registerRenderer();
         }
 
         NetworkRegistry.INSTANCE.registerGuiHandler(TeslaCoreLib.instance, new TeslaCoreGuiProxy());
