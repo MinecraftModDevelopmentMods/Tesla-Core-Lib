@@ -8,6 +8,6 @@ import net.ndrei.teslacorelib.blocks.OrientedBlock;
  */
 public class CreativeGeneratorBlock extends OrientedBlock<CreativeGeneratorEntity> {
     public CreativeGeneratorBlock() {
-        super(TeslaCoreLib.MODID, "creative_generator", CreativeGeneratorEntity.class);
+        super(TeslaCoreLib.MODID, TeslaCoreLib.creativeTab, "creative_generator", CreativeGeneratorEntity.class);
     }
 }

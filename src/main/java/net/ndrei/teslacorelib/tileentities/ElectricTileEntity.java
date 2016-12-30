@@ -521,7 +521,7 @@ public abstract class ElectricTileEntity extends TileEntity implements
     public List<IGuiContainerPiece> getGuiContainerPieces(BasicTeslaGuiContainer container) {
         List<IGuiContainerPiece> pieces = Lists.newArrayList();
 
-        pieces.add(new MachineNameGuiPiece(this.getBlockType().getUnlocalizedName(),
+        pieces.add(new MachineNameGuiPiece(this.getBlockType().getUnlocalizedName() + ".name",
                 7, 7, 162, 12));
 
         BoundingRectangle energyBox = this.getEnergyBoundingBox();

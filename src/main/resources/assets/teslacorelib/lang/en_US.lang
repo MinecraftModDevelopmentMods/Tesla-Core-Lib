@@ -1,5 +1,7 @@
+itemGroup.tabTesla_Core_Lib=Tesla Core Lib
+
 item.teslacorelib_wrench.name=Tesla Wrench
 item.teslacorelib_battery.name=Tesla Battery
 
-tile.teslacorelib_test_machine=Test All-in-One Machine
-tile.teslacorelib_creative_generator=Creative Generator
+tile.teslacorelib_test_machine.name=Test All-in-One Machine
+tile.teslacorelib_creative_generator.name=Creative Generator
