@@ -46,7 +46,7 @@ public abstract class ElectricGenerator extends ElectricTileEntity {
             }
 
             @Override
-            public int getSlotLimit(int slot) {
+            protected int getStackLimit(int slot, ItemStack stack) {
                 return 1;
             }
         };

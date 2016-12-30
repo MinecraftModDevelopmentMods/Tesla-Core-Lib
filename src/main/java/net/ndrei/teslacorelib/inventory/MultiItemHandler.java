@@ -159,20 +159,20 @@ public class MultiItemHandler implements IMultiItemHandler {
         return ItemStackUtil.getEmptyStack();
     }
 
-    @Override
-    public int getSlotLimit(int slot) {
-        if (slot < 0) {
-            return 0;
-        }
-        for(int i = 0; i < this.handlers.size(); i++) {
-            IItemHandler handler = this.handlers.get(i);
-            if (handler.getSlots() > slot) {
-                return handler.getSlotLimit(slot);
-            }
-            slot -= handler.getSlots();
-        }
-        return 0;
-    }
+//    @Override
+//    public int getSlotLimit(int slot) {
+//        if (slot < 0) {
+//            return 0;
+//        }
+//        for(int i = 0; i < this.handlers.size(); i++) {
+//            IItemHandler handler = this.handlers.get(i);
+//            if (handler.getSlots() > slot) {
+//                return handler.getSlotLimit(slot);
+//            }
+//            slot -= handler.getSlots();
+//        }
+//        return 0;
+//    }
 
     @Override
     public void setStackInSlot(int slot, @Nonnull ItemStack stack) {

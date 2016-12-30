@@ -58,10 +58,10 @@ public class FilteredItemHandler implements IFilteredItemHandler {
         return this.handler.extractItem(slot, amount, simulate);
     }
 
-    @Override
-    public final int getSlotLimit(int slot) {
-        return this.handler.getSlotLimit(slot);
-    }
+//    @Override
+//    public final int getSlotLimit(int slot) {
+//        return this.handler.getSlotLimit(slot);
+//    }
 
     @Override
     public void setStackInSlot(int slot, @Nonnull ItemStack stack) {

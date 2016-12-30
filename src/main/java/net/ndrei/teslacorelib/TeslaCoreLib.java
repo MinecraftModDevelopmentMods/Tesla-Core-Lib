@@ -2,6 +2,7 @@ package net.ndrei.teslacorelib;
 
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.Mod;
@@ -41,7 +42,7 @@ public class TeslaCoreLib
         }
 
         @Override
-        public ItemStack getTabIconItem() { return this.getIconItemStack(); }
+        public Item getTabIconItem() { return this.getIconItemStack().getItem(); }
     };
 
     public static TeslaWrench wrench;

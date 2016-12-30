@@ -35,9 +35,8 @@ public class TeslaWrench extends RegisteredItem {
     }
 
     @Override
-    public EnumActionResult onItemUseFirst(EntityPlayer player, World worldIn, BlockPos pos,
-                                           EnumFacing facing, float hitX, float hitY, float hitZ,
-                                           EnumHand hand) {
+    public EnumActionResult onItemUseFirst(ItemStack stack, EntityPlayer player, World worldIn, BlockPos pos,
+                                           EnumFacing facing, float hitX, float hitY, float hitZ, EnumHand hand) {
         EnumActionResult result = EnumActionResult.PASS;
 
         // test if block implements the interface

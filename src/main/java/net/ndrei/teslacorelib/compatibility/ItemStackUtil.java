@@ -7,32 +7,32 @@ import net.minecraft.item.ItemStack;
  */
 public final class ItemStackUtil {
     public static boolean isEmpty(ItemStack stack) {
-        return (stack == null) || stack.isEmpty() || (stack.getCount() == 0);
+        return (stack == null) || (stack.stackSize == 0);
     }
 
     public static void grow(ItemStack stack, int amount) {
-        stack.grow(amount);
+        stack.stackSize += amount;
     }
 
     public static void shrink(ItemStack stack, int amount) {
-        stack.shrink(amount);
+        stack.stackSize -= amount;
     }
 
     public static int getSize(ItemStack stack) {
-        return stack.getCount();
+        return stack.stackSize;
     }
 
     public static void setSize(ItemStack stack, int size) {
-        stack.setCount(size);
+        stack.stackSize = size;
     }
 
     public static ItemStack copyWithSize(ItemStack stack, int size) {
         ItemStack result = stack.copy();
-        result.setCount(size);
+        result.stackSize = size;
         return result;
     }
 
     public static ItemStack getEmptyStack() {
-        return ItemStack.EMPTY;
+        return null;
     }
 }

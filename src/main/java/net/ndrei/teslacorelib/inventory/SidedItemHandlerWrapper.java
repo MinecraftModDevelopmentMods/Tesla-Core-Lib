@@ -41,8 +41,8 @@ public class SidedItemHandlerWrapper implements IItemHandler {
         return this.handler.extractItem(this.slots[slot], amount, simulate);
     }
 
-    @Override
-    public int getSlotLimit(int slot) {
-        return this.handler.getSlotLimit(this.slots[slot]);
-    }
+//    @Override
+//    public int getSlotLimit(int slot) {
+//        return this.handler.getSlotLimit(this.slots[slot]);
+//    }
 }

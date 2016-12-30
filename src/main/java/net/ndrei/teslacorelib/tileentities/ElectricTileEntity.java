@@ -98,7 +98,7 @@ public abstract class ElectricTileEntity extends TileEntity implements
             }
 
             @Override
-            public int getSlotLimit(int slot) {
+            protected int getStackLimit(int slot, ItemStack stack) {
                 return 1;
             }
         };

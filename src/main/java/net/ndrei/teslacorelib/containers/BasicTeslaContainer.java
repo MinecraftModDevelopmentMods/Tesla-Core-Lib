@@ -120,7 +120,7 @@ public class BasicTeslaContainer<T extends ElectricTileEntity> extends Container
                 {
                     ItemStack itemstack = this.getStack();
                     return !(!ItemStackUtil.isEmpty(itemstack) && !playerIn.isCreative()
-                            && EnchantmentHelper.hasBindingCurse(itemstack))
+                            /*&& EnchantmentHelper.hasBindingCurse(itemstack)*/)
                             && super.canTakeStack(playerIn);
                 }
 

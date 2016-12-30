@@ -211,8 +211,8 @@ public class FluidStorage implements IFluidHandler, INBTSerializable<NBTTagCompo
     }
 
     public boolean acceptsFluidFrom(ItemStack bucket) {
-        if (!ItemStackUtil.isEmpty(bucket) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null))) {
-            IFluidHandlerItem handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
+        if (!ItemStackUtil.isEmpty(bucket) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null))) {
+            IFluidHandler handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null);
             FluidStack fluid = (handler != null) ? handler.drain(1000, false) : null;
             if ((fluid != null) && (fluid.amount > 0)) {
                 return (1000 == this.fill(fluid, false));
@@ -222,16 +222,16 @@ public class FluidStorage implements IFluidHandler, INBTSerializable<NBTTagCompo
     }
 
     public ItemStack fillFluidFrom(ItemStack bucket) {
-        if (!ItemStackUtil.isEmpty(bucket) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null))) {
+        if (!ItemStackUtil.isEmpty(bucket) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null))) {
             ItemStack clone = bucket.copy();
-            IFluidHandlerItem handler = clone.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
+            IFluidHandler handler = clone.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null);
             FluidStack fluid = (handler != null) ? handler.drain(Fluid.BUCKET_VOLUME,false) : null;
             if ((fluid != null) && (fluid.amount == Fluid.BUCKET_VOLUME)) {
                 int filled = this.fill(fluid, false);
                 if (filled == Fluid.BUCKET_VOLUME) {
                     this.fill(fluid, true);
                     handler.drain(filled, true);
-                    return handler.getContainer();
+                    return clone;
                 }
             }
         }

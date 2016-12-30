@@ -27,7 +27,6 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -116,13 +115,13 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
 
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand,
-                                    EnumFacing side, float hitX, float hitY, float hitZ) {
+                                    ItemStack held, EnumFacing side, float hitX, float hitY, float hitZ) {
         TileEntity te = world.getTileEntity(pos);
         if ((te != null) && (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null))) {
             IFluidHandler tank = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null);
             ItemStack bucket = player.getHeldItem(hand);
-            if (!ItemStackUtil.isEmpty(bucket) && (tank != null) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null))) {
-                IFluidHandlerItem handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
+            if (!ItemStackUtil.isEmpty(bucket) && (tank != null) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null))) {
+                IFluidHandler handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null);
                 FluidStack fluid = (handler != null) ? handler.drain(Fluid.BUCKET_VOLUME, false) : null;
                 if ((fluid != null) && (fluid.amount == Fluid.BUCKET_VOLUME)) {
                     int filled = tank.fill(fluid, false);
@@ -130,7 +129,6 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
                         tank.fill(fluid, true);
                         if (!player.capabilities.isCreativeMode) {
                             handler.drain(filled, true);
-                            player.setHeldItem(hand, handler.getContainer());
                         }
                     }
                     return true;
@@ -138,7 +136,7 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
             }
         }
 
-        if (super.onBlockActivated(world, pos, state, player, hand, side, hitX, hitY, hitZ)) {
+        if (super.onBlockActivated(world, pos, state, player, hand, held, side, hitX, hitY, hitZ)) {
             return true;
         }
 

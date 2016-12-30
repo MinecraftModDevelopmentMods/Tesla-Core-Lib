@@ -34,6 +34,11 @@ public class BasicTeslaGuiContainer<T extends ElectricTileEntity> extends GuiCon
         this.pieces = (pieces != null) ? pieces : Lists.newArrayList();
     }
 
+    public int getGuiLeft() { return super.guiLeft; }
+    public int getGuiTop() { return super.guiTop; }
+    public int getXSize() { return super.xSize; }
+    public int getYSize() { return super.ySize; }
+
     public BasicTeslaContainer getTeslaContainer() {
         if (this.inventorySlots instanceof BasicTeslaContainer) {
             return (BasicTeslaContainer)this.inventorySlots;
@@ -60,7 +65,7 @@ public class BasicTeslaGuiContainer<T extends ElectricTileEntity> extends GuiCon
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         this.bindDefaultTexture();
-        this.drawTexturedModalRect(super.guiLeft, super.guiTop, 0, 0, super.getXSize(), super.getYSize());
+        this.drawTexturedModalRect(super.guiLeft, super.guiTop, 0, 0, this.getXSize(), this.getYSize());
 
         for(IGuiContainerPiece piece : this.pieces) {
             if (!piece.isVisible()) {
