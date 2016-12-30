@@ -5,7 +5,7 @@ import net.minecraft.item.ItemStack;
 /**
  * Created by CF on 2016-12-30.
  */
-public final class ItemStackWrapper {
+public final class ItemStackUtil {
     public static boolean isEmpty(ItemStack stack) {
         return (stack == null) || stack.isEmpty() || (stack.getCount() == 0);
     }
@@ -30,5 +30,9 @@ public final class ItemStackWrapper {
         ItemStack result = stack.copy();
         result.setCount(size);
         return result;
+    }
+
+    public static ItemStack getEmptyStack() {
+        return ItemStack.EMPTY;
     }
 }

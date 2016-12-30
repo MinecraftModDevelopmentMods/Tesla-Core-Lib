@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
+import net.ndrei.teslacorelib.compatibility.ItemStackUtil;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -114,7 +115,7 @@ public class MultiItemHandler implements IMultiItemHandler {
     @Override
     public ItemStack getStackInSlot(int slot) {
         if (slot < 0) {
-            return ItemStack.EMPTY;
+            return ItemStackUtil.getEmptyStack();
         }
         for(int i = 0; i < this.handlers.size(); i++) {
             IItemHandler handler = this.handlers.get(i);
@@ -123,14 +124,14 @@ public class MultiItemHandler implements IMultiItemHandler {
             }
             slot -= handler.getSlots();
         }
-        return ItemStack.EMPTY;
+        return ItemStackUtil.getEmptyStack();
     }
 
     @Nonnull
     @Override
     public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
         if (slot < 0) {
-            return ItemStack.EMPTY;
+            return ItemStackUtil.getEmptyStack();
         }
         for(int i = 0; i < this.handlers.size(); i++) {
             IItemHandler handler = this.handlers.get(i);
@@ -139,14 +140,14 @@ public class MultiItemHandler implements IMultiItemHandler {
             }
             slot -= handler.getSlots();
         }
-        return ItemStack.EMPTY;
+        return ItemStackUtil.getEmptyStack();
     }
 
     @Nonnull
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
         if (slot < 0) {
-            return ItemStack.EMPTY;
+            return ItemStackUtil.getEmptyStack();
         }
         for(int i = 0; i < this.handlers.size(); i++) {
             IItemHandler handler = this.handlers.get(i);
@@ -155,7 +156,7 @@ public class MultiItemHandler implements IMultiItemHandler {
             }
             slot -= handler.getSlots();
         }
-        return ItemStack.EMPTY;
+        return ItemStackUtil.getEmptyStack();
     }
 
     @Override

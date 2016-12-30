@@ -11,6 +11,7 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidTank;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
+import net.ndrei.teslacorelib.compatibility.ItemStackUtil;
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer;
 import net.ndrei.teslacorelib.containers.FilteredSlot;
 import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer;
@@ -176,7 +177,7 @@ public final class TeslaCoreUITestEntity extends ElectricMachine {
             if ((water != null) && (water.amount == 250) && (lava != null) && (lava.amount == 125)) {
                 ItemStack cobble = new ItemStack(Blocks.COBBLESTONE, 1);
                 cobble = ItemHandlerHelper.insertItem(this.outputs, cobble, false);
-                if (cobble.isEmpty()) {
+                if (ItemStackUtil.isEmpty(cobble)) {
                     this.waterTank.drain(250, true);
                     this.lavaTank.drain(125, true);
                     result = 0.25f;
@@ -190,11 +191,11 @@ public final class TeslaCoreUITestEntity extends ElectricMachine {
                 moved = false;
                 for(int x = 0; x < 3; x++) {
                     ItemStack stack = this.inputs.extractItem(x, 1, true);
-                    if (stack.isEmpty()) {
+                    if (ItemStackUtil.isEmpty(stack)) {
                         continue;
                     }
                     stack = ItemHandlerHelper.insertItem(this.outputs, stack, false);
-                    if (stack.isEmpty()) {
+                    if (ItemStackUtil.isEmpty(stack)) {
                         this.inputs.extractItem(x, 1, false);
                         result += .15f;
                         moved = true;

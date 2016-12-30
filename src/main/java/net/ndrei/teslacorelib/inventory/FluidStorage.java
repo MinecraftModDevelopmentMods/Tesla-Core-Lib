@@ -12,7 +12,7 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidTank;
 import net.minecraftforge.fluids.capability.*;
 import net.ndrei.teslacorelib.TeslaCoreLib;
-import net.ndrei.teslacorelib.compatibility.ItemStackWrapper;
+import net.ndrei.teslacorelib.compatibility.ItemStackUtil;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -211,8 +211,8 @@ public class FluidStorage implements IFluidHandler, INBTSerializable<NBTTagCompo
     }
 
     public boolean acceptsFluidFrom(ItemStack bucket) {
-        if (!ItemStackWrapper.isEmpty(bucket) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null))) {
-            IFluidHandler handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
+        if (!ItemStackUtil.isEmpty(bucket) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null))) {
+            IFluidHandlerItem handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
             FluidStack fluid = (handler != null) ? handler.drain(1000, false) : null;
             if ((fluid != null) && (fluid.amount > 0)) {
                 return (1000 == this.fill(fluid, false));
@@ -222,7 +222,7 @@ public class FluidStorage implements IFluidHandler, INBTSerializable<NBTTagCompo
     }
 
     public ItemStack fillFluidFrom(ItemStack bucket) {
-        if (!ItemStackWrapper.isEmpty(bucket) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null))) {
+        if (!ItemStackUtil.isEmpty(bucket) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null))) {
             ItemStack clone = bucket.copy();
             IFluidHandlerItem handler = clone.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
             FluidStack fluid = (handler != null) ? handler.drain(Fluid.BUCKET_VOLUME,false) : null;

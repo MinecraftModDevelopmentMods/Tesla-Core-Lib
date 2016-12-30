@@ -3,6 +3,7 @@ package net.ndrei.teslacorelib.inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
+import net.ndrei.teslacorelib.compatibility.ItemStackUtil;
 
 import javax.annotation.Nonnull;
 
@@ -52,7 +53,7 @@ public class FilteredItemHandler implements IFilteredItemHandler {
     @Override
     public final ItemStack extractItem(int slot, int amount, boolean simulate) {
         if (!this.canExtractItem(slot)) {
-            return ItemStack.EMPTY;
+            return ItemStackUtil.getEmptyStack();
         }
         return this.handler.extractItem(slot, amount, simulate);
     }
@@ -69,11 +70,11 @@ public class FilteredItemHandler implements IFilteredItemHandler {
 //            return;
 //        }
 
-//        if (!ItemStackWrapper.isEmpty(existing)) {
+//        if (!ItemStackUtil.isEmpty(existing)) {
 //            throw new RuntimeException("That slot is not empty!");
 //        }
 
-//        if (!ItemStackWrapper.isEmpty(stack) && !this.canInsertItem(slot, stack)) {
+//        if (!ItemStackUtil.isEmpty(stack) && !this.canInsertItem(slot, stack)) {
 //            throw new RuntimeException("That slot does not accept that stack!");
 //        }
 

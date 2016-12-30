@@ -13,7 +13,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.ItemStackHandler;
-import net.ndrei.teslacorelib.compatibility.ItemStackWrapper;
+import net.ndrei.teslacorelib.compatibility.ItemStackUtil;
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer;
 import net.ndrei.teslacorelib.containers.FilteredSlot;
 import net.ndrei.teslacorelib.gui.BasicRenderedGuiPiece;
@@ -53,13 +53,13 @@ public abstract class ElectricGenerator extends ElectricTileEntity {
         super.addInventory(new ColoredItemHandler(this.chargePadItems, EnumDyeColor.BROWN, "Charge Pad", new BoundingRectangle(34, 34, 18, 36)) {
             @Override
             public boolean canInsertItem(int slot, ItemStack stack) {
-                return (!ItemStackWrapper.isEmpty(stack) && stack.hasCapability(TeslaCapabilities.CAPABILITY_CONSUMER, null));
+                return (!ItemStackUtil.isEmpty(stack) && stack.hasCapability(TeslaCapabilities.CAPABILITY_CONSUMER, null));
             }
 
             @Override
             public boolean canExtractItem(int slot) {
                 ItemStack stack = this.getStackInSlot(slot);
-                if (!stack.isEmpty()) {
+                if (!ItemStackUtil.isEmpty(stack)) {
                     ITeslaHolder holder = stack.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null);
                     if (holder != null) {
                         return (holder.getCapacity() == holder.getStoredPower());
@@ -203,7 +203,7 @@ public abstract class ElectricGenerator extends ElectricTileEntity {
 
         for(int index = 0; index < 2; index++) {
             ItemStack stack = this.chargePadItems.getStackInSlot(index);
-            if (stack.isEmpty()) {
+            if (ItemStackUtil.isEmpty(stack)) {
                 continue;
             }
 

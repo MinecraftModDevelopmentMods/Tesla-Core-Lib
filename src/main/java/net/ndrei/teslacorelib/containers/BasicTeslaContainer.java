@@ -10,7 +10,7 @@ import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.ndrei.teslacorelib.compatibility.ItemStackWrapper;
+import net.ndrei.teslacorelib.compatibility.ItemStackUtil;
 import net.ndrei.teslacorelib.tileentities.ElectricTileEntity;
 
 import javax.annotation.Nullable;
@@ -119,7 +119,7 @@ public class BasicTeslaContainer<T extends ElectricTileEntity> extends Container
                 public boolean canTakeStack(EntityPlayer playerIn)
                 {
                     ItemStack itemstack = this.getStack();
-                    return !(!ItemStackWrapper.isEmpty(itemstack) && !playerIn.isCreative()
+                    return !(!ItemStackUtil.isEmpty(itemstack) && !playerIn.isCreative()
                             && EnchantmentHelper.hasBindingCurse(itemstack))
                             && super.canTakeStack(playerIn);
                 }

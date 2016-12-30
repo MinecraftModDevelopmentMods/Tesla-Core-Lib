@@ -36,7 +36,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.ndrei.teslacorelib.TeslaCoreLib;
 import net.ndrei.teslacorelib.Utils;
-import net.ndrei.teslacorelib.compatibility.ItemStackWrapper;
+import net.ndrei.teslacorelib.compatibility.ItemStackUtil;
 import net.ndrei.teslacorelib.render.HudInfoRenderer;
 
 /**
@@ -121,7 +121,7 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
         if ((te != null) && (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null))) {
             IFluidHandler tank = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null);
             ItemStack bucket = player.getHeldItem(hand);
-            if (!ItemStackWrapper.isEmpty(bucket) && (tank != null) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null))) {
+            if (!ItemStackUtil.isEmpty(bucket) && (tank != null) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null))) {
                 IFluidHandlerItem handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null);
                 FluidStack fluid = (handler != null) ? handler.drain(Fluid.BUCKET_VOLUME, false) : null;
                 if ((fluid != null) && (fluid.amount == Fluid.BUCKET_VOLUME)) {
@@ -181,7 +181,7 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
             if (handler != null) {
                 for (int i = 0; i < handler.getSlots(); ++i) {
                     ItemStack stack = handler.getStackInSlot(i);
-                    if (!ItemStackWrapper.isEmpty(stack)) {
+                    if (!ItemStackUtil.isEmpty(stack)) {
                         InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), handler.getStackInSlot(i));
                     }
                 }

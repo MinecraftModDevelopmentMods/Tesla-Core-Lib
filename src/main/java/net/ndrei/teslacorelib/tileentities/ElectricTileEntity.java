@@ -30,7 +30,7 @@ import net.ndrei.teslacorelib.capabilities.hud.HudInfoLine;
 import net.ndrei.teslacorelib.capabilities.hud.IHudInfoProvider;
 import net.ndrei.teslacorelib.capabilities.inventory.SidedItemHandlerConfig;
 import net.ndrei.teslacorelib.capabilities.wrench.ITeslaWrenchHandler;
-import net.ndrei.teslacorelib.compatibility.ItemStackWrapper;
+import net.ndrei.teslacorelib.compatibility.ItemStackUtil;
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer;
 import net.ndrei.teslacorelib.containers.FilteredSlot;
 import net.ndrei.teslacorelib.containers.IContainerSlotsProvider;
@@ -589,13 +589,13 @@ public abstract class ElectricTileEntity extends TileEntity implements
     protected void processImmediateInventories() {
         if (this.fluidItems != null) {
             ItemStack stack = this.fluidItems.getStackInSlot(0);
-            if (!ItemStackWrapper.isEmpty(stack) && this.fluidHandler.acceptsFluidFrom(stack)) {
+            if (!ItemStackUtil.isEmpty(stack) && this.fluidHandler.acceptsFluidFrom(stack)) {
                 ItemStack result = this.fluidHandler.fillFluidFrom(stack);
                 if (!ItemStack.areItemStacksEqual(stack, result)) {
                     this.fluidItems.setStackInSlot(0, result);
                     this.discardUsedFluidItem();
                 }
-            } else if (!ItemStackWrapper.isEmpty(stack)) {
+            } else if (!ItemStackUtil.isEmpty(stack)) {
                 this.discardUsedFluidItem();
             }
         }

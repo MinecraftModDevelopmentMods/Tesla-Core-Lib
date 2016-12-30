@@ -35,7 +35,7 @@
 //                if (this.stacks.length > this.size) {
 //                    for(int i = this.size; i < this.stacks.length; i++) {
 //                        ItemStack stack = this.stacks[i];
-//                        if ((stack != null) && !stack.isEmpty()) {
+//                        if ((stack != null) && !ItemStackUtil.isEmpty(stack)) {
 //                            removed.add(stack);
 //                        }
 //                    }
@@ -44,7 +44,7 @@
 //            }
 //            for(int i = this.size; i < this.stacks.length; i++) {
 //                if (this.stacks[i] == null) {
-//                    this.stacks[i] = ItemStack.EMPTY;
+//                    this.stacks[i] = ItemStackUtil.getEmptyStack();
 //                }
 //            }
 //        }
@@ -63,20 +63,20 @@
 //
 //    @Override
 //    public boolean canInsertItem(int slot, ItemStack stack) {
-//        if (stack.isEmpty()) {
+//        if (ItemStackUtil.isEmpty(stack)) {
 //            // inserted stack is empty
 //            return false;
 //        }
 //        ItemStack existing = this.getStackInSlot(slot);
-//        if (!ItemStackWrapper.isEmpty(existing) && !ItemHandlerHelper.canItemStacksStack(existing, stack)) {
+//        if (!ItemStackUtil.isEmpty(existing) && !ItemHandlerHelper.canItemStacksStack(existing, stack)) {
 //            // different items than existing stack
 //            return false;
 //        }
-//        if (!ItemStackWrapper.isEmpty(existing) && (this.getStackLimit(slot, existing) < (existing.getCount() + stack.getCount()))) {
+//        if (!ItemStackUtil.isEmpty(existing) && (this.getStackLimit(slot, existing) < (existing.getCount() + stack.getCount()))) {
 //            // resulting stack would be too big
 //            return false;
 //        }
-//        if (ItemStackWrapper.isEmpty(existing) && !this.isItemValidForSlot(slot, stack)) {
+//        if (ItemStackUtil.isEmpty(existing) && !this.isItemValidForSlot(slot, stack)) {
 //            // new stack not valid for this slot
 //            return false;
 //        }
@@ -86,7 +86,7 @@
 //    @Override
 //    public boolean canExtractItem(int slot) {
 //        ItemStack existing = this.getStackInSlot(slot);
-//        return !ItemStackWrapper.isEmpty(existing);
+//        return !ItemStackUtil.isEmpty(existing);
 //    }
 //
 //    protected int getStackLimit(int slot, ItemStack stack) {
@@ -112,15 +112,15 @@
 //    public final ItemStack getStackInSlot(int slot) {
 //        this.validateSlotIndex(slot);
 //        ItemStack stack = this.stacks[slot];
-//        return (stack == null) ? ItemStack.EMPTY : stack;
+//        return (stack == null) ? ItemStackUtil.getEmptyStack() : stack;
 //    }
 //
 //    @Nonnull
 //    @Override
 //    public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
 //        this.validateSlotIndex(slot);
-//        if (stack.isEmpty())
-//            return ItemStack.EMPTY;
+//        if (ItemStackUtil.isEmpty(stack))
+//            return ItemStackUtil.getEmptyStack();
 //
 //        if (!this.canInsertItem(slot, stack)) {
 //            return stack;
@@ -128,7 +128,7 @@
 //
 //        ItemStack existing = this.getStackInSlot(slot);
 //        int limit = this.getStackLimit(slot, stack);
-//        if (!existing.isEmpty()) {
+//        if (!ItemStackUtil.isEmpty(existing)) {
 //            if (!ItemHandlerHelper.canItemStacksStack(stack, existing)) {
 //                return stack;
 //            }
@@ -141,39 +141,39 @@
 //
 //        boolean overflowed = stack.getCount() > limit;
 //        if (!simulate) {
-//            if (existing.isEmpty()) {
+//            if (ItemStackUtil.isEmpty(existing)) {
 //                this.stacks[slot] = overflowed
 //                        ? ItemHandlerHelper.copyStackWithSize(stack, limit)
 //                        : stack;
 //            }
 //            else {
-//                ItemStackWrapper.grow(existing, overflowed ? limit : stack.getCount());
+//                ItemStackUtil.grow(existing, overflowed ? limit : stack.getCount());
 //            }
 //            this.onContentsChanged(slot);
 //        }
 //
 //        return overflowed
 //                ? ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - limit)
-//                : ItemStack.EMPTY;
+//                : ItemStackUtil.getEmptyStack();
 //    }
 //
 //    @Nonnull
 //    @Override
 //    public ItemStack extractItem(int slot, int amount, boolean simulate) {
 //        if (amount <= 0) {
-//            return ItemStack.EMPTY;
+//            return ItemStackUtil.getEmptyStack();
 //        }
 //        this.validateSlotIndex(slot);
 //
 //        ItemStack existing = this.getStackInSlot(slot);
-//        if (existing.isEmpty()) {
-//            return ItemStack.EMPTY;
+//        if (ItemStackUtil.isEmpty(existing)) {
+//            return ItemStackUtil.getEmptyStack();
 //        }
 //
 //        int toExtract = Math.min(amount, existing.getMaxStackSize());
 //        if (existing.getCount() <= toExtract) {
 //            if (!simulate) {
-//                this.stacks[slot] = ItemStack.EMPTY;
+//                this.stacks[slot] = ItemStackUtil.getEmptyStack();
 //                this.onContentsChanged(slot);
 //            }
 //            return existing;
@@ -192,7 +192,7 @@
 //        NBTTagList list = new NBTTagList();
 //
 //        for (int i = 0; i < this.stacks.length; i++) {
-//            if ((this.stacks[i] != null) && !this.stacks[i].isEmpty()) {
+//            if ((this.stacks[i] != null) && !ItemStackUtil.isEmpty(this.stacks[i])) {
 //                NBTTagCompound itemTag = new NBTTagCompound();
 //                itemTag.setInteger("SLOT", i);
 //                this.stacks[i].writeToNBT(itemTag);
