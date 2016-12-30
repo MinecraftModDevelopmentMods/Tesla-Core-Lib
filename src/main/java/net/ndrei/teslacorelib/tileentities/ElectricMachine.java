@@ -10,6 +10,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.ItemStackHandler;
 import net.ndrei.teslacorelib.capabilities.hud.HudInfoLine;
+import net.ndrei.teslacorelib.compatibility.ItemStackWrapper;
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer;
 import net.ndrei.teslacorelib.containers.FilteredSlot;
 import net.ndrei.teslacorelib.gui.BasicRenderedGuiPiece;
@@ -296,7 +297,7 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
 
         if (this.energyItems != null) {
             ItemStack stack = this.energyItems.getStackInSlot(0);
-            if (!stack.isEmpty()) {
+            if (!ItemStackWrapper.isEmpty(stack)) {
                 ITeslaProducer producer = stack.getCapability(TeslaCapabilities.CAPABILITY_PRODUCER, null);
                 if (producer != null) {
                     long power = producer.takePower(this.energyStorage.getInputRate(), true);
