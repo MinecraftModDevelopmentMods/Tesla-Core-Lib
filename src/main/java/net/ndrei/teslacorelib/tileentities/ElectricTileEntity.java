@@ -58,7 +58,7 @@ public abstract class ElectricTileEntity extends TileEntity implements
     private SidedFluidHandler fluidHandler;
     private ItemStackHandler fluidItems = null;
 
-    protected ItemStackHandler upgradeItems;
+    protected ItemStackHandler addonItems;
 
     private int typeId; // used for message sync
 
@@ -87,11 +87,11 @@ public abstract class ElectricTileEntity extends TileEntity implements
 
     protected void initializeInventories() {
         this.energyStorage.setSidedConfig(EnumDyeColor.LIGHT_BLUE, this.sideConfig, this.getEnergyBoundingBox());
-        this.createFiltersInventory();
+        this.createAddonsInventory();
     }
 
-    protected void createFiltersInventory() {
-        this.upgradeItems = new ItemStackHandler(4) {
+    protected void createAddonsInventory() {
+        this.addonItems = new ItemStackHandler(4) {
             @Override
             protected void onContentsChanged(int slot) {
                 ElectricTileEntity.this.markDirty();
@@ -102,10 +102,10 @@ public abstract class ElectricTileEntity extends TileEntity implements
                 return 1;
             }
         };
-        this.addInventory(new ColoredItemHandler(this.upgradeItems, null, null, null) {
+        this.addInventory(new ColoredItemHandler(this.addonItems, null, null, null) {
             @Override
             public boolean canInsertItem(int slot, ItemStack stack) {
-                return ElectricTileEntity.this.isValidUpgradeItem(stack);
+                return ElectricTileEntity.this.isValidAddonItem(stack);
             }
 
             @Override
@@ -136,7 +136,7 @@ public abstract class ElectricTileEntity extends TileEntity implements
         });
     }
 
-    protected boolean isValidUpgradeItem(ItemStack stack) {
+    protected boolean isValidAddonItem(ItemStack stack) {
         return false;
     }
 
@@ -305,8 +305,8 @@ public abstract class ElectricTileEntity extends TileEntity implements
         if (compound.hasKey("fluidItems") && (this.fluidItems != null)) {
             this.fluidItems.deserializeNBT(compound.getCompoundTag("fluidItems"));
         }
-        if (compound.hasKey("upgradeItems") && (this.upgradeItems != null)) {
-            this.upgradeItems.deserializeNBT(compound.getCompoundTag("upgradeItems"));
+        if (compound.hasKey("addonItems") && (this.addonItems != null)) {
+            this.addonItems.deserializeNBT(compound.getCompoundTag("addonItems"));
         }
 
         this.syncTick = compound.getInteger("tick_sync");
@@ -326,8 +326,8 @@ public abstract class ElectricTileEntity extends TileEntity implements
         if (this.fluidItems != null) {
             compound.setTag("fluidItems", this.fluidItems.serializeNBT());
         }
-        if (this.upgradeItems != null) {
-            compound.setTag("upgradeItems", this.upgradeItems.serializeNBT());
+        if (this.addonItems != null) {
+            compound.setTag("addonItems", this.addonItems.serializeNBT());
         }
 
         compound.setInteger("tick_sync", this.syncTick);
@@ -423,8 +423,7 @@ public abstract class ElectricTileEntity extends TileEntity implements
         facing = this.orientFacing(facing);
 
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            EnumFacing oriented = this.orientFacing(facing);
-            int[] slots = this.itemHandler.getSlotsForFace(oriented);
+            int[] slots = this.itemHandler.getSlotsForFace(facing);
             return ((slots != null) && (slots.length > 0));
         } else if (capability == TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
             return true;
@@ -447,8 +446,7 @@ public abstract class ElectricTileEntity extends TileEntity implements
         facing = this.orientFacing(facing);
 
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            EnumFacing oriented = this.orientFacing(facing);
-            return (T)this.itemHandler.getSideWrapper(oriented);
+            return (T)this.itemHandler.getSideWrapper(facing);
         } else if (capability == TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
             return (T) this;
         } else if (capability == TeslaCoreCapabilities.CAPABILITY_GUI_CONTAINER) {
@@ -522,6 +520,9 @@ public abstract class ElectricTileEntity extends TileEntity implements
     @Override
     public List<IGuiContainerPiece> getGuiContainerPieces(BasicTeslaGuiContainer container) {
         List<IGuiContainerPiece> pieces = Lists.newArrayList();
+
+        pieces.add(new MachineNameGuiPiece(this.getBlockType().getUnlocalizedName() + ".name",
+                7, 7, 162, 12));
 
         BoundingRectangle energyBox = this.getEnergyBoundingBox();
         if (energyBox != null) {

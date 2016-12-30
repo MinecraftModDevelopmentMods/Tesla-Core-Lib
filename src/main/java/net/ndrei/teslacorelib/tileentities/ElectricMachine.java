@@ -207,8 +207,8 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
 
     //region work              methods
 
-    protected int getWorkTicks() {
-        return 40;
+    protected int getMinimumWorkTicks() {
+        return 20;
     }
 
     protected int getEnergyForWork() {
@@ -244,15 +244,19 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
             long toTransfer = Math.min(
                     this.workEnergy.getCapacity() - this.workEnergy.getStoredPower(),
                     this.workEnergy.getInputRate());
-            long transfered = this.energyStorage.takePower(toTransfer);
-            this.workEnergy.givePower(transfered);
+            long transferred = this.energyStorage.takePower(toTransfer);
+            this.workEnergy.givePower(transferred);
         }
 
-        if (this.workEnergy.isFull() && !this.getWorld().isRemote) {
+        this.workTick = Math.min(this.lastWorkTicks + 1, this.workTick + 1);
+        if (this.workEnergy.isFull() && (this.workTick >= this.lastWorkTicks) && !this.getWorld().isRemote) {
             float work = this.performWork();
             long oldCapacity = this.workEnergy.getCapacity();
             this.workEnergy = new EnergyStorage(this.getEnergyForWork(), this.getEnergyForWorkRate(), 0);
-            this.workEnergy.givePower(Math.round(oldCapacity * Math.max(0, Math.min(1, work))));
+            this.workEnergy.givePower(Math.round(oldCapacity * (1 - Math.max(0, Math.min(1, work)))));
+
+            this.workTick = 0;
+            this.lastWorkTicks = this.getMinimumWorkTicks();
             this.forceSync();
         }
 
@@ -289,7 +293,6 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
 
     @SuppressWarnings("WeakerAccess")
     protected abstract float performWork();
-
 
     @Override
     protected void processImmediateInventories() {

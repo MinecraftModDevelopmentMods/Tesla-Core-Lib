@@ -9,6 +9,7 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryHelper;
@@ -48,17 +49,20 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
     private Class<T> teClass;
 
     @SuppressWarnings("unused")
-    protected OrientedBlock(String blockId, Class<T> teClass) {
-        this(blockId, teClass, Material.ROCK);
+    protected OrientedBlock(String modId, CreativeTabs tab, String registryName, Class<T> teClass) {
+        this(modId, tab, registryName, teClass, Material.ROCK);
     }
 
     @SuppressWarnings("WeakerAccess")
-    protected OrientedBlock(String blockId, Class<T> teClass, Material material) {
+    protected OrientedBlock(String modId, CreativeTabs tab, String registryName, Class<T> teClass, Material material) {
         super(material);
         this.teClass = teClass;
 
-        this.setRegistryName(blockId);
-
+        this.setRegistryName(modId, registryName);
+        this.setUnlocalizedName(modId + "_" + registryName);
+        if (tab != null) {
+            this.setCreativeTab(tab);
+        }
         this.setHarvestLevel("pickaxe", 0);
         this.setHardness(3.0f);
 

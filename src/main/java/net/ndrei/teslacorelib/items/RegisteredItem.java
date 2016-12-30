@@ -12,7 +12,7 @@ public class RegisteredItem extends Item {
     public RegisteredItem(String modId, CreativeTabs tab, String registryName) {
         super();
 
-        this.setRegistryName(registryName);
+        this.setRegistryName(modId, registryName);
         this.setUnlocalizedName(modId + "_" + registryName);
         if (tab != null) {
             this.setCreativeTab(tab);
