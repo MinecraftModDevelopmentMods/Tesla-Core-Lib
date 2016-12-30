@@ -30,6 +30,7 @@ import net.ndrei.teslacorelib.capabilities.hud.HudInfoLine;
 import net.ndrei.teslacorelib.capabilities.hud.IHudInfoProvider;
 import net.ndrei.teslacorelib.capabilities.inventory.SidedItemHandlerConfig;
 import net.ndrei.teslacorelib.capabilities.wrench.ITeslaWrenchHandler;
+import net.ndrei.teslacorelib.compatibility.ItemStackWrapper;
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer;
 import net.ndrei.teslacorelib.containers.FilteredSlot;
 import net.ndrei.teslacorelib.containers.IContainerSlotsProvider;
@@ -56,6 +57,8 @@ public abstract class ElectricTileEntity extends TileEntity implements
 
     private SidedFluidHandler fluidHandler;
     private ItemStackHandler fluidItems = null;
+
+    protected ItemStackHandler upgradeItems;
 
     private int typeId; // used for message sync
 
@@ -84,6 +87,57 @@ public abstract class ElectricTileEntity extends TileEntity implements
 
     protected void initializeInventories() {
         this.energyStorage.setSidedConfig(EnumDyeColor.LIGHT_BLUE, this.sideConfig, this.getEnergyBoundingBox());
+        this.createFiltersInventory();
+    }
+
+    protected void createFiltersInventory() {
+        this.upgradeItems = new ItemStackHandler(4) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                ElectricTileEntity.this.markDirty();
+            }
+
+            @Override
+            public int getSlotLimit(int slot) {
+                return 1;
+            }
+        };
+        this.addInventory(new ColoredItemHandler(this.upgradeItems, null, null, null) {
+            @Override
+            public boolean canInsertItem(int slot, ItemStack stack) {
+                return ElectricTileEntity.this.isValidUpgradeItem(stack);
+            }
+
+            @Override
+            public boolean canExtractItem(int slot) {
+                return false;
+            }
+
+            @Override
+            public List<Slot> getSlots(BasicTeslaContainer container) {
+                List<Slot> slots = super.getSlots(container);
+
+                for(int y = 0; y < 4; y++) {
+                    slots.add(new FilteredSlot(this.getItemHandlerForContainer(), y, 174, 8 + y * 18));
+                }
+
+                return slots;
+            }
+
+            @Override
+            public List<IGuiContainerPiece> getGuiContainerPieces(BasicTeslaGuiContainer container) {
+                List<IGuiContainerPiece> pieces = super.getGuiContainerPieces(container);
+
+                pieces.add(new TiledRenderedGuiPiece(173, 7, 18, 18, 1, 4,
+                        BasicTeslaGuiContainer.MACHINE_BACKGROUND, 144, 190, null));
+
+                return pieces;
+            }
+        });
+    }
+
+    protected boolean isValidUpgradeItem(ItemStack stack) {
+        return false;
     }
 
     protected void addInventory(IItemHandler handler) {
@@ -251,6 +305,9 @@ public abstract class ElectricTileEntity extends TileEntity implements
         if (compound.hasKey("fluidItems") && (this.fluidItems != null)) {
             this.fluidItems.deserializeNBT(compound.getCompoundTag("fluidItems"));
         }
+        if (compound.hasKey("upgradeItems") && (this.upgradeItems != null)) {
+            this.upgradeItems.deserializeNBT(compound.getCompoundTag("upgradeItems"));
+        }
 
         this.syncTick = compound.getInteger("tick_sync");
 
@@ -268,6 +325,9 @@ public abstract class ElectricTileEntity extends TileEntity implements
         compound.setTag("fluids", this.fluidHandler.serializeNBT());
         if (this.fluidItems != null) {
             compound.setTag("fluidItems", this.fluidItems.serializeNBT());
+        }
+        if (this.upgradeItems != null) {
+            compound.setTag("upgradeItems", this.upgradeItems.serializeNBT());
         }
 
         compound.setInteger("tick_sync", this.syncTick);
@@ -515,24 +575,28 @@ public abstract class ElectricTileEntity extends TileEntity implements
         this.protectedUpdate();
         this.energyStorage.processStatistics();
 
-        if (this.fluidItems != null) {
-            ItemStack stack = this.fluidItems.getStackInSlot(0);
-            if (!stack.isEmpty() && this.fluidHandler.acceptsFluidFrom(stack)) {
-                ItemStack result = this.fluidHandler.fillFluidFrom(stack);
-                if (!ItemStack.areItemStacksEqual(stack, result)) {
-                    this.fluidItems.setStackInSlot(0, result);
-                    this.discardUsedFluidItem();
-                }
-            } else if (!stack.isEmpty()) {
-                this.discardUsedFluidItem();
-            }
-        }
+        this.processImmediateInventories();
 
         if (!this.getWorld().isRemote) {
             this.syncTick++;
             if (this.syncTick >= SYNC_ON_TICK) {
                 TeslaCoreLib.network.send(new SimpleNBTMessage(this, this.writeToNBT()));
                 this.syncTick = 0;
+            }
+        }
+    }
+
+    protected void processImmediateInventories() {
+        if (this.fluidItems != null) {
+            ItemStack stack = this.fluidItems.getStackInSlot(0);
+            if (!ItemStackWrapper.isEmpty(stack) && this.fluidHandler.acceptsFluidFrom(stack)) {
+                ItemStack result = this.fluidHandler.fillFluidFrom(stack);
+                if (!ItemStack.areItemStacksEqual(stack, result)) {
+                    this.fluidItems.setStackInSlot(0, result);
+                    this.discardUsedFluidItem();
+                }
+            } else if (!ItemStackWrapper.isEmpty(stack)) {
+                this.discardUsedFluidItem();
             }
         }
     }

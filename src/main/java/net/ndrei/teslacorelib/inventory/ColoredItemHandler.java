@@ -40,7 +40,6 @@ public class ColoredItemHandler extends FilteredItemHandler implements IContaine
 
     public BoundingRectangle getBoundingBox() { return this.boundingBox; }
 
-
 //    public final ColoredItemHandlerInfo getInfo() {
 //        return new ColoredItemHandlerInfo(this.getName(), this.getColor());
 //    }

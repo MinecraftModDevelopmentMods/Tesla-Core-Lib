@@ -37,7 +37,7 @@ public class FluidTankPiece extends BasicContainerGuiPiece {
                 if (stack.getFluid() != null) {
                     Fluid fluid = stack.getFluid();
                     int color = fluid.getColor(stack);
-                    ResourceLocation still = fluid.getStill(stack); //.getStill(stack);
+                    ResourceLocation still = fluid.getFlowing(stack); //.getStill(stack);
                     if (still != null) {
                         TextureAtlasSprite sprite = container.mc.getTextureMapBlocks().getTextureExtry(still.toString());
                         container.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);

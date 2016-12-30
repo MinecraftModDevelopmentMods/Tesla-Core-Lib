@@ -11,6 +11,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities;
 import net.ndrei.teslacorelib.gui.TeslaCoreGuiProxy;
+import net.ndrei.teslacorelib.items.TeslaBattery;
 import net.ndrei.teslacorelib.items.TeslaWrench;
 import net.ndrei.teslacorelib.netsync.ITeslaCorePackets;
 import net.ndrei.teslacorelib.netsync.TeslaCorePackets;
@@ -44,6 +45,7 @@ public class TeslaCoreLib
     };
 
     public static TeslaWrench wrench;
+    public static TeslaBattery battery;
     public static TeslaCoreUITestBlock testBlock;
     public static CreativeGeneratorBlock generatorBlock;
 
@@ -53,6 +55,7 @@ public class TeslaCoreLib
         TeslaCoreLib.logger = event.getModLog();
 
         GameRegistry.register(TeslaCoreLib.wrench = new TeslaWrench());
+        GameRegistry.register(TeslaCoreLib.battery = new TeslaBattery());
         TeslaCoreCapabilities.register();
 
         TeslaCoreLib.testBlock = new TeslaCoreUITestBlock();
@@ -68,6 +71,11 @@ public class TeslaCoreLib
                     TeslaCoreLib.wrench,
                     0,
                     new ModelResourceLocation(TeslaCoreLib.wrench.getRegistryName(), "inventory")
+            );
+            ModelLoader.setCustomModelResourceLocation(
+                    TeslaCoreLib.battery,
+                    0,
+                    new ModelResourceLocation(TeslaCoreLib.battery.getRegistryName(), "inventory")
             );
             TeslaCoreLib.testBlock.registerRenderer();
             TeslaCoreLib.generatorBlock.registerRenderer();

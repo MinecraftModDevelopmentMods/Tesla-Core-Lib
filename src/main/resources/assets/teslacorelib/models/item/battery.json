@@ -1,0 +1,14 @@
+{
+  "parent":"builtin/generated",
+  "textures": {
+    "layer0":"teslacorelib:items/battery"
+  },
+  "overrides": [
+    { "predicate": { "power": 0.00 }, "model": "teslacorelib:item/battery" },
+    { "predicate": { "power": 0.20 }, "model": "teslacorelib:item/battery_1" },
+    { "predicate": { "power": 0.40 }, "model": "teslacorelib:item/battery_2" },
+    { "predicate": { "power": 0.60 }, "model": "teslacorelib:item/battery_3" },
+    { "predicate": { "power": 0.80 }, "model": "teslacorelib:item/battery_4" },
+    { "predicate": { "power": 1.00 }, "model": "teslacorelib:item/battery_5" }
+  ]
+}

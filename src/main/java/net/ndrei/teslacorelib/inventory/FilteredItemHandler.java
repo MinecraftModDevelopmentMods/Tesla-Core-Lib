@@ -69,11 +69,11 @@ public class FilteredItemHandler implements IFilteredItemHandler {
 //            return;
 //        }
 
-//        if (!existing.isEmpty()) {
+//        if (!ItemStackWrapper.isEmpty(existing)) {
 //            throw new RuntimeException("That slot is not empty!");
 //        }
 
-//        if (!stack.isEmpty() && !this.canInsertItem(slot, stack)) {
+//        if (!ItemStackWrapper.isEmpty(stack) && !this.canInsertItem(slot, stack)) {
 //            throw new RuntimeException("That slot does not accept that stack!");
 //        }
 

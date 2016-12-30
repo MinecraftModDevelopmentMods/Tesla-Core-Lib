@@ -26,10 +26,10 @@ public class SidedItemHandlerConfig implements ISidedItemHandlerConfig, INBTSeri
         this.facesConfig = new HashMap<>();
     }
 
-    public SidedItemHandlerConfig(List<ColoredItemHandlerInfo> info) {
-        this();
-        this.setColoredInfo(info);
-    }
+//    public SidedItemHandlerConfig(List<ColoredItemHandlerInfo> info) {
+//        this();
+//        this.setColoredInfo(info);
+//    }
 
     public boolean isSideSet(EnumDyeColor color, EnumFacing side) {
         if (this.facesConfig.containsKey(color)) {
@@ -66,9 +66,9 @@ public class SidedItemHandlerConfig implements ISidedItemHandlerConfig, INBTSeri
         return (this.information == null) ? Lists.newArrayList() : this.information;
     }
 
-    public void setColoredInfo(List<ColoredItemHandlerInfo> info) {
-        this.information = info;
-    }
+//    public void setColoredInfo(List<ColoredItemHandlerInfo> info) {
+//        this.information = info;
+//    }
 
     public void addColoredInfo(String name, EnumDyeColor color, BoundingRectangle highlight) {
         this.addColoredInfo(new ColoredItemHandlerInfo(name, color, highlight));

@@ -68,15 +68,15 @@
 //            return false;
 //        }
 //        ItemStack existing = this.getStackInSlot(slot);
-//        if (!existing.isEmpty() && !ItemHandlerHelper.canItemStacksStack(existing, stack)) {
+//        if (!ItemStackWrapper.isEmpty(existing) && !ItemHandlerHelper.canItemStacksStack(existing, stack)) {
 //            // different items than existing stack
 //            return false;
 //        }
-//        if (!existing.isEmpty() && (this.getStackLimit(slot, existing) < (existing.getCount() + stack.getCount()))) {
+//        if (!ItemStackWrapper.isEmpty(existing) && (this.getStackLimit(slot, existing) < (existing.getCount() + stack.getCount()))) {
 //            // resulting stack would be too big
 //            return false;
 //        }
-//        if (existing.isEmpty() && !this.isItemValidForSlot(slot, stack)) {
+//        if (ItemStackWrapper.isEmpty(existing) && !this.isItemValidForSlot(slot, stack)) {
 //            // new stack not valid for this slot
 //            return false;
 //        }
@@ -86,7 +86,7 @@
 //    @Override
 //    public boolean canExtractItem(int slot) {
 //        ItemStack existing = this.getStackInSlot(slot);
-//        return !existing.isEmpty();
+//        return !ItemStackWrapper.isEmpty(existing);
 //    }
 //
 //    protected int getStackLimit(int slot, ItemStack stack) {
@@ -147,7 +147,7 @@
 //                        : stack;
 //            }
 //            else {
-//                existing.grow(overflowed ? limit : stack.getCount());
+//                ItemStackWrapper.grow(existing, overflowed ? limit : stack.getCount());
 //            }
 //            this.onContentsChanged(slot);
 //        }

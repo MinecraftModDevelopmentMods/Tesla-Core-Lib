@@ -1,5 +1,8 @@
 package net.ndrei.teslacorelib.tileentities;
 
+import net.darkhax.tesla.api.ITeslaHolder;
+import net.darkhax.tesla.api.ITeslaProducer;
+import net.darkhax.tesla.capability.TeslaCapabilities;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
@@ -37,6 +40,8 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
     protected ElectricMachine(int typeId) {
         super(typeId);
     }
+
+    //#region inventories       methods
 
     @Override
     protected void initializeInventories() {
@@ -86,10 +91,17 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
             return false;
         }
 
-        // TODO: test for energy cells
-        return true;
+        ITeslaProducer tesla = stack.getCapability(TeslaCapabilities.CAPABILITY_PRODUCER, null);
+        if (tesla != null) {
+            ITeslaHolder holder = stack.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null);
+            if ((holder == null) || (holder.getStoredPower() > 0)) {
+                return true;
+            }
+        }
+        return false;
     }
 
+    //#endregion
     //#region write/read/sync   methods
 
     @Override
@@ -104,9 +116,11 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
             compound.setTag("work_energy", this.workEnergy.serializeNBT());
         }
 
-        NBTTagCompound nbt = this.energyItems.serializeNBT();
-        if (nbt != null) {
-            compound.setTag("inv_energy_items", nbt);
+        if (this.energyItems != null) {
+            NBTTagCompound nbt = this.energyItems.serializeNBT();
+            if (nbt != null) {
+                compound.setTag("inv_energy_items", nbt);
+            }
         }
 
         return compound;
@@ -274,6 +288,36 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
 
     @SuppressWarnings("WeakerAccess")
     protected abstract float performWork();
+
+
+    @Override
+    protected void processImmediateInventories() {
+        super.processImmediateInventories();
+
+        if (this.energyItems != null) {
+            ItemStack stack = this.energyItems.getStackInSlot(0);
+            if (!stack.isEmpty()) {
+                ITeslaProducer producer = stack.getCapability(TeslaCapabilities.CAPABILITY_PRODUCER, null);
+                if (producer != null) {
+                    long power = producer.takePower(this.energyStorage.getInputRate(), true);
+                    if (power == 0) {
+                        this.discardUsedEnergyItem();
+                    } else {
+                        long accepted = this.energyStorage.givePower(power, false);
+                        producer.takePower(accepted, false);
+                    }
+                } else {
+                    this.discardUsedEnergyItem();
+                }
+            }
+        }
+    }
+
+    private void discardUsedEnergyItem() {
+        ItemStack stack = this.energyItems.getStackInSlot(0);
+        ItemStack remaining = this.energyItems.insertItem(1, stack, false);
+        this.energyItems.setStackInSlot(0, remaining);
+    }
 
     //endregion
 }

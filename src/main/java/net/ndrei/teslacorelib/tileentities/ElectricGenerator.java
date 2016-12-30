@@ -2,11 +2,25 @@ package net.ndrei.teslacorelib.tileentities;
 
 import com.google.common.collect.Lists;
 import net.darkhax.tesla.api.ITeslaConsumer;
+import net.darkhax.tesla.api.ITeslaHolder;
 import net.darkhax.tesla.capability.TeslaCapabilities;
+import net.minecraft.inventory.Slot;
+import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.items.ItemStackHandler;
+import net.ndrei.teslacorelib.compatibility.ItemStackWrapper;
+import net.ndrei.teslacorelib.containers.BasicTeslaContainer;
+import net.ndrei.teslacorelib.containers.FilteredSlot;
+import net.ndrei.teslacorelib.gui.BasicRenderedGuiPiece;
+import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer;
+import net.ndrei.teslacorelib.gui.IGuiContainerPiece;
+import net.ndrei.teslacorelib.inventory.BoundingRectangle;
+import net.ndrei.teslacorelib.inventory.ColoredItemHandler;
 import net.ndrei.teslacorelib.inventory.EnergyStorage;
 
 import java.util.List;
@@ -16,9 +30,70 @@ import java.util.List;
  */
 public abstract class ElectricGenerator extends ElectricTileEntity {
     private EnergyStorage generatedPower = null;
+    private ItemStackHandler chargePadItems;
 
     protected ElectricGenerator(int typeId) {
         super(typeId);
+    }
+
+    protected void initializeInventories() {
+        super.initializeInventories();
+
+        this.chargePadItems = new ItemStackHandler(2) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                ElectricGenerator.this.markDirty();
+            }
+
+            @Override
+            public int getSlotLimit(int slot) {
+                return 1;
+            }
+        };
+        super.addInventory(new ColoredItemHandler(this.chargePadItems, EnumDyeColor.BROWN, "Charge Pad", new BoundingRectangle(34, 34, 18, 36)) {
+            @Override
+            public boolean canInsertItem(int slot, ItemStack stack) {
+                return (!ItemStackWrapper.isEmpty(stack) && stack.hasCapability(TeslaCapabilities.CAPABILITY_CONSUMER, null));
+            }
+
+            @Override
+            public boolean canExtractItem(int slot) {
+                ItemStack stack = this.getStackInSlot(slot);
+                if (!stack.isEmpty()) {
+                    ITeslaHolder holder = stack.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null);
+                    if (holder != null) {
+                        return (holder.getCapacity() == holder.getStoredPower());
+                    } else {
+                        ITeslaConsumer consumer = stack.getCapability(TeslaCapabilities.CAPABILITY_CONSUMER, null);
+                        if (consumer != null) {
+                            long consumed = consumer.givePower(1, true);
+                            return (consumed == 0);
+                        }
+                    }
+                }
+                return true;
+            }
+
+            @Override
+            public List<Slot> getSlots(BasicTeslaContainer container) {
+                List<Slot> slots = super.getSlots(container);
+
+                slots.add(new FilteredSlot(this.getItemHandlerForContainer(), 0, 35, 35));
+                slots.add(new FilteredSlot(this.getItemHandlerForContainer(), 1, 35, 53));
+
+                return slots;
+            }
+
+            @Override
+            public List<IGuiContainerPiece> getGuiContainerPieces(BasicTeslaGuiContainer container) {
+                List<IGuiContainerPiece> pieces = super.getGuiContainerPieces(container);
+
+                pieces.add(new BasicRenderedGuiPiece(25, 26, 27, 52,
+                        BasicTeslaGuiContainer.MACHINE_BACKGROUND, 206, 4));
+
+                return pieces;
+            }
+        });
     }
 
     //region energy            methods
@@ -122,6 +197,31 @@ public abstract class ElectricGenerator extends ElectricTileEntity {
         //#endregion
     }
 
+    @Override
+    protected void processImmediateInventories() {
+        super.processImmediateInventories();
+
+        for(int index = 0; index < 2; index++) {
+            ItemStack stack = this.chargePadItems.getStackInSlot(index);
+            if (stack.isEmpty()) {
+                continue;
+            }
+
+            long available = this.energyStorage.takePower(this.energyStorage.getOutputRate(), true);
+            if (available == 0) {
+                break;
+            }
+
+            ITeslaConsumer consumer = stack.getCapability(TeslaCapabilities.CAPABILITY_CONSUMER, null);
+            if (consumer != null) {
+                long consumed = consumer.givePower(available, false);
+                if (consumed > 0) {
+                    this.energyStorage.takePower(consumed, false);
+                }
+            }
+        }
+    }
+
     //#endregion
     //#region write/read/sync   methods
 
@@ -131,6 +231,13 @@ public abstract class ElectricGenerator extends ElectricTileEntity {
 
         if (this.generatedPower != null) {
             compound.setTag("generated_energy", this.generatedPower.serializeNBT());
+        }
+
+        if (this.chargePadItems != null) {
+            NBTTagCompound nbt = this.chargePadItems.serializeNBT();
+            if (nbt != null) {
+                compound.setTag("inv_charge_pad", nbt);
+            }
         }
 
         return compound;
@@ -145,6 +252,10 @@ public abstract class ElectricGenerator extends ElectricTileEntity {
                 this.generatedPower = new EnergyStorage(0, 0, 0);
             }
             this.generatedPower.deserializeNBT(compound.getCompoundTag("generated_energy"));
+        }
+
+        if (compound.hasKey("inv_charge_pad", Constants.NBT.TAG_COMPOUND) && (this.chargePadItems != null)) {
+            this.chargePadItems.deserializeNBT(compound.getCompoundTag("inv_charge_pad"));
         }
     }
 
