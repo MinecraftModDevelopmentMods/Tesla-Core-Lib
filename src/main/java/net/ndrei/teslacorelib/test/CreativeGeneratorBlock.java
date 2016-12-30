@@ -1,5 +1,6 @@
 package net.ndrei.teslacorelib.test;
 
+import net.ndrei.teslacorelib.TeslaCoreLib;
 import net.ndrei.teslacorelib.blocks.OrientedBlock;
 
 /**
@@ -7,6 +8,6 @@ import net.ndrei.teslacorelib.blocks.OrientedBlock;
  */
 public class CreativeGeneratorBlock extends OrientedBlock<CreativeGeneratorEntity> {
     public CreativeGeneratorBlock() {
-        super("creative_generator", CreativeGeneratorEntity.class);
+        super(TeslaCoreLib.MODID, "creative_generator", CreativeGeneratorEntity.class);
     }
 }

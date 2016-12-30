@@ -49,16 +49,17 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
     private Class<T> teClass;
 
     @SuppressWarnings("unused")
-    protected OrientedBlock(String blockId, Class<T> teClass) {
-        this(blockId, teClass, Material.ROCK);
+    protected OrientedBlock(String modId, String registryName, Class<T> teClass) {
+        this(modId, registryName, teClass, Material.ROCK);
     }
 
     @SuppressWarnings("WeakerAccess")
-    protected OrientedBlock(String blockId, Class<T> teClass, Material material) {
+    protected OrientedBlock(String modId, String registryName, Class<T> teClass, Material material) {
         super(material);
         this.teClass = teClass;
 
-        this.setRegistryName(blockId);
+        this.setRegistryName(registryName);
+        this.setUnlocalizedName(modId + "_" + registryName);
 
         this.setHarvestLevel("pickaxe", 0);
         this.setHardness(3.0f);
