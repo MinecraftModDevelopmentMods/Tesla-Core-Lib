@@ -3,6 +3,7 @@ package net.ndrei.teslacorelib.tileentities;
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
@@ -54,6 +55,7 @@ public abstract class ElectricTileEntity extends TileEntity implements
     @SuppressWarnings("WeakerAccess")
     protected EnergyStorage energyStorage;
     private SidedItemHandler itemHandler;
+    private List<InventoryStorageInfo> inventoryStorage;
 
     private SidedFluidHandler fluidHandler;
     private ItemStackHandler fluidItems = null;
@@ -67,7 +69,12 @@ public abstract class ElectricTileEntity extends TileEntity implements
     @SuppressWarnings("unused")
     protected ElectricTileEntity(int typeId) {
         this.typeId = typeId;
-        this.sideConfig = new SidedItemHandlerConfig();
+        this.sideConfig = new SidedItemHandlerConfig() {
+            @Override
+            protected void updated() {
+                ElectricTileEntity.this.notifyNeighbours();
+            }
+        };
         this.itemHandler = new SidedItemHandler(this.sideConfig);
         this.fluidHandler = new SidedFluidHandler(this.sideConfig);
 
@@ -81,6 +88,16 @@ public abstract class ElectricTileEntity extends TileEntity implements
 
         this.initializeInventories();
         this.ensureFluidItems();
+    }
+
+    private void notifyNeighbours() {
+        if (this.getWorld() != null) {
+            this.getWorld().notifyNeighborsOfStateChange(
+                    this.getPos(),
+                    this.getBlockType(),
+                    true
+            );
+        }
     }
 
     //region inventory         methods
@@ -154,6 +171,24 @@ public abstract class ElectricTileEntity extends TileEntity implements
         }
     }
 
+    protected void addInventoryToStorage(ItemStackHandler handler, String storageKey) {
+        if (this.inventoryStorage == null) {
+            this.inventoryStorage = Lists.newArrayList();
+        }
+
+        this.inventoryStorage.add(new InventoryStorageInfo(handler, storageKey));
+    }
+
+    private final class InventoryStorageInfo {
+        final ItemStackHandler inventory;
+        final String storageKey;
+
+        InventoryStorageInfo(ItemStackHandler inventory, String storageKey) {
+            this.inventory = inventory;
+            this.storageKey = storageKey;
+        }
+    }
+
     protected BoundingRectangle getEnergyBoundingBox() {
         return new BoundingRectangle(7, 25, 18, 54);
     }
@@ -163,13 +198,20 @@ public abstract class ElectricTileEntity extends TileEntity implements
     //region fluid tank        methods
 
     protected IFluidTank addFluidTank(Fluid filter, int capacity, EnumDyeColor color, String name, BoundingRectangle boundingBox) {
-        ColoredFluidHandler tank = this.fluidHandler.addTank(filter, capacity, color, name, boundingBox);
+        FluidTank tank = new FluidTank(capacity) {
+            @Override
+            protected void onContentsChanged()
+            {
+                ElectricTileEntity.this.markDirty();
+            }
+        };
+        ColoredFluidHandler colored = this.fluidHandler.addTank(filter, tank, color, name, boundingBox);
 
         if ((color != null) && (name != null) && (name.length() > 0) && (boundingBox != null)) {
             this.sideConfig.addColoredInfo(name, color, boundingBox);
         }
 
-        return tank.getInnerTank();
+        return colored.getInnerTank();
     }
 
     protected void addFluidTank(IFluidTank tank, BoundingRectangle box) {
@@ -178,9 +220,14 @@ public abstract class ElectricTileEntity extends TileEntity implements
         }
         this.fluidHandler.addTank(tank);
 
-        if ((tank instanceof ColoredFluidHandler) && (box != null)) {
-            ColoredFluidHandler colored  = (ColoredFluidHandler)tank;
-            this.sideConfig.addColoredInfo(colored.getName(), colored.getColor(), box);
+        if (tank instanceof ColoredFluidHandler) {
+            ColoredFluidHandler colored = (ColoredFluidHandler)tank;
+            if (box == null) {
+               box = colored.getBoundingBox();
+            }
+            if ((box != null) && (colored.getColor() != null)) {
+                this.sideConfig.addColoredInfo(colored.getName(), colored.getColor(), box);
+            }
         }
     }
 
@@ -190,26 +237,16 @@ public abstract class ElectricTileEntity extends TileEntity implements
     }
 
     protected void ensureFluidItems() {
-        if ((this.fluidHandler == null) || (this.fluidHandler.tankCount() == 0)) {
+        if (!shouldAddFluidItemsInventory())
             return;
-        }
 
         if (this.fluidItems == null) {
             EnumDyeColor color = this.getColorForFluidInventory();
             if (color != null) {
-                int x = 0, y = 0;
-                for(IFluidTank tank : this.fluidHandler.getTanks()) {
-                    if (tank instanceof ColoredFluidHandler) {
-                        BoundingRectangle box = ((ColoredFluidHandler) tank).getBoundingBox();
-                        if (box != null) {
-                            x = Math.max(x, box.getRight());
-                            y = box.getTop();
-                        }
-                    }
-                }
+                BoundingRectangle box = this.getFluidItemsBoundingBox();
 
                 this.fluidItems = new ItemStackHandler(2);
-                this.addInventory(new ColoredItemHandler(this.fluidItems, color, "Fluid Containers", new BoundingRectangle(x, y, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT)) {
+                this.addInventory(new ColoredItemHandler(this.fluidItems, color, "Fluid Containers", box) {
                     @Override
                     public boolean canInsertItem(int slot, ItemStack stack) {
                         return (slot == 0) && ElectricTileEntity.this.fluidHandler.acceptsFluidFrom(stack);
@@ -239,8 +276,7 @@ public abstract class ElectricTileEntity extends TileEntity implements
 
                         BoundingRectangle box = this.getBoundingBox();
                         if (box != null) {
-                            pieces.add(new BasicRenderedGuiPiece(box.getLeft(), box.getTop(), 18, 54,
-                                    BasicTeslaGuiContainer.MACHINE_BACKGROUND, 78, 189));
+                            ElectricTileEntity.this.addFluidItemsBackground(pieces, box);
                         }
 
                         return pieces;
@@ -250,9 +286,32 @@ public abstract class ElectricTileEntity extends TileEntity implements
         }
     }
 
+    protected BoundingRectangle getFluidItemsBoundingBox() {
+        int x = 0, y = 0;
+        for(IFluidTank tank : this.fluidHandler.getTanks()) {
+            if (tank instanceof ColoredFluidHandler) {
+                BoundingRectangle box = ((ColoredFluidHandler) tank).getBoundingBox();
+                if (box != null) {
+                    x = Math.max(x, box.getRight());
+                    y = box.getTop();
+                }
+            }
+        }
+        return new BoundingRectangle(x, y, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT);
+    }
+
+    protected void addFluidItemsBackground(List<IGuiContainerPiece> pieces, BoundingRectangle box) {
+        pieces.add(new BasicRenderedGuiPiece(box.getLeft(), box.getTop(), 18, 54,
+                BasicTeslaGuiContainer.MACHINE_BACKGROUND, 78, 189));
+    }
+
+    protected boolean shouldAddFluidItemsInventory() {
+        return !((this.fluidHandler == null) || (this.fluidHandler.tankCount() == 0));
+    }
+
     //endregion
 
-    protected EnumFacing getFacing() {
+    public EnumFacing getFacing() {
         IBlockState state = this.getWorld().getBlockState(this.getPos());
         if (state.getBlock() instanceof OrientedBlock) {
             return state.getValue(OrientedBlock.FACING);
@@ -315,6 +374,14 @@ public abstract class ElectricTileEntity extends TileEntity implements
             NBTTagList list = compound.getTagList("side_config", Constants.NBT.TAG_COMPOUND);
             this.sideConfig.deserializeNBT(list);
         }
+
+        if ((this.inventoryStorage != null) && !this.inventoryStorage.isEmpty()) {
+            for(InventoryStorageInfo storage : this.inventoryStorage) {
+                if (compound.hasKey(storage.storageKey, Constants.NBT.TAG_COMPOUND)) {
+                    storage.inventory.deserializeNBT(compound.getCompoundTag(storage.storageKey));
+                }
+            }
+        }
     }
 
     @Override
@@ -333,6 +400,12 @@ public abstract class ElectricTileEntity extends TileEntity implements
         compound.setInteger("tick_sync", this.syncTick);
 
         compound.setTag("side_config", this.sideConfig.serializeNBT());
+
+        if ((this.inventoryStorage != null) && !this.inventoryStorage.isEmpty()) {
+            for(InventoryStorageInfo storage : this.inventoryStorage) {
+                compound.setTag(storage.storageKey, storage.inventory.serializeNBT());
+            }
+        }
 
         return compound;
     }
@@ -611,4 +684,15 @@ public abstract class ElectricTileEntity extends TileEntity implements
     }
 
     protected void protectedUpdate() { }
+
+    public void onBlockBroken() {
+        if (this.itemHandler != null) {
+            for (int i = 0; i < this.itemHandler.getSlots(); ++i) {
+                ItemStack stack = this.itemHandler.getStackInSlot(i);
+                if (!ItemStackUtil.isEmpty(stack)) {
+                    InventoryHelper.spawnItemStack(this.getWorld(), pos.getX(), pos.getY(), pos.getZ(), stack);
+                }
+            }
+        }
+    }
 }

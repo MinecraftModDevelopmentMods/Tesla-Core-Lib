@@ -67,6 +67,7 @@ public class FluidStorage implements IFluidHandler, INBTSerializable<NBTTagCompo
             resource.amount -= amount;
         }
 
+        TeslaCoreLib.logger.info("Tank filled with " + used + " mb of " + resource.getFluid().getName());
         return used;
     }
 
@@ -140,10 +141,10 @@ public class FluidStorage implements IFluidHandler, INBTSerializable<NBTTagCompo
         return tank;
     }
 
-    public ColoredFluidHandler addTank(Fluid acceptedFluid, int capacity, EnumDyeColor color, String name, BoundingRectangle boundingBox) {
-        ColoredFluidHandler tank = new ColoredFluidHandler(acceptedFluid, new FluidTank(capacity), color, name, boundingBox);
-        this.addTank(tank);
-        return tank;
+    public ColoredFluidHandler addTank(Fluid acceptedFluid, IFluidTank tank, EnumDyeColor color, String name, BoundingRectangle boundingBox) {
+        ColoredFluidHandler colored = new ColoredFluidHandler(acceptedFluid, tank, color, name, boundingBox);
+        this.addTank(colored);
+        return colored;
     }
 
     @Override
@@ -152,6 +153,9 @@ public class FluidStorage implements IFluidHandler, INBTSerializable<NBTTagCompo
 
         NBTTagList list = new NBTTagList();
         for(IFluidTank tank: this.tanks) {
+            if (tank instanceof FilteredFluidTank) {
+                tank = ((FilteredFluidTank)tank).getInnerTank();
+            }
             NBTTagCompound tankNbt;
             if (tank instanceof ISerializableFluidTank) {
                 tankNbt = ((ISerializableFluidTank) tank).serializeNBT();
@@ -179,6 +183,9 @@ public class FluidStorage implements IFluidHandler, INBTSerializable<NBTTagCompo
         if (list != null) {
             for(int index = 0; (index < list.tagCount()) && (index < this.tanks.size()); index++) {
                 IFluidTank tank = this.tanks.get(index);
+                if (tank instanceof FilteredFluidTank) {
+                    tank = ((FilteredFluidTank)tank).getInnerTank();
+                }
                 NBTTagCompound tankNbt = list.getCompoundTagAt(index);
                 if (tank instanceof ISerializableFluidTank) {
                     ((ISerializableFluidTank) tank).deserializeNBT(tankNbt);

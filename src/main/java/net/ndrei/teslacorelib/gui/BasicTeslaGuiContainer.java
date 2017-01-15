@@ -1,7 +1,9 @@
 package net.ndrei.teslacorelib.gui;
 
 import com.google.common.collect.Lists;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.inventory.Container;
 import net.minecraft.util.ResourceLocation;
 import net.ndrei.teslacorelib.TeslaCoreLib;
@@ -128,5 +130,17 @@ public class BasicTeslaGuiContainer<T extends ElectricTileEntity> extends GuiCon
         super.drawVerticalLine(x, y, y + height - 1, strokeColor);
         super.drawVerticalLine(x + width - 1, y, y + height - 1, strokeColor);
         super.drawHorizontalLine(x, x + width - 1, y + height - 1, strokeColor);
+    }
+
+    public RenderItem getItemRenderer() {
+        return super.itemRender;
+    }
+
+    public FontRenderer getFontRenderer() {
+        return super.fontRendererObj;
+    }
+
+    public void setZIndex(float zLevel) {
+        this.zLevel = zLevel;
     }
 }

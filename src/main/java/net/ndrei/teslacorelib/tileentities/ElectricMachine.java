@@ -7,7 +7,6 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.ItemStackHandler;
 import net.ndrei.teslacorelib.capabilities.hud.HudInfoLine;
 import net.ndrei.teslacorelib.compatibility.ItemStackUtil;
@@ -85,6 +84,7 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
                 return pieces;
             }
         });
+        super.addInventoryToStorage(this.energyItems, "inv_energy_items");
     }
 
     private boolean canInsertEnergyItem(int slot, ItemStack stack) {
@@ -117,12 +117,12 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
             compound.setTag("work_energy", this.workEnergy.serializeNBT());
         }
 
-        if (this.energyItems != null) {
-            NBTTagCompound nbt = this.energyItems.serializeNBT();
-            if (nbt != null) {
-                compound.setTag("inv_energy_items", nbt);
-            }
-        }
+//        if (this.energyItems != null) {
+//            NBTTagCompound nbt = this.energyItems.serializeNBT();
+//            if (nbt != null) {
+//                compound.setTag("inv_energy_items", nbt);
+//            }
+//        }
 
         return compound;
     }
@@ -142,9 +142,9 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
             this.workEnergy.deserializeNBT(compound.getCompoundTag("work_energy"));
         }
 
-        if (compound.hasKey("inv_energy_items", Constants.NBT.TAG_COMPOUND)) {
-            this.energyItems.deserializeNBT(compound.getCompoundTag("inv_energy_items"));
-        }
+//        if (compound.hasKey("inv_energy_items", Constants.NBT.TAG_COMPOUND)) {
+//            this.energyItems.deserializeNBT(compound.getCompoundTag("inv_energy_items"));
+//        }
     }
 
     //#endregion
