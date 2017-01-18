@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -32,12 +31,11 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
 import net.ndrei.teslacorelib.TeslaCoreLib;
 import net.ndrei.teslacorelib.Utils;
 import net.ndrei.teslacorelib.compatibility.ItemStackUtil;
 import net.ndrei.teslacorelib.render.HudInfoRenderer;
+import net.ndrei.teslacorelib.tileentities.ElectricTileEntity;
 
 /**
  * Created by CF on 2016-12-03.
@@ -121,7 +119,7 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand,
                                     ItemStack held, EnumFacing side, float hitX, float hitY, float hitZ) {
         TileEntity te = world.getTileEntity(pos);
-        if ((te != null) && (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null))) {
+        if ((te != null) && (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null)) && !world.isRemote) {
             IFluidHandler tank = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null);
             ItemStack bucket = player.getHeldItem(hand);
             if (!ItemStackUtil.isEmpty(bucket) && (tank != null) && (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null))) {
@@ -178,16 +176,8 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
         TileEntity t = worldIn.getTileEntity(pos);
-        if ((t != null) && (t.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))) {
-            IItemHandler handler = t.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-            if (handler != null) {
-                for (int i = 0; i < handler.getSlots(); ++i) {
-                    ItemStack stack = handler.getStackInSlot(i);
-                    if (!ItemStackUtil.isEmpty(stack)) {
-                        InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), handler.getStackInSlot(i));
-                    }
-                }
-            }
+        if (t instanceof ElectricTileEntity) {
+            ((ElectricTileEntity) t).onBlockBroken();
         }
         super.breakBlock(worldIn, pos, state);
     }

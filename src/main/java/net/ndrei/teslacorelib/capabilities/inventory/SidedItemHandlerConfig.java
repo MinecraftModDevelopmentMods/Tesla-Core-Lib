@@ -58,6 +58,7 @@ public class SidedItemHandlerConfig implements ISidedItemHandlerConfig, INBTSeri
         } else {
             this.setSidesForColor(color, Lists.newArrayList(side));
         }
+        this.updated();
         return this.isSideSet(color, side);
     }
 
@@ -101,6 +102,7 @@ public class SidedItemHandlerConfig implements ISidedItemHandlerConfig, INBTSeri
             sides = Lists.newArrayList();
         }
         this.facesConfig.put(color, sides);
+        this.updated();
     }
 
     @Override
@@ -137,5 +139,8 @@ public class SidedItemHandlerConfig implements ISidedItemHandlerConfig, INBTSeri
             }
             this.facesConfig.put(color, sides);
         }
+        this.updated();
     }
+
+    protected void updated() {}
 }

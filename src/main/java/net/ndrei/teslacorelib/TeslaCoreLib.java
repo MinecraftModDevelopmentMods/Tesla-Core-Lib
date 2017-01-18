@@ -1,10 +1,8 @@
 package net.ndrei.teslacorelib;
 
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -12,6 +10,8 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities;
 import net.ndrei.teslacorelib.gui.TeslaCoreGuiProxy;
+import net.ndrei.teslacorelib.items.BaseAddonItem;
+import net.ndrei.teslacorelib.items.MachineCaseItem;
 import net.ndrei.teslacorelib.items.TeslaBattery;
 import net.ndrei.teslacorelib.items.TeslaWrench;
 import net.ndrei.teslacorelib.netsync.ITeslaCorePackets;
@@ -47,6 +47,9 @@ public class TeslaCoreLib
 
     public static TeslaWrench wrench;
     public static TeslaBattery battery;
+    public static BaseAddonItem baseAddon;
+    public static MachineCaseItem machineCase;
+
     public static TeslaCoreUITestBlock testBlock;
     public static CreativeGeneratorBlock generatorBlock;
 
@@ -57,6 +60,8 @@ public class TeslaCoreLib
 
         GameRegistry.register(TeslaCoreLib.wrench = new TeslaWrench());
         GameRegistry.register(TeslaCoreLib.battery = new TeslaBattery());
+        GameRegistry.register(TeslaCoreLib.baseAddon = new BaseAddonItem());
+        GameRegistry.register(TeslaCoreLib.machineCase = new MachineCaseItem());
         TeslaCoreCapabilities.register();
 
         TeslaCoreLib.testBlock = new TeslaCoreUITestBlock();
@@ -68,16 +73,11 @@ public class TeslaCoreLib
         TeslaCoreLib.generatorBlock.setCreativeTab(TeslaCoreLib.creativeTab);
 
         if (event.getSide() == Side.CLIENT) {
-            ModelLoader.setCustomModelResourceLocation(
-                    TeslaCoreLib.wrench,
-                    0,
-                    new ModelResourceLocation(TeslaCoreLib.wrench.getRegistryName(), "inventory")
-            );
-            ModelLoader.setCustomModelResourceLocation(
-                    TeslaCoreLib.battery,
-                    0,
-                    new ModelResourceLocation(TeslaCoreLib.battery.getRegistryName(), "inventory")
-            );
+            TeslaCoreLib.wrench.registerRenderer();
+            TeslaCoreLib.battery.registerRenderer();
+            TeslaCoreLib.baseAddon.registerRenderer();
+            TeslaCoreLib.machineCase.registerRenderer();
+
             TeslaCoreLib.testBlock.registerRenderer();
             TeslaCoreLib.generatorBlock.registerRenderer();
         }

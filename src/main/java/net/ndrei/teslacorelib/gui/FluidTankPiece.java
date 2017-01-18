@@ -1,5 +1,7 @@
 package net.ndrei.teslacorelib.gui;
 
+import com.google.common.collect.Lists;
+import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -8,6 +10,8 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidTank;
 import org.lwjgl.opengl.GL11;
+
+import java.util.List;
 
 /**
  * Created by CF on 2016-12-29.
@@ -55,5 +59,19 @@ public class FluidTankPiece extends BasicContainerGuiPiece {
         }
         container.bindDefaultTexture();
         container.drawTexturedRect(this.getLeft() + 2, this.getTop() + 2, 63, 191, this.getWidth() - 4, this.getHeight() - 4);
+    }
+
+    @Override
+    public void drawForegroundTopLayer(BasicTeslaGuiContainer container, int guiX, int guiY, int mouseX, int mouseY) {
+        if (super.isInside(container, mouseX, mouseY) && (this.tank != null)) {
+            FluidStack fluid = this.tank.getFluid();
+            if ((fluid != null) && (fluid.amount > 0)) {
+                List<String> lines = Lists.newArrayList();
+                lines.add(String.format("%sFluid: %s%s", ChatFormatting.DARK_PURPLE, ChatFormatting.LIGHT_PURPLE, fluid.getLocalizedName()));
+                lines.add(String.format("%s%,d mb %sof", ChatFormatting.AQUA, this.tank.getFluidAmount(), ChatFormatting.DARK_GRAY));
+                lines.add(String.format("%s%,d mb", ChatFormatting.RESET, this.tank.getCapacity()));
+                container.drawTooltip(lines, mouseX - guiX, mouseY - guiY);
+            }
+        }
     }
 }

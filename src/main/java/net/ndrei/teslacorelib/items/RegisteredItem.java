@@ -1,9 +1,11 @@
 package net.ndrei.teslacorelib.items;
 
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraftforge.client.model.ModelLoader;
 
 /**
  * Created by CF on 2016-12-13.
@@ -26,5 +28,13 @@ public class RegisteredItem extends Item {
 
     protected IRecipe getRecipe() {
         return null;
+    }
+
+    public void registerRenderer() {
+        ModelLoader.setCustomModelResourceLocation(
+                this,
+                0,
+                new ModelResourceLocation(this.getRegistryName(), "inventory")
+        );
     }
 }

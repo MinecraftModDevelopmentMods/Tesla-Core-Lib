@@ -11,7 +11,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.ItemStackHandler;
 import net.ndrei.teslacorelib.compatibility.ItemStackUtil;
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer;
@@ -94,6 +93,7 @@ public abstract class ElectricGenerator extends ElectricTileEntity {
                 return pieces;
             }
         });
+        super.addInventoryToStorage(this.chargePadItems, "inv_charge_pad");
     }
 
     //region energy            methods
@@ -120,6 +120,7 @@ public abstract class ElectricGenerator extends ElectricTileEntity {
     //#region work              methods
 
     protected abstract long consumeFuel();
+    protected void fuelConsumed() {}
 
     protected boolean isGeneratedPowerLostIfFull() {
         return true;
@@ -132,6 +133,11 @@ public abstract class ElectricGenerator extends ElectricTileEntity {
             long consumed = this.energyStorage.givePower(power);
             if ((consumed > 0) && this.isGeneratedPowerLostIfFull()) {
                 this.generatedPower.takePower(consumed);
+            }
+
+            // TeslaCoreLib.logger.info("generated power: " + this.generatedPower.getStoredPower() + " / " + this.generatedPower.getCapacity());
+            if (this.generatedPower.isEmpty()) {
+                this.fuelConsumed();
             }
         }
 
@@ -233,12 +239,12 @@ public abstract class ElectricGenerator extends ElectricTileEntity {
             compound.setTag("generated_energy", this.generatedPower.serializeNBT());
         }
 
-        if (this.chargePadItems != null) {
-            NBTTagCompound nbt = this.chargePadItems.serializeNBT();
-            if (nbt != null) {
-                compound.setTag("inv_charge_pad", nbt);
-            }
-        }
+//        if (this.chargePadItems != null) {
+//            NBTTagCompound nbt = this.chargePadItems.serializeNBT();
+//            if (nbt != null) {
+//                compound.setTag("inv_charge_pad", nbt);
+//            }
+//        }
 
         return compound;
     }
@@ -254,10 +260,22 @@ public abstract class ElectricGenerator extends ElectricTileEntity {
             this.generatedPower.deserializeNBT(compound.getCompoundTag("generated_energy"));
         }
 
-        if (compound.hasKey("inv_charge_pad", Constants.NBT.TAG_COMPOUND) && (this.chargePadItems != null)) {
-            this.chargePadItems.deserializeNBT(compound.getCompoundTag("inv_charge_pad"));
-        }
+//        if (compound.hasKey("inv_charge_pad", Constants.NBT.TAG_COMPOUND) && (this.chargePadItems != null)) {
+//            this.chargePadItems.deserializeNBT(compound.getCompoundTag("inv_charge_pad"));
+//        }
     }
 
     //#endregion
+
+    public long getGeneratedPowerCapacity() {
+        return (this.generatedPower == null) ? 0 : this.generatedPower.getCapacity();
+    }
+
+    public long getGeneratedPowerStored() {
+        return (this.generatedPower == null) ? 0 : this.generatedPower.getStoredPower();
+    }
+
+    public long getGeneratedPowerReleaseRate() {
+        return (this.generatedPower == null) ? 0 : this.generatedPower.getOutputRate();
+    }
 }
