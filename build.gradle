@@ -86,7 +86,8 @@ artifacts {
     archives sourceJar, deobfJar
 }
 
-if (project.hasProperty('mavenFTPServer') && project.hasProperty('mavenFTPUser') && project.hasProperty('mavenFTPPassword')) {
+if (project.hasProperty('mavenFTPServer') && project.hasProperty('mavenFTPUser') && project.hasProperty('mavenFTPPassword')
+        && !project.hasProperty('mavenLocalPath')) {
     uploadArchives {
         repositories.mavenDeployer {
             dependsOn build, deobfJar, sourcesJar
@@ -119,6 +120,7 @@ if (project.hasProperty('mavenLocalPath')) {
         }
     }
 }
+
 
 def getDate() {
     def date = new Date()
