@@ -1,4 +1,10 @@
-itemGroup.tabTesla_Core_Lib=Tesla Core Lib
+itemGroup.tesla_core_lib=Tesla Core Lib
+
+item.teslacorelib_gear_wood.name=Wood Gear
+item.teslacorelib_gear_stone.name=Stone Gear
+item.teslacorelib_gear_iron.name=Iron Gear
+item.teslacorelib_gear_gold.name=Gold Gear
+item.teslacorelib_gear_diamond.name=Diamond Gear
 
 item.teslacorelib_wrench.name=Tesla Wrench
 item.teslacorelib_battery.name=Tesla Battery

@@ -15,4 +15,11 @@ public final class Utils {
     public static EnumFacing getFacingFromEntity(BlockPos pos, double entityX, double entityZ) {
         return EnumFacing.getFacingFromVector((float) (entityX - pos.getX()), 0, (float) (entityZ - pos.getZ()));
     }
+
+    public static String capitalizeFirstLetter(String original) {
+        if (original == null || original.length() == 0) {
+            return original;
+        }
+        return original.substring(0, 1).toUpperCase() + original.substring(1);
+    }
 }

@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.inventory.Container;
 import net.minecraft.util.ResourceLocation;
 import net.ndrei.teslacorelib.TeslaCoreLib;
+import net.ndrei.teslacorelib.compatibility.FontRendererUtil;
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer;
 import net.ndrei.teslacorelib.tileentities.ElectricTileEntity;
 
@@ -142,7 +143,7 @@ public class BasicTeslaGuiContainer<T extends ElectricTileEntity> extends GuiCon
     }
 
     public FontRenderer getFontRenderer() {
-        return super.fontRendererObj;
+        return FontRendererUtil.getFontRenderer(); // TODO: not sure if this is different than super.fontRenderer... find out!
     }
 
     public void setZIndex(float zLevel) {

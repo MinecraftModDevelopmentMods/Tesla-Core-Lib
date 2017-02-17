@@ -4,6 +4,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.item.ItemStack;
+import net.ndrei.teslacorelib.compatibility.FontRendererUtil;
 import net.ndrei.teslacorelib.inventory.BoundingRectangle;
 
 /**
@@ -43,7 +44,7 @@ public abstract class ToggleButtonPiece extends BasicContainerGuiPiece {
             GlStateManager.pushMatrix();
             GlStateManager.enableDepth();
             container.getItemRenderer().renderItemAndEffectIntoGUI(stack, box.getLeft(), box.getTop());
-            container.getItemRenderer().renderItemOverlayIntoGUI(container.mc.fontRendererObj, stack, box.getLeft(), box.getTop(), null);
+            container.getItemRenderer().renderItemOverlayIntoGUI(FontRendererUtil.getFontRenderer(), stack, box.getLeft(), box.getTop(), null);
             GlStateManager.popMatrix();
             RenderHelper.disableStandardItemLighting();
             item.renderItemOverlayIntoGUI(container.getFontRenderer(), stack,

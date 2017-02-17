@@ -2,6 +2,7 @@ package net.ndrei.teslacorelib.gui;
 
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
+import net.ndrei.teslacorelib.compatibility.FontRendererUtil;
 
 /**
  * Created by CF on 2016-12-30.
@@ -19,7 +20,7 @@ public class MachineNameGuiPiece extends BasicContainerGuiPiece {
     public void drawBackgroundLayer(BasicTeslaGuiContainer container, int guiX, int guiY, float partialTicks, int mouseX, int mouseY) {
         if ((this.unlocalizedName != null) && (this.unlocalizedName.length() > 0)) {
             String title = I18n.format(this.unlocalizedName);
-            container.mc.fontRendererObj.drawString(title, guiX + this.getLeft(), guiY + this.getTop(), 4210751);
+            FontRendererUtil.getFontRenderer().drawString(title, guiX + this.getLeft(), guiY + this.getTop(), 4210751);
             GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
         }
     }
