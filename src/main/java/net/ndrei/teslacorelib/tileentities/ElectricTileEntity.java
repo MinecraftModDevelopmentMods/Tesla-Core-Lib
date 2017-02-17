@@ -94,8 +94,7 @@ public abstract class ElectricTileEntity extends TileEntity implements
         if (this.getWorld() != null) {
             this.getWorld().notifyNeighborsOfStateChange(
                     this.getPos(),
-                    this.getBlockType(),
-                    true
+                    this.getBlockType()
             );
         }
     }
