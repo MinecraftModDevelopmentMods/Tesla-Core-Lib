@@ -1,6 +1,5 @@
 package net.ndrei.teslacorelib.render;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -13,6 +12,7 @@ import net.ndrei.teslacorelib.Utils;
 import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities;
 import net.ndrei.teslacorelib.capabilities.hud.HudInfoLine;
 import net.ndrei.teslacorelib.capabilities.hud.IHudInfoProvider;
+import net.ndrei.teslacorelib.compatibility.FontRendererUtil;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -70,7 +70,7 @@ public class HudInfoRenderer<T extends TileEntity> extends TileEntitySpecialRend
 
     private void renderText(List<HudInfoLine> messages, float scale)
     {
-        FontRenderer font = Minecraft.getMinecraft().fontRendererObj;
+        FontRenderer font = FontRendererUtil.getFontRenderer();
         GlStateManager.pushMatrix();
 
         GlStateManager.translate(-0.5F, 0F, 0.01F);

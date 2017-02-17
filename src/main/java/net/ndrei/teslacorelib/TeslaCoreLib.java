@@ -5,14 +5,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities;
 import net.ndrei.teslacorelib.gui.TeslaCoreGuiProxy;
-import net.ndrei.teslacorelib.items.BaseAddonItem;
-import net.ndrei.teslacorelib.items.MachineCaseItem;
-import net.ndrei.teslacorelib.items.TeslaBattery;
-import net.ndrei.teslacorelib.items.TeslaWrench;
+import net.ndrei.teslacorelib.items.*;
 import net.ndrei.teslacorelib.netsync.ITeslaCorePackets;
 import net.ndrei.teslacorelib.netsync.TeslaCorePackets;
 import net.ndrei.teslacorelib.test.CreativeGeneratorBlock;
@@ -33,7 +29,7 @@ public class TeslaCoreLib
 
     public static ITeslaCorePackets network = new TeslaCorePackets(MODID);
 
-    public static CreativeTabs creativeTab =  new CreativeTabs("Tesla Core Lib") {
+    public static CreativeTabs creativeTab =  new CreativeTabs("tesla_core_lib") {
         @Override
         public ItemStack getIconItemStack()
         {
@@ -52,15 +48,27 @@ public class TeslaCoreLib
     public static TeslaCoreUITestBlock testBlock;
     public static CreativeGeneratorBlock generatorBlock;
 
+    public static GearWoodItem gearWood;
+    public static GearStoneItem gearStone;
+    public static GearIronItem gearIron;
+    public static GearGoldItem gearGold;
+    public static GearDiamondItem gearDiamond;
+
     @Mod.EventHandler
     @SuppressWarnings("unused")
     public void preInit(FMLPreInitializationEvent event){
         TeslaCoreLib.logger = event.getModLog();
 
-        GameRegistry.register(TeslaCoreLib.wrench = new TeslaWrench());
-        GameRegistry.register(TeslaCoreLib.battery = new TeslaBattery());
-        GameRegistry.register(TeslaCoreLib.baseAddon = new BaseAddonItem());
-        GameRegistry.register(TeslaCoreLib.machineCase = new MachineCaseItem());
+        (TeslaCoreLib.gearWood = new GearWoodItem()).register();
+        (TeslaCoreLib.gearStone = new GearStoneItem()).register();
+        (TeslaCoreLib.gearIron = new GearIronItem()).register();
+        (TeslaCoreLib.gearGold = new GearGoldItem()).register();
+        (TeslaCoreLib.gearDiamond = new GearDiamondItem()).register();
+
+        (TeslaCoreLib.wrench = new TeslaWrench()).register();
+        (TeslaCoreLib.battery = new TeslaBattery()).register();
+        (TeslaCoreLib.baseAddon = new BaseAddonItem()).register();
+        (TeslaCoreLib.machineCase = new MachineCaseItem()).register();
         TeslaCoreCapabilities.register();
 
         TeslaCoreLib.testBlock = new TeslaCoreUITestBlock();
@@ -72,6 +80,12 @@ public class TeslaCoreLib
         TeslaCoreLib.generatorBlock.setCreativeTab(TeslaCoreLib.creativeTab);
 
         if (event.getSide() == Side.CLIENT) {
+            TeslaCoreLib.gearWood.registerRenderer();
+            TeslaCoreLib.gearStone.registerRenderer();
+            TeslaCoreLib.gearIron.registerRenderer();
+            TeslaCoreLib.gearGold.registerRenderer();
+            TeslaCoreLib.gearDiamond.registerRenderer();
+
             TeslaCoreLib.wrench.registerRenderer();
             TeslaCoreLib.battery.registerRenderer();
             TeslaCoreLib.baseAddon.registerRenderer();

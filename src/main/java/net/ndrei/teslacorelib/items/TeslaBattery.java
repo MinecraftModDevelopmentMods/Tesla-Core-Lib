@@ -1,22 +1,24 @@
 package net.ndrei.teslacorelib.items;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
+import net.darkhax.tesla.api.ITeslaConsumer;
 import net.darkhax.tesla.api.ITeslaHolder;
 import net.darkhax.tesla.api.implementation.BaseTeslaContainer;
 import net.darkhax.tesla.api.implementation.BaseTeslaContainerProvider;
 import net.darkhax.tesla.capability.TeslaCapabilities;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.ndrei.teslacorelib.TeslaCoreLib;
 
@@ -30,19 +32,17 @@ public class TeslaBattery extends RegisteredItem {
     public TeslaBattery() {
         super(TeslaCoreLib.MODID, TeslaCoreLib.creativeTab, "battery");
 
-//        super.setMaxDamage(100);
-        super.addPropertyOverride(new ResourceLocation("power"), new IItemPropertyGetter() {
-            @Override
-            public float apply(ItemStack stack, @Nullable World worldIn, @Nullable EntityLivingBase entityIn) {
-                ITeslaHolder holder = stack.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null);
-                if (holder == null) {
-                    return 0.0f;
-                }
+        super
+                .setHasSubtypes(true)
+                .addPropertyOverride(new ResourceLocation("power"), (stack, worldIn, entityIn) -> {
+                    ITeslaHolder holder = stack.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null);
+                    if (holder == null) {
+                        return 0.0f;
+                    }
 
-                long thing = Math.round((double)holder.getStoredPower() / (double)holder.getCapacity() * 5);
-                return (float)Math.max(0, Math.min(5, thing)) * .2f;
-            }
-        });
+                    long thing = Math.round((double) holder.getStoredPower() / (double) holder.getCapacity() * 5);
+                    return (float) Math.max(0, Math.min(5, thing)) * .2f;
+                });
     }
 
     @Override
@@ -57,39 +57,8 @@ public class TeslaBattery extends RegisteredItem {
     @Nullable
     public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable NBTTagCompound nbt) {
         return new BaseTeslaContainerProvider(new BaseTeslaContainer(10000, 100, 100) {
-//            private ItemStack targetStack;
-//
-//            BaseTeslaContainer initializeStack(ItemStack targetStack) {
-//                this.targetStack = targetStack;
-//                return this;
-//            }
-
-//            @Override
-//            public long givePower(long power, boolean simulated) {
-//                if (this.targetStack != null) {
-//                    TeslaBattery.this.setDamage(this.targetStack, 0);
-//                    return super.givePower(power, simulated);
-//                }
-//                return 0;
-//            }
-
-//            @Override
-//            public long takePower(long power, boolean simulated) {
-//                if (this.targetStack != null) {
-//                    TeslaBattery.this.setDamage(this.targetStack, 0);
-//                    return super.takePower(power, simulated);
-//                }
-//                return 0;
-//            }
-        }/*.initializeStack(stack)*/);
+        });
     }
-
-//    @Override
-//    public void setDamage(ItemStack stack, int damage) {
-//        ITeslaHolder tesla = stack.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null);
-//        damage = (tesla.getCapacity() > 0) ? (100 - Math.round(tesla.getStoredPower() * 100f / tesla.getCapacity())) : 0;
-//        super.setDamage(stack, (damage == 100) ? 0 : damage);
-//    }
 
     @Override
     public int getItemStackLimit(ItemStack stack) {
@@ -112,9 +81,21 @@ public class TeslaBattery extends RegisteredItem {
         }
         super.addInformation(stack, playerIn, tooltip, advanced);
     }
-//
-//    @Override
-//    public boolean isRepairable() {
-//        return false;
-//    }
+
+    @SideOnly(Side.CLIENT)
+    public void getSubItems(Item itemIn, CreativeTabs tab, NonNullList<ItemStack> subItems)
+    {
+        subItems.add(new ItemStack(itemIn));
+        ItemStack full = new ItemStack(itemIn);
+        ITeslaHolder holder = full.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null);
+        ITeslaConsumer consumer = full.getCapability(TeslaCapabilities.CAPABILITY_CONSUMER, null);
+        if ((holder != null) && (consumer != null)) {
+            int cycle = 0; // just in case something goes wrong :)
+            while ((holder.getCapacity() > holder.getStoredPower()) && (cycle++ < 100)){
+                // fill it up
+                consumer.givePower(holder.getCapacity() - holder.getStoredPower(), false);
+            }
+        }
+        subItems.add(full);
+    }
 }
