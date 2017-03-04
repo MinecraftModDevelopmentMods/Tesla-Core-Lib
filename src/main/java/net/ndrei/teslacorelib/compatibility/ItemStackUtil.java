@@ -87,11 +87,10 @@ public final class ItemStackUtil {
         return taken;
     }
 
-    @Nonnull
-    public static ItemStack insertItemInExistingStacks(IItemHandler dest, @Nonnull ItemStack stack, boolean simulate)
+    public static ItemStack insertItemInExistingStacks(IItemHandler dest, ItemStack stack, boolean simulate)
     {
-        if (dest == null || stack.isEmpty())
-            return ItemStack.EMPTY;
+        if (dest == null || ItemStackUtil.isEmpty(stack))
+            return ItemStackUtil.getEmptyStack();
 
         for (int i = 0; i < dest.getSlots(); i++)
         {
@@ -100,9 +99,9 @@ public final class ItemStackUtil {
             }
 
             stack = dest.insertItem(i, stack, simulate);
-            if (stack.isEmpty())
+            if (ItemStackUtil.isEmpty(stack))
             {
-                return ItemStack.EMPTY;
+                return ItemStackUtil.getEmptyStack();
             }
         }
 
