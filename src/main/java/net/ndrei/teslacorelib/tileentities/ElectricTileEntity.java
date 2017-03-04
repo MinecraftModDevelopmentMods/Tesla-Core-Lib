@@ -57,7 +57,7 @@ public abstract class ElectricTileEntity extends TileEntity implements
     private SidedItemHandler itemHandler;
     private List<InventoryStorageInfo> inventoryStorage;
 
-    private SidedFluidHandler fluidHandler;
+    protected SidedFluidHandler fluidHandler;
     private ItemStackHandler fluidItems = null;
 
     protected ItemStackHandler addonItems;
@@ -244,11 +244,23 @@ public abstract class ElectricTileEntity extends TileEntity implements
             if (color != null) {
                 BoundingRectangle box = this.getFluidItemsBoundingBox();
 
-                this.fluidItems = new ItemStackHandler(2);
+                this.fluidItems = new ItemStackHandler(2) {
+//                    @Override
+//                    public final int getSlotLimit(int slot) {
+//                        if (slot == 0) {
+//                            return 1;
+//                        }
+//                        ItemStack stack = this.getStackInSlot(slot);
+//                        if (!ItemStackUtil.isEmpty(stack)) {
+//                            return stack.getMaxStackSize();
+//                        }
+//                        return 64; // ??
+//                    }
+                };
                 this.addInventory(new ColoredItemHandler(this.fluidItems, color, "Fluid Containers", box) {
                     @Override
                     public boolean canInsertItem(int slot, ItemStack stack) {
-                        return (slot == 0) && ElectricTileEntity.this.fluidHandler.acceptsFluidFrom(stack);
+                        return (slot == 0) && ElectricTileEntity.this.acceptsFluidItem(stack);
                     }
 
                     @Override
@@ -283,6 +295,10 @@ public abstract class ElectricTileEntity extends TileEntity implements
                 });
             }
         }
+    }
+
+    protected boolean acceptsFluidItem(ItemStack stack) {
+        return (this.fluidHandler != null) && this.fluidHandler.acceptsFluidFrom(stack);
     }
 
     protected BoundingRectangle getFluidItemsBoundingBox() {
@@ -560,7 +576,7 @@ public abstract class ElectricTileEntity extends TileEntity implements
 
         if (!this.getWorld().isRemote) {
             // client side
-            TeslaCoreLib.logger.info("WRENCH!!");
+            // TeslaCoreLib.logger.info("WRENCH!!");
             if (this.getBlockType() instanceof OrientedBlock) {
                 return this.getBlockType().rotateBlock(this.getWorld(), this.getPos(), EnumFacing.UP)
                         ? EnumActionResult.SUCCESS
@@ -661,20 +677,24 @@ public abstract class ElectricTileEntity extends TileEntity implements
 
     protected void processImmediateInventories() {
         if (this.fluidItems != null) {
-            ItemStack stack = this.fluidItems.getStackInSlot(0);
-            if (!ItemStackUtil.isEmpty(stack) && this.fluidHandler.acceptsFluidFrom(stack)) {
-                ItemStack result = this.fluidHandler.fillFluidFrom(stack);
-                if (!ItemStack.areItemStacksEqual(stack, result)) {
-                    this.fluidItems.setStackInSlot(0, result);
-                    this.discardUsedFluidItem();
-                }
-            } else if (!ItemStackUtil.isEmpty(stack)) {
-                this.discardUsedFluidItem();
-            }
+            this.processFluidItems(this.fluidItems);
         }
     }
 
-    private void discardUsedFluidItem() {
+    protected void processFluidItems(ItemStackHandler fluidItems) {
+        ItemStack stack = fluidItems.getStackInSlot(0);
+        if (!ItemStackUtil.isEmpty(stack) && this.fluidHandler.acceptsFluidFrom(stack)) {
+            ItemStack result = this.fluidHandler.fillFluidFrom(stack);
+            if (!ItemStack.areItemStacksEqual(stack, result)) {
+                fluidItems.setStackInSlot(0, result);
+                this.discardUsedFluidItem();
+            }
+        } else if (!ItemStackUtil.isEmpty(stack)) {
+            this.discardUsedFluidItem();
+        }
+    }
+
+    protected void discardUsedFluidItem() {
         if (this.fluidItems != null) {
             ItemStack source = this.fluidItems.getStackInSlot(0);
             ItemStack result = this.fluidItems.insertItem(1, source, false);
