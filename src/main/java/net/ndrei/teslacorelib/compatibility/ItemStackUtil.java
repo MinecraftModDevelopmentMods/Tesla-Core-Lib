@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -84,5 +85,27 @@ public final class ItemStackUtil {
             }
         }
         return taken;
+    }
+
+    @Nonnull
+    public static ItemStack insertItemInExistingStacks(IItemHandler dest, @Nonnull ItemStack stack, boolean simulate)
+    {
+        if (dest == null || stack.isEmpty())
+            return ItemStack.EMPTY;
+
+        for (int i = 0; i < dest.getSlots(); i++)
+        {
+            if (ItemStackUtil.isEmpty(dest.getStackInSlot(i))) {
+                continue;
+            }
+
+            stack = dest.insertItem(i, stack, simulate);
+            if (stack.isEmpty())
+            {
+                return ItemStack.EMPTY;
+            }
+        }
+
+        return stack;
     }
 }

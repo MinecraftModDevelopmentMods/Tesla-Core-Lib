@@ -67,7 +67,7 @@ public class FluidStorage implements IFluidHandler, INBTSerializable<NBTTagCompo
             resource.amount -= amount;
         }
 
-        TeslaCoreLib.logger.info("Tank filled with " + used + " mb of " + resource.getFluid().getName());
+        // TeslaCoreLib.logger.info("Tank filled with " + used + " mb of " + resource.getFluid().getName());
         return used;
     }
 
