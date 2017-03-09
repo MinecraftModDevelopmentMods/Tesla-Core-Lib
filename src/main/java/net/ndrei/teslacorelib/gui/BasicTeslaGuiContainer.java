@@ -1,15 +1,18 @@
 package net.ndrei.teslacorelib.gui;
 
 import com.google.common.collect.Lists;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.inventory.Container;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import net.ndrei.teslacorelib.TeslaCoreLib;
 import net.ndrei.teslacorelib.compatibility.FontRendererUtil;
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer;
 import net.ndrei.teslacorelib.tileentities.ElectricTileEntity;
+import net.ndrei.teslacorelib.tileentities.SidedTileEntity;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,7 +20,7 @@ import java.util.List;
 /**
  * Created by CF on 2016-12-18.
  */
-public class BasicTeslaGuiContainer<T extends ElectricTileEntity> extends GuiContainer {
+public class BasicTeslaGuiContainer<T extends SidedTileEntity> extends GuiContainer {
     public static final ResourceLocation MACHINE_BACKGROUND = new ResourceLocation(TeslaCoreLib.MODID, "textures/gui/basic-machine.png");
 
     private T entity;
@@ -33,8 +36,9 @@ public class BasicTeslaGuiContainer<T extends ElectricTileEntity> extends GuiCon
         super.xSize = 198;
         super.ySize = 184;
 
-        List<IGuiContainerPiece> pieces = this.entity.getGuiContainerPieces(this);
-        this.pieces = (pieces != null) ? pieces : Lists.newArrayList();
+//        List<IGuiContainerPiece> pieces = this.entity.getGuiContainerPieces(this);
+//        this.pieces = (pieces != null) ? pieces : Lists.newArrayList();
+        this.refreshParts();
     }
 
     public BasicTeslaContainer getTeslaContainer() {
@@ -143,5 +147,16 @@ public class BasicTeslaGuiContainer<T extends ElectricTileEntity> extends GuiCon
 
     public void setZIndex(float zLevel) {
         this.zLevel = zLevel;
+    }
+
+    private void refreshParts() {
+        List<IGuiContainerPiece> pieces = this.entity.getGuiContainerPieces(this);
+        this.pieces = (pieces != null) ? pieces : Lists.newArrayList();
+    }
+
+    public static void refreshParts(World world) {
+        if ((world != null) && world.isRemote && (Minecraft.getMinecraft().currentScreen instanceof BasicTeslaGuiContainer)) {
+            ((BasicTeslaGuiContainer)Minecraft.getMinecraft().currentScreen).refreshParts();
+        }
     }
 }

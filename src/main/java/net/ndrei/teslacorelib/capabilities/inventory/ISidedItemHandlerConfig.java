@@ -19,4 +19,6 @@ public interface ISidedItemHandlerConfig {
     void setSidesForColor(EnumDyeColor color, List<EnumFacing> sides);
 
     boolean isSideSet(EnumDyeColor color, EnumFacing side);
+
+    void removeColoredInfo(EnumDyeColor color);
 }

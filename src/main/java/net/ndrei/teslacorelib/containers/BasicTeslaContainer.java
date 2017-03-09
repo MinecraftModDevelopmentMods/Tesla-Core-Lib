@@ -13,6 +13,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.ndrei.teslacorelib.compatibility.ItemStackUtil;
 import net.ndrei.teslacorelib.tileentities.ElectricTileEntity;
+import net.ndrei.teslacorelib.tileentities.SidedTileEntity;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.List;
 /**
  * Created by CF on 2016-12-18.
  */
-public class BasicTeslaContainer<T extends ElectricTileEntity> extends Container {
+public class BasicTeslaContainer<T extends SidedTileEntity> extends Container {
     private T entity;
 
     private int entitySlots = 0;

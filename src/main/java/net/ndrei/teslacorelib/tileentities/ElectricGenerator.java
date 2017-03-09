@@ -27,6 +27,7 @@ import java.util.List;
 /**
  * Created by CF on 2016-12-25.
  */
+@SuppressWarnings("WeakerAccess")
 public abstract class ElectricGenerator extends ElectricTileEntity {
     private EnergyStorage generatedPower = null;
     private ItemStackHandler chargePadItems;
@@ -267,14 +268,17 @@ public abstract class ElectricGenerator extends ElectricTileEntity {
 
     //#endregion
 
+    @SuppressWarnings("unused")
     public long getGeneratedPowerCapacity() {
         return (this.generatedPower == null) ? 0 : this.generatedPower.getCapacity();
     }
 
+    @SuppressWarnings("unused")
     public long getGeneratedPowerStored() {
         return (this.generatedPower == null) ? 0 : this.generatedPower.getStoredPower();
     }
 
+    @SuppressWarnings("unused")
     public long getGeneratedPowerReleaseRate() {
         return (this.generatedPower == null) ? 0 : this.generatedPower.getOutputRate();
     }

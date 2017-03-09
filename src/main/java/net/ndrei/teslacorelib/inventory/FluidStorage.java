@@ -16,6 +16,7 @@ import net.ndrei.teslacorelib.compatibility.ItemStackUtil;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by CF on 2016-12-29.
@@ -145,6 +146,20 @@ public class FluidStorage implements IFluidHandler, INBTSerializable<NBTTagCompo
         ColoredFluidHandler colored = new ColoredFluidHandler(acceptedFluid, tank, color, name, boundingBox);
         this.addTank(colored);
         return colored;
+    }
+
+    public void removeTank(IFluidTank tank) {
+        this.tanks.removeIf(t -> FluidStorage.isSameTank(tank, t));
+    }
+
+    private static boolean isSameTank(IFluidTank a, IFluidTank b) {
+        if (Objects.equals(a, b)) {
+            return true;
+        }
+        else if ((a != null) && (b != null) && (b instanceof IFluidTankWrapper)) {
+            return FluidStorage.isSameTank(a, ((IFluidTankWrapper) b).getInnerTank());
+        }
+        return false;
     }
 
     @Override

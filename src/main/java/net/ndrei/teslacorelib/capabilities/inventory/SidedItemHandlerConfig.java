@@ -14,6 +14,7 @@ import net.ndrei.teslacorelib.inventory.ColoredItemHandlerInfo;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * Created by CF on 2016-12-17.
@@ -143,4 +144,12 @@ public class SidedItemHandlerConfig implements ISidedItemHandlerConfig, INBTSeri
     }
 
     protected void updated() {}
+
+    @Override
+    public void removeColoredInfo(EnumDyeColor color) {
+        this.information.removeIf(i -> (i.getColor() == color));
+        this.facesConfig.remove(color);
+        
+        this.updated();
+    }
 }
