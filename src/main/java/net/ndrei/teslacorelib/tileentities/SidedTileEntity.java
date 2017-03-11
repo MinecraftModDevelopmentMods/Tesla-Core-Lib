@@ -577,10 +577,10 @@ public abstract class SidedTileEntity extends TileEntity implements
 
     @Override
     public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing) {
-        facing = this.orientFacing(facing);
+        EnumFacing oriented = this.orientFacing(facing);
 
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            int[] slots = this.itemHandler.getSlotsForFace(facing);
+            int[] slots = this.itemHandler.getSlotsForFace(oriented);
             return ((slots != null) && (slots.length > 0));
         } else if (capability == TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
             return true;
@@ -588,7 +588,7 @@ public abstract class SidedTileEntity extends TileEntity implements
             return true;
         } else if (capability == TeslaCoreCapabilities.CAPABILITY_WRENCH) {
             return true;
-        } else if ((this.fluidHandler != null) && this.fluidHandler.hasCapability(capability, facing)) {
+        } else if ((this.fluidHandler != null) && this.fluidHandler.hasCapability(capability, oriented)) {
             return true;
         }
 
@@ -598,10 +598,10 @@ public abstract class SidedTileEntity extends TileEntity implements
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing) {
-        facing = this.orientFacing(facing);
+        EnumFacing oriented = this.orientFacing(facing);
 
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return (T)this.itemHandler.getSideWrapper(facing);
+            return (T)this.itemHandler.getSideWrapper(oriented);
         } else if (capability == TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
             return (T) this;
         } else if (capability == TeslaCoreCapabilities.CAPABILITY_GUI_CONTAINER) {
@@ -611,7 +611,7 @@ public abstract class SidedTileEntity extends TileEntity implements
         }
 
         if (this.fluidHandler != null) {
-            T c = this.fluidHandler.getCapability(capability, facing);
+            T c = this.fluidHandler.getCapability(capability, oriented);
             if (c != null) {
                 return c;
             }

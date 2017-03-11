@@ -93,8 +93,9 @@ public abstract class ElectricTileEntity extends SidedTileEntity {
     @Override
     @SuppressWarnings("SimplifiableIfStatement")
     public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing) {
-        facing = this.orientFacing(facing);
-        if ((this.energyStorage != null) && this.energyStorage.hasCapability(capability, facing)) {
+        EnumFacing oriented = this.orientFacing(facing);
+        
+        if ((this.energyStorage != null) && this.energyStorage.hasCapability(capability, oriented)) {
             return true;
         }
 
@@ -104,10 +105,10 @@ public abstract class ElectricTileEntity extends SidedTileEntity {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing) {
-        facing = this.orientFacing(facing);
+        EnumFacing oriented = this.orientFacing(facing);
 
         if (this.energyStorage != null) {
-            T c = this.energyStorage.getCapability(capability, facing);
+            T c = this.energyStorage.getCapability(capability, oriented);
             if (c != null) {
                 return c;
             }
