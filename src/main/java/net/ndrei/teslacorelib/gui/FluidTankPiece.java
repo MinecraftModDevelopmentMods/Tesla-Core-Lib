@@ -9,6 +9,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidTank;
+import net.ndrei.teslacorelib.inventory.FilteredFluidTank;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
@@ -44,6 +45,9 @@ public class FluidTankPiece extends BasicContainerGuiPiece {
                     ResourceLocation still = fluid.getFlowing(stack); //.getStill(stack);
                     if (still != null) {
                         TextureAtlasSprite sprite = container.mc.getTextureMapBlocks().getTextureExtry(still.toString());
+                        if (sprite == null) {
+                            sprite = container.mc.getTextureMapBlocks().getMissingSprite();
+                        }
                         container.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
                         GL11.glColor3ub((byte) (color >> 16 & 0xFF), (byte) (color >> 8 & 0xFF), (byte) (color & 0xFF));
                         GlStateManager.enableBlend();
@@ -65,7 +69,7 @@ public class FluidTankPiece extends BasicContainerGuiPiece {
     public void drawForegroundTopLayer(BasicTeslaGuiContainer container, int guiX, int guiY, int mouseX, int mouseY) {
         if (super.isInside(container, mouseX, mouseY) && (this.tank != null)) {
             FluidStack fluid = this.tank.getFluid();
-            if ((fluid != null) && (fluid.amount > 0)) {
+            if (fluid != null) { // && (fluid.amount > 0)) {
                 List<String> lines = Lists.newArrayList();
                 lines.add(String.format("%sFluid: %s%s", ChatFormatting.DARK_PURPLE, ChatFormatting.LIGHT_PURPLE, fluid.getLocalizedName()));
                 lines.add(String.format("%s%,d mb %sof", ChatFormatting.AQUA, this.tank.getFluidAmount(), ChatFormatting.DARK_GRAY));

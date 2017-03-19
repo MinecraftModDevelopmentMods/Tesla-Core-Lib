@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 /**
  * Created by CF on 2016-12-29.
  */
-public class FilteredFluidTank implements IFilteredFluidTank {
+public class FilteredFluidTank implements IFilteredFluidTank, IFluidTankWrapper {
     private IFluidTank tank;
     private Fluid filter = null;
 
@@ -42,7 +42,11 @@ public class FilteredFluidTank implements IFilteredFluidTank {
     @Nullable
     @Override
     public FluidStack getFluid() {
-        return this.tank.getFluid();
+        FluidStack stack = this.tank.getFluid();
+        if ((stack == null) && (this.filter != null)) {
+            stack = new FluidStack(this.filter, 0);
+        }
+        return stack;
     }
 
     @Override
@@ -79,6 +83,7 @@ public class FilteredFluidTank implements IFilteredFluidTank {
         return this.tank.drain(maxDrain, doDrain);
     }
 
+    @Override
     public IFluidTank getInnerTank() {
         return this.tank;
     }

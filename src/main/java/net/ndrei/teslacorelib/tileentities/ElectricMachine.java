@@ -19,6 +19,7 @@ import net.ndrei.teslacorelib.gui.WorkEnergyIndicatorPiece;
 import net.ndrei.teslacorelib.inventory.BoundingRectangle;
 import net.ndrei.teslacorelib.inventory.ColoredItemHandler;
 import net.ndrei.teslacorelib.inventory.EnergyStorage;
+import net.ndrei.teslacorelib.items.BaseAddon;
 
 import java.awt.*;
 import java.util.List;
@@ -234,10 +235,18 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
         return (this.workEnergy != null) ? this.workEnergy.getInputRate() : 0;
     }
 
+    private int getFinalEnergyForWork() {
+        float energy = this.getEnergyForWork();
+        for(BaseAddon addon: this.getAddons()) {
+            energy *= addon.getWorkEnergyMultiplier();
+        }
+        return Math.round(energy);
+    }
+
     @Override
     public void protectedUpdate() {
         if (this.workEnergy == null) {
-            this.workEnergy = new EnergyStorage(this.getEnergyForWork(), this.getEnergyForWorkRate(), 0);
+            this.workEnergy = new EnergyStorage(this.getFinalEnergyForWork(), this.getEnergyForWorkRate(), 0);
         }
 
         if (!this.workEnergy.isFull()) {
@@ -252,43 +261,13 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
         if (this.workEnergy.isFull() && (this.workTick >= this.lastWorkTicks) && !this.getWorld().isRemote) {
             float work = this.performWork();
             long oldCapacity = this.workEnergy.getCapacity();
-            this.workEnergy = new EnergyStorage(this.getEnergyForWork(), this.getEnergyForWorkRate(), 0);
+            this.workEnergy = new EnergyStorage(this.getFinalEnergyForWork(), this.getEnergyForWorkRate(), 0);
             this.workEnergy.givePower(Math.round(oldCapacity * (1 - Math.max(0, Math.min(1, work)))));
 
             this.workTick = 0;
             this.lastWorkTicks = this.getMinimumWorkTicks();
             this.forceSync();
         }
-
-//        if (this.outOfPower) {
-//            int energy = this.getEnergyForWork();
-//            if (this.energyStorage.getEnergyStored() >= energy) {
-//                this.outOfPower = false;
-//                this.forceSync();
-//            }
-//        }
-
-//        if (!this.outOfPower) {
-//            this.workTick++;
-//
-//            if (this.workTick > this.lastWorkTicks) {
-//                this.lastWorkTicks = this.getWorkTicks();
-//                this.workTick = 0;
-//
-//                int energy = this.getEnergyForWork();
-//                if (this.energyStorage.getEnergyStored() >= energy) {
-//                    if (!this.getWorld().isRemote) {
-//                        float work = this.performWork();
-//                        if (work > 0) {
-//                            this.energyStorage.workPerformed(energy, work);
-//                        }
-//                    } else {
-//                        this.outOfPower = true;
-//                    }
-//                    this.forceSync();
-//                }
-//            }
-//        }
     }
 
     @SuppressWarnings("WeakerAccess")
