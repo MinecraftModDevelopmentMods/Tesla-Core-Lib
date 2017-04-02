@@ -2,6 +2,7 @@ package net.ndrei.teslacorelib.tileentities;
 
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.Slot;
@@ -117,10 +118,13 @@ public abstract class SidedTileEntity extends TileEntity implements
             }
 
             private void testSlot(int slot) {
-                ItemStack stack = this.getStackInSlot(slot);
+                ItemStack stack = this.getStackInSlot(slot).copy();
                 Item item = (ItemStackUtil.isEmpty(stack) ? null : stack.getItem());
                 if (!(item instanceof BaseAddon)) {
                     item = null;
+                }
+                else {
+                    stack = stack.copy();
                 }
 
                 if ((item == null) && (this.items[slot] != null)) {
@@ -210,7 +214,7 @@ public abstract class SidedTileEntity extends TileEntity implements
         return (null != this.getAddon(addonClass));
     }
 
-    protected List<BaseAddon> getAddons() {
+    public List<BaseAddon> getAddons() {
         List<BaseAddon> list = Lists.newArrayList();
 
         if (this.addonItems != null) {
@@ -239,6 +243,23 @@ public abstract class SidedTileEntity extends TileEntity implements
             }
         }
         return false;
+    }
+
+    public ItemStack removeAddon(BaseAddon addon, boolean drop) {
+        if ((this.addonItems != null) && !this.getWorld().isRemote) {
+            for (int index = 0; index < this.addonItems.getSlots(); index++) {
+                ItemStack stack = this.addonItems.getStackInSlot(index);
+                if (!ItemStackUtil.isEmpty(stack) && (stack.getItem() == addon)) {
+                    this.addonItems.setStackInSlot(index, ItemStackUtil.getEmptyStack());
+                    if (drop) {
+                        this.spawnItemFromFrontSide(stack);
+                    }
+                    return stack;
+                }
+            }
+        }
+
+        return ItemStackUtil.getEmptyStack();
     }
 
     protected void addInventory(IItemHandler handler) {
@@ -773,5 +794,19 @@ public abstract class SidedTileEntity extends TileEntity implements
                 }
             }
         }
+    }
+
+    public EntityItem spawnItemFromFrontSide(ItemStack stack) {
+        if (ItemStackUtil.isEmpty(stack) || this.getWorld().isRemote) {
+            return null;
+        }
+
+        BlockPos spawnPos = this.pos.offset(this.getFacing());
+        EntityItem entity = new EntityItem(this.getWorld(),
+                spawnPos.getX() + .5,
+                spawnPos.getY() + .5,
+                spawnPos.getZ() + .5, stack);
+        this.getWorld().spawnEntity(entity);
+        return entity;
     }
 }
