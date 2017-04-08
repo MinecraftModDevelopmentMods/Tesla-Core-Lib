@@ -28,9 +28,11 @@ public class BaseTieredAddon extends BaseAddon {
         return 1;
     }
 
-    @Override
-    public boolean canBeAddedTo(SidedTileEntity machine) {
-        int tier = this.getTier();
+    public boolean isTierValid(SidedTileEntity machine, int tier, boolean ignoreSameTier) {
+        if ((tier == 1) && ignoreSameTier) {
+            return true;
+        }
+
         Map<Integer, BaseAddon> tiers = new HashMap<>();
 
         List<BaseAddon> addons = machine.getAddons();
@@ -42,7 +44,7 @@ public class BaseTieredAddon extends BaseAddon {
                 BaseTieredAddon tiered = (BaseTieredAddon)addon;
 
                 if (this.hasSameFunction(tiered)) {
-                    if (tiered.getTier() == tier) {
+                    if ((tiered.getTier() == tier) && !ignoreSameTier) {
                         // already has an addon with same tier and function
                         return false;
                     }
@@ -60,7 +62,46 @@ public class BaseTieredAddon extends BaseAddon {
         }
         return true;
     }
+
+    @Override
+    public boolean canBeAddedTo(SidedTileEntity machine) {
+        return this.isTierValid(machine, this.getTier(), false);
+//        int tier = this.getTier();
+//        Map<Integer, BaseAddon> tiers = new HashMap<>();
 //
+//        List<BaseAddon> addons = machine.getAddons();
+//        if (addons != null) {
+//            for (BaseAddon addon : addons) {
+//                if (!(addon instanceof BaseTieredAddon)) {
+//                    break;
+//                }
+//                BaseTieredAddon tiered = (BaseTieredAddon)addon;
+//
+//                if (this.hasSameFunction(tiered)) {
+//                    if (tiered.getTier() == tier) {
+//                        // already has an addon with same tier and function
+//                        return false;
+//                    }
+//
+//                    tiers.put(tiered.getTier(), tiered);
+//                }
+//            }
+//        }
+//
+//        for(int index = 1; index < tier; index++) {
+//            if (!tiers.containsKey(index)) {
+//                // missing an addon with an inferior tier
+//                return false;
+//            }
+//        }
+//        return true;
+    }
+
+    @Override
+    public boolean isValid(SidedTileEntity machine) {
+        return super.isValid(machine) && this.isTierValid(machine, this.getTier(), true);
+    }
+
 //    @Override
 //    public void onRemoved(ItemStack addon, SidedTileEntity machine) {
 //        super.onRemoved(addon, machine);

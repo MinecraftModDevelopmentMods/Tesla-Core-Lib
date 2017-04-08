@@ -7,18 +7,19 @@ import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.ndrei.teslacorelib.TeslaCoreLib;
 
 /**
- * Created by CF on 2017-01-02.
+ * Created by CF on 2017-04-08.
  */
-public class BaseAddonItem extends BaseAddon {
-    public BaseAddonItem() {
-        super(TeslaCoreLib.MODID, TeslaCoreLib.creativeTab, "base_addon");
+public class SpeedUpgradeTier1 extends SpeedUpgrade {
+    public SpeedUpgradeTier1() {
+        super(1);
     }
 
     @Override
     protected IRecipe getRecipe() {
         return new ShapedOreRecipe(new ItemStack(this, 1),
-                "xyx", "xxx", "xyx",
-                'x', Items.PAPER,
-                'y', Items.REDSTONE);
+                "rgr", "rbr", "rgr",
+                'b', TeslaCoreLib.baseAddon,
+                'r', Items.REDSTONE,
+                'g', TeslaCoreLib.gearGold);
     }
 }

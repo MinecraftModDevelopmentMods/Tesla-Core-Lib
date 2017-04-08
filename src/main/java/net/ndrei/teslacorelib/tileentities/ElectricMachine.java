@@ -20,6 +20,8 @@ import net.ndrei.teslacorelib.inventory.BoundingRectangle;
 import net.ndrei.teslacorelib.inventory.ColoredItemHandler;
 import net.ndrei.teslacorelib.inventory.EnergyStorage;
 import net.ndrei.teslacorelib.items.BaseAddon;
+import net.ndrei.teslacorelib.items.SpeedUpgradeTier1;
+import net.ndrei.teslacorelib.items.SpeedUpgradeTier2;
 
 import java.awt.*;
 import java.util.List;
@@ -118,13 +120,6 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
             compound.setTag("work_energy", this.workEnergy.serializeNBT());
         }
 
-//        if (this.energyItems != null) {
-//            NBTTagCompound nbt = this.energyItems.serializeNBT();
-//            if (nbt != null) {
-//                compound.setTag("inv_energy_items", nbt);
-//            }
-//        }
-
         return compound;
     }
 
@@ -142,10 +137,6 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
             }
             this.workEnergy.deserializeNBT(compound.getCompoundTag("work_energy"));
         }
-
-//        if (compound.hasKey("inv_energy_items", Constants.NBT.TAG_COMPOUND)) {
-//            this.energyItems.deserializeNBT(compound.getCompoundTag("inv_energy_items"));
-//        }
     }
 
     //#endregion
@@ -159,14 +150,6 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
 
         return pieces;
     }
-
-//    @Override
-//    public List<Slot> getSlots(BasicTeslaContainer container) {
-//        List<Slot> slots = super.getSlots(container);
-//
-//
-//        return slots;
-//    }
 
     @Override
     public List<HudInfoLine> getHUDLines() {
@@ -209,7 +192,7 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
     //region work              methods
 
     protected int getMinimumWorkTicks() {
-        return 20;
+        return 10;
     }
 
     protected int getEnergyForWork() {
@@ -219,6 +202,23 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
     protected int getEnergyForWorkRate() {
         return 20;
     }
+
+    protected float getEnergyForWorkRateMultiplier() {
+        float ratio = 1.0f;
+        if (this.hasAddon(SpeedUpgradeTier1.class)) {
+            ratio *= 1.5f;
+            if (this.hasAddon(SpeedUpgradeTier2.class)) {
+                ratio *= 1.5f;
+            }
+        }
+        return ratio;
+    }
+
+    public boolean supportsSpeedUpgrades() {
+        return true;
+    }
+
+    public boolean supportsEnergyUpgrades() { return true; }
 
     @Override
     public long getWorkEnergyCapacity() {
@@ -238,15 +238,39 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
     private int getFinalEnergyForWork() {
         float energy = this.getEnergyForWork();
         for(BaseAddon addon: this.getAddons()) {
+            if (!addon.isValid(this)) {
+                continue;
+            }
+
             energy *= addon.getWorkEnergyMultiplier();
         }
         return Math.round(energy);
     }
 
+    protected void resetWorkEnergyBuffer() {
+        this.workEnergy = new EnergyStorage(this.getFinalEnergyForWork(),
+                Math.round(this.getEnergyForWorkRate() * this.getEnergyForWorkRateMultiplier()),
+                0);
+    }
+
+    public void updateWorkEnergyRate() {
+        if (this.workEnergy != null) {
+            this.workEnergy.setInputRate(
+                    Math.round(this.getEnergyForWorkRate() * this.getEnergyForWorkRateMultiplier())
+            );
+        }
+    }
+
+    public void updateWorkEnergyCapacity() {
+        if (this.workEnergy != null) {
+            this.workEnergy.setCapacity(this.getFinalEnergyForWork());
+        }
+    }
+
     @Override
     public void protectedUpdate() {
         if (this.workEnergy == null) {
-            this.workEnergy = new EnergyStorage(this.getFinalEnergyForWork(), this.getEnergyForWorkRate(), 0);
+            this.resetWorkEnergyBuffer();
         }
 
         if (!this.workEnergy.isFull()) {
@@ -261,7 +285,7 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
         if (this.workEnergy.isFull() && (this.workTick >= this.lastWorkTicks) && !this.getWorld().isRemote) {
             float work = this.performWork();
             long oldCapacity = this.workEnergy.getCapacity();
-            this.workEnergy = new EnergyStorage(this.getFinalEnergyForWork(), this.getEnergyForWorkRate(), 0);
+            this.resetWorkEnergyBuffer();
             this.workEnergy.givePower(Math.round(oldCapacity * (1 - Math.max(0, Math.min(1, work)))));
 
             this.workTick = 0;
