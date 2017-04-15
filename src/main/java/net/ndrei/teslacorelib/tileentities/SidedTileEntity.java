@@ -68,6 +68,8 @@ public abstract class SidedTileEntity extends TileEntity implements
 
     protected SidedItemHandlerConfig sideConfig;
 
+    private boolean wasPickedUpInItemStack = false;
+
     @SuppressWarnings("unused")
     protected SidedTileEntity(int typeId) {
         this.typeId = typeId;
@@ -655,18 +657,28 @@ public abstract class SidedTileEntity extends TileEntity implements
         }
 
         if (!this.getWorld().isRemote) {
-            // client side
-            // TeslaCoreLib.logger.info("WRENCH!!");
-            if (this.getBlockType() instanceof OrientedBlock) {
-                return this.getBlockType().rotateBlock(this.getWorld(), this.getPos(), EnumFacing.UP)
-                        ? EnumActionResult.SUCCESS
-                        : EnumActionResult.PASS;
+            if (player.isSneaking()) {
+                NBTTagCompound nbt = new NBTTagCompound();
+                nbt.setTag("tileentity", this.writeToNBT());
+                ItemStack stack = new ItemStack(Item.getItemFromBlock(this.getBlockType()), 1);
+                stack.setTagCompound(nbt);
+                BlockPos spawnPos = this.getPos();
+                this.wasPickedUpInItemStack = true;
+                this.getWorld().setBlockToAir(spawnPos);
+                this.spawnItem(stack, spawnPos);
+                // this.getWorld().notifyNeighborsOfStateChange(this.getPos(), this.getBlockType(), true);
+            }
+            else if (this.getBlockType() instanceof OrientedBlock) {
+                try {
+                    return this.getBlockType().rotateBlock(this.getWorld(), this.getPos(), EnumFacing.UP)
+                            ? EnumActionResult.SUCCESS
+                            : EnumActionResult.PASS;
+                }
+                finally {
+                    this.getWorld().notifyNeighborsOfStateChange(this.getPos(), this.getBlockType(), true);
+                }
             }
         }
-//        else  {
-//            // server side
-//            TeslaCoreLib.logger.info("WRENCH!!");
-//        }
 
         return EnumActionResult.PASS;
     }
@@ -785,7 +797,13 @@ public abstract class SidedTileEntity extends TileEntity implements
         }
     }
 
-    public void onBlockBroken() {
+    public final void onBlockBroken() {
+        if (!this.wasPickedUpInItemStack) {
+            this.processBlockBroken();
+        }
+    }
+
+    protected void processBlockBroken() {
         if (this.itemHandler != null) {
             for (int i = 0; i < this.itemHandler.getSlots(); ++i) {
                 ItemStack stack = this.itemHandler.getStackInSlot(i);
@@ -797,11 +815,15 @@ public abstract class SidedTileEntity extends TileEntity implements
     }
 
     public EntityItem spawnItemFromFrontSide(ItemStack stack) {
+        BlockPos spawnPos = this.pos.offset(this.getFacing());
+        return this.spawnItem(stack, spawnPos);
+    }
+
+    public EntityItem spawnItem(ItemStack stack, BlockPos spawnPos) {
         if (ItemStackUtil.isEmpty(stack) || this.getWorld().isRemote) {
             return null;
         }
 
-        BlockPos spawnPos = this.pos.offset(this.getFacing());
         EntityItem entity = new EntityItem(this.getWorld(),
                 spawnPos.getX() + .5,
                 spawnPos.getY() + .5,
