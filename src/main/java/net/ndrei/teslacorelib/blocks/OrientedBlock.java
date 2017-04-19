@@ -17,12 +17,14 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
@@ -151,6 +153,22 @@ public class OrientedBlock<T extends TileEntity> extends Block implements ITileE
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         world.setBlockState(pos, state.withProperty(FACING, Utils.getFacingFromEntity(pos, placer)), 2);
+        if (!ItemStackUtil.isEmpty(stack) && stack.hasTagCompound()) {
+            NBTTagCompound nbt = stack.getTagCompound();
+            if ((nbt != null) && nbt.hasKey("tileentity", Constants.NBT.TAG_COMPOUND)) {
+                NBTTagCompound teNBT = nbt.getCompoundTag("tileentity");
+                try {
+                    TileEntity te = this.createNewTileEntity(world, 0);
+                    if (te != null) {
+                        te.deserializeNBT(teNBT);
+                        world.setTileEntity(pos, te);
+                    }
+                }
+                catch (Throwable t) {
+                    TeslaCoreLib.logger.error(t);
+                }
+            }
+        }
     }
 
     @SuppressWarnings("NullableProblems")

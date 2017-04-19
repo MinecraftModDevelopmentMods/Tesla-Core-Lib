@@ -55,6 +55,11 @@ public class TeslaCoreLib
     public static GearGoldItem gearGold;
     public static GearDiamondItem gearDiamond;
 
+    public static EnergyUpgradeTier1 energyUpgradeTier1;
+    public static EnergyUpgradeTier2 energyUpgradeTier2;
+    public static SpeedUpgradeTier1 speedUpgradeTier1;
+    public static SpeedUpgradeTier2 speedUpgradeTier2;
+
     @Mod.EventHandler
     @SuppressWarnings("unused")
     public void preInit(FMLPreInitializationEvent event){
@@ -71,6 +76,11 @@ public class TeslaCoreLib
         (TeslaCoreLib.baseAddon = new BaseAddonItem()).register();
         (TeslaCoreLib.machineCase = new MachineCaseItem()).register();
         TeslaCoreCapabilities.register();
+
+        (TeslaCoreLib.energyUpgradeTier1 = new EnergyUpgradeTier1()).register();
+        (TeslaCoreLib.energyUpgradeTier2 = new EnergyUpgradeTier2()).register();
+        (TeslaCoreLib.speedUpgradeTier1 = new SpeedUpgradeTier1()).register();
+        (TeslaCoreLib.speedUpgradeTier2 = new SpeedUpgradeTier2()).register();
 
         TeslaCoreLib.testBlock = new TeslaCoreUITestBlock();
         TeslaCoreLib.testBlock.register();
@@ -91,6 +101,11 @@ public class TeslaCoreLib
             TeslaCoreLib.battery.registerRenderer();
             TeslaCoreLib.baseAddon.registerRenderer();
             TeslaCoreLib.machineCase.registerRenderer();
+
+            TeslaCoreLib.energyUpgradeTier1.registerRenderer();
+            TeslaCoreLib.energyUpgradeTier2.registerRenderer();
+            TeslaCoreLib.speedUpgradeTier1.registerRenderer();
+            TeslaCoreLib.speedUpgradeTier2.registerRenderer();
 
             TeslaCoreLib.testBlock.registerRenderer();
             TeslaCoreLib.generatorBlock.registerRenderer();

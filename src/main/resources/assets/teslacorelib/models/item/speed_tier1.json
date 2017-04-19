@@ -1,6 +1,6 @@
 {
   "parent":"item/generated",
   "textures": {
-    "layer0":"teslacorelib:items/gear_diamond"
+    "layer0":"teslacorelib:items/speed_tier1"
   }
 }

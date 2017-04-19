@@ -2,6 +2,7 @@ package net.ndrei.teslacorelib.tileentities;
 
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.Slot;
@@ -67,6 +68,8 @@ public abstract class SidedTileEntity extends TileEntity implements
 
     protected SidedItemHandlerConfig sideConfig;
 
+    private boolean wasPickedUpInItemStack = false;
+
     @SuppressWarnings("unused")
     protected SidedTileEntity(int typeId) {
         this.typeId = typeId;
@@ -116,10 +119,13 @@ public abstract class SidedTileEntity extends TileEntity implements
             }
 
             private void testSlot(int slot) {
-                ItemStack stack = this.getStackInSlot(slot);
+                ItemStack stack = this.getStackInSlot(slot).copy();
                 Item item = (ItemStackUtil.isEmpty(stack) ? null : stack.getItem());
                 if (!(item instanceof BaseAddon)) {
                     item = null;
+                }
+                else {
+                    stack = stack.copy();
                 }
 
                 if ((item == null) && (this.items[slot] != null)) {
@@ -209,7 +215,7 @@ public abstract class SidedTileEntity extends TileEntity implements
         return (null != this.getAddon(addonClass));
     }
 
-    protected List<BaseAddon> getAddons() {
+    public List<BaseAddon> getAddons() {
         List<BaseAddon> list = Lists.newArrayList();
 
         if (this.addonItems != null) {
@@ -238,6 +244,23 @@ public abstract class SidedTileEntity extends TileEntity implements
             }
         }
         return false;
+    }
+
+    public ItemStack removeAddon(BaseAddon addon, boolean drop) {
+        if ((this.addonItems != null) && !this.getWorld().isRemote) {
+            for (int index = 0; index < this.addonItems.getSlots(); index++) {
+                ItemStack stack = this.addonItems.getStackInSlot(index);
+                if (!ItemStackUtil.isEmpty(stack) && (stack.getItem() == addon)) {
+                    this.addonItems.setStackInSlot(index, ItemStackUtil.getEmptyStack());
+                    if (drop) {
+                        this.spawnItemFromFrontSide(stack);
+                    }
+                    return stack;
+                }
+            }
+        }
+
+        return ItemStackUtil.getEmptyStack();
     }
 
     protected void addInventory(IItemHandler handler) {
@@ -633,18 +656,28 @@ public abstract class SidedTileEntity extends TileEntity implements
         }
 
         if (!this.getWorld().isRemote) {
-            // client side
-            // TeslaCoreLib.logger.info("WRENCH!!");
-            if (this.getBlockType() instanceof OrientedBlock) {
-                return this.getBlockType().rotateBlock(this.getWorld(), this.getPos(), EnumFacing.UP)
-                        ? EnumActionResult.SUCCESS
-                        : EnumActionResult.PASS;
+            if (player.isSneaking()) {
+                NBTTagCompound nbt = new NBTTagCompound();
+                nbt.setTag("tileentity", this.writeToNBT());
+                ItemStack stack = new ItemStack(Item.getItemFromBlock(this.getBlockType()), 1);
+                stack.setTagCompound(nbt);
+                BlockPos spawnPos = this.getPos();
+                this.wasPickedUpInItemStack = true;
+                this.getWorld().setBlockToAir(spawnPos);
+                this.spawnItem(stack, spawnPos);
+                // this.getWorld().notifyNeighborsOfStateChange(this.getPos(), this.getBlockType(), true);
+            }
+            else if (this.getBlockType() instanceof OrientedBlock) {
+                try {
+                    return this.getBlockType().rotateBlock(this.getWorld(), this.getPos(), EnumFacing.UP)
+                            ? EnumActionResult.SUCCESS
+                            : EnumActionResult.PASS;
+                }
+                finally {
+                    this.getWorld().notifyNeighborsOfStateChange(this.getPos(), this.getBlockType(), true);
+                }
             }
         }
-//        else  {
-//            // server side
-//            TeslaCoreLib.logger.info("WRENCH!!");
-//        }
 
         return EnumActionResult.PASS;
     }
@@ -763,7 +796,13 @@ public abstract class SidedTileEntity extends TileEntity implements
         }
     }
 
-    public void onBlockBroken() {
+    public final void onBlockBroken() {
+        if (!this.wasPickedUpInItemStack) {
+            this.processBlockBroken();
+        }
+    }
+
+    protected void processBlockBroken() {
         if (this.itemHandler != null) {
             for (int i = 0; i < this.itemHandler.getSlots(); ++i) {
                 ItemStack stack = this.itemHandler.getStackInSlot(i);
@@ -772,5 +811,23 @@ public abstract class SidedTileEntity extends TileEntity implements
                 }
             }
         }
+    }
+
+    public EntityItem spawnItemFromFrontSide(ItemStack stack) {
+        BlockPos spawnPos = this.pos.offset(this.getFacing());
+        return this.spawnItem(stack, spawnPos);
+    }
+
+    public EntityItem spawnItem(ItemStack stack, BlockPos spawnPos) {
+        if (ItemStackUtil.isEmpty(stack) || this.getWorld().isRemote) {
+            return null;
+        }
+
+        EntityItem entity = new EntityItem(this.getWorld(),
+                spawnPos.getX() + .5,
+                spawnPos.getY() + .5,
+                spawnPos.getZ() + .5, stack);
+        this.getWorld().spawnEntity(entity);
+        return entity;
     }
 }

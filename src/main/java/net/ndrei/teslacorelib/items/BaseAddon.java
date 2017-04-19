@@ -28,6 +28,10 @@ public abstract class BaseAddon extends RegisteredItem {
         // TeslaCoreLib.logger.info("Addon " + this.getClass().getSimpleName() + " removed from " + ((machine == null) ? "n/a" : machine.getClass().getSimpleName()));
     }
 
+    public boolean isValid(SidedTileEntity machine) {
+        return true;
+    }
+
     public float getWorkEnergyMultiplier() {
         return 1.0f;
     }

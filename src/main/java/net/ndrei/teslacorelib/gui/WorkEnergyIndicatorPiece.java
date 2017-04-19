@@ -48,6 +48,12 @@ public class WorkEnergyIndicatorPiece extends BasicContainerGuiPiece {
                     ChatFormatting.AQUA, this.provider.getWorkEnergyTick(),
                     ChatFormatting.GRAY));
 
+            long ticks = this.provider.getWorkEnergyCapacity() / this.provider.getWorkEnergyTick();
+            lines.add(String.format("%s~ every %s%,d %sticks",
+                    ChatFormatting.GRAY,
+                    ChatFormatting.WHITE, ticks,
+                    ChatFormatting.GRAY));
+
             container.drawTooltip(lines, mouseX - guiX, mouseY - guiY);
         }
     }
