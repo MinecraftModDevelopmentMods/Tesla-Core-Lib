@@ -119,7 +119,7 @@ public abstract class SidedTileEntity extends TileEntity implements
             }
 
             private void testSlot(int slot) {
-                ItemStack stack = this.getStackInSlot(slot).copy();
+                ItemStack stack = this.getStackInSlot(slot);
                 Item item = (ItemStackUtil.isEmpty(stack) ? null : stack.getItem());
                 if (!(item instanceof BaseAddon)) {
                     item = null;
@@ -674,7 +674,7 @@ public abstract class SidedTileEntity extends TileEntity implements
                             : EnumActionResult.PASS;
                 }
                 finally {
-                    this.getWorld().notifyNeighborsOfStateChange(this.getPos(), this.getBlockType(), true);
+                    this.getWorld().notifyNeighborsOfStateChange(this.getPos(), this.getBlockType());
                 }
             }
         }
@@ -827,7 +827,7 @@ public abstract class SidedTileEntity extends TileEntity implements
                 spawnPos.getX() + .5,
                 spawnPos.getY() + .5,
                 spawnPos.getZ() + .5, stack);
-        this.getWorld().spawnEntity(entity);
+        this.getWorld().spawnEntityInWorld(entity);
         return entity;
     }
 }
