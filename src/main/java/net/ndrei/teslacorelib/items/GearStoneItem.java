@@ -1,12 +1,9 @@
 package net.ndrei.teslacorelib.items;
 
-import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraftforge.oredict.ShapedOreRecipe;
-import net.ndrei.teslacorelib.TeslaCoreLib;
 
 import java.util.List;
 
@@ -22,18 +19,23 @@ public class GearStoneItem extends BaseGearItem {
     protected List<IRecipe> getRecipes() {
         List<IRecipe> recipes = super.getRecipes();
 
-        for (Block block : new Block[]{
-                Blocks.COBBLESTONE, Blocks.STONE, Blocks.MOSSY_COBBLESTONE, Blocks.STONEBRICK
+//        for (Block block : new Block[]{
+//                Blocks.COBBLESTONE, Blocks.STONE, Blocks.MOSSY_COBBLESTONE, Blocks.STONEBRICK
+        for(Object block : new Object[]{
+                "cobblestone", Blocks.STONE, "stone", Blocks.MOSSY_COBBLESTONE, Blocks.STONEBRICK,
+                Blocks.SANDSTONE, Blocks.RED_SANDSTONE
         }) {
             recipes.add(new ShapedOreRecipe(new ItemStack(this, 1),
                     " w ", "wsw", " w ",
                     'w', block,
-                    's', TeslaCoreLib.gearWood));
+                    's', "gearWood" // TeslaCoreLib.gearWood
+            ));
 
             recipes.add(new ShapedOreRecipe(new ItemStack(this, 1),
                     " w ", "wsw", " w ",
                     'w', block,
-                    's', Items.STICK));
+                    's', "stickWood" // Items.STICK
+            ));
         }
 
         return recipes;

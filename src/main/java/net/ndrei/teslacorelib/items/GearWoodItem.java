@@ -1,7 +1,5 @@
 package net.ndrei.teslacorelib.items;
 
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraftforge.oredict.ShapedOreRecipe;
@@ -22,16 +20,19 @@ public class GearWoodItem extends BaseGearItem {
 
         recipes.add(new ShapedOreRecipe(new ItemStack(this, 1),
                 " w ", "wsw", " w ",
-                'w', Blocks.PLANKS,
-                's', Items.STICK));
+                'w', "plankWood", // Blocks.PLANKS,
+                's', "stickWood" // Items.STICK
+        ));
         recipes.add(new ShapedOreRecipe(new ItemStack(this, 4),
                 " w ", "wsw", " w ",
-                'w', Blocks.LOG,
-                's', Items.STICK));
-        recipes.add(new ShapedOreRecipe(new ItemStack(this, 4),
-                " w ", "wsw", " w ",
-                'w', Blocks.LOG2,
-                's', Items.STICK));
+                'w', "logWood", // Blocks.LOG,
+                's', "stickWood" // Items.STICK
+        ));
+//        recipes.add(new ShapedOreRecipe(new ItemStack(this, 4),
+//                " w ", "wsw", " w ",
+//                'w', Blocks.LOG2,
+//                's', "stickWood" // Items.STICK
+//        ));
 
         return recipes;
     }

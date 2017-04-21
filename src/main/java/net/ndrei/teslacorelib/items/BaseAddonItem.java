@@ -1,6 +1,5 @@
 package net.ndrei.teslacorelib.items;
 
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraftforge.oredict.ShapedOreRecipe;
@@ -18,7 +17,8 @@ public class BaseAddonItem extends BaseAddon {
     protected IRecipe getRecipe() {
         return new ShapedOreRecipe(new ItemStack(this, 1),
                 "xyx", "xxx", "xyx",
-                'x', Items.PAPER,
-                'y', Items.REDSTONE);
+                'x', "paper", // Items.PAPER,
+                'y', "dustRedstone" // Items.REDSTONE
+        );
     }
 }

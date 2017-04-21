@@ -1,7 +1,5 @@
 package net.ndrei.teslacorelib.items;
 
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraftforge.oredict.ShapedOreRecipe;
@@ -19,8 +17,9 @@ public class MachineCaseItem extends RegisteredItem {
     protected IRecipe getRecipe() {
         return new ShapedOreRecipe(new ItemStack(this, 1),
                 "xyx", "yzy", "xyx",
-                'x', Items.IRON_INGOT,
-                'y', Blocks.PLANKS,
-                'z', Blocks.REDSTONE_BLOCK);
+                'x', "ingotIron", // Items.IRON_INGOT,
+                'y', "plankWood", // Blocks.PLANKS,
+                'z', "blockRedstone" //  Blocks.REDSTONE_BLOCK
+        );
     }
 }

@@ -1,7 +1,6 @@
 package net.ndrei.teslacorelib.items;
 
 import com.google.common.collect.Lists;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraftforge.oredict.ShapedOreRecipe;
@@ -24,13 +23,15 @@ public class EnergyUpgradeTier2 extends EnergyUpgrade {
         recipes.add(new ShapedOreRecipe(new ItemStack(this, 1),
                 " g ", "rbr", "rrr",
                 'b', TeslaCoreLib.baseAddon,
-                'r', Items.REDSTONE,
-                'g', TeslaCoreLib.gearDiamond));
+                'r', "dustRedstone", // Items.REDSTONE,
+                'g', "gearDiamond" // TeslaCoreLib.gearDiamond)
+        ));
 
         recipes.add(new ShapedOreRecipe(new ItemStack(this, 1),
                 " d ", "dbd", " d ",
                 'b', TeslaCoreLib.energyUpgradeTier1,
-                'd', Items.DIAMOND));
+                'd', "gemDiamond" // Items.DIAMOND
+        ));
 
         return recipes;
     }
