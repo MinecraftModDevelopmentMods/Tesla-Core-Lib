@@ -2,7 +2,6 @@ package net.ndrei.teslacorelib.items;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.tileentity.TileEntity;
@@ -29,9 +28,10 @@ public class TeslaWrench extends RegisteredItem {
     protected IRecipe getRecipe() {
         return new ShapedOreRecipe(new ItemStack(this, 1),
                 " LX", " XR", "X  ",
-                'X', Items.IRON_INGOT,
-                'R', Items.REDSTONE,
-                'L', new ItemStack(Items.DYE, 1, 4));
+                'X', "ingotIron", // Items.IRON_INGOT,
+                'R', "dustRedstone", //  Items.REDSTONE,
+                'L', "dyeBlue" // new ItemStack(Items.DYE, 1, 4)
+        );
     }
 
     @Override

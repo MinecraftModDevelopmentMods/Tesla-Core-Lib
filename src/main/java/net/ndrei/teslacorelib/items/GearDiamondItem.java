@@ -1,10 +1,8 @@
 package net.ndrei.teslacorelib.items;
 
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraftforge.oredict.ShapedOreRecipe;
-import net.ndrei.teslacorelib.TeslaCoreLib;
 
 import java.util.List;
 
@@ -22,13 +20,15 @@ public class GearDiamondItem extends BaseGearItem {
 
         recipes.add(new ShapedOreRecipe(new ItemStack(this, 1),
                 "iwi", "wsw", "iwi",
-                'w', Items.DIAMOND,
-                'i', Items.IRON_INGOT,
-                's', TeslaCoreLib.gearStone));
+                'w', "gemDiamond", // Items.DIAMOND,
+                'i', "ingotIron", // Items.IRON_INGOT,
+                's', "gearStone" // TeslaCoreLib.gearStone
+        ));
         recipes.add(new ShapedOreRecipe(new ItemStack(this, 1),
                 " w ", "wsw", " w ",
-                'w', Items.DIAMOND,
-                's', TeslaCoreLib.gearIron));
+                'w', "gemDiamond", // Items.DIAMOND,
+                's', "gearIron" // TeslaCoreLib.gearIron
+        ));
 
         return recipes;
     }

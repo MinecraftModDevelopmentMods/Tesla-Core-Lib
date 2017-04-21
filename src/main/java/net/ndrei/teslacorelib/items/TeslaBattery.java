@@ -8,8 +8,6 @@ import net.darkhax.tesla.api.implementation.BaseTeslaContainerProvider;
 import net.darkhax.tesla.capability.TeslaCapabilities;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
@@ -49,9 +47,10 @@ public class TeslaBattery extends RegisteredItem {
     protected IRecipe getRecipe() {
         return new ShapedOreRecipe(new ItemStack(this, 1),
                 "IRI", "RXR", "IRI",
-                'I', Items.IRON_INGOT,
-                'R', Items.REDSTONE,
-                'X', Item.getItemFromBlock(Blocks.REDSTONE_BLOCK));
+                'I', "ingotIron", // Items.IRON_INGOT,
+                'R', "dustRedstone", // Items.REDSTONE,
+                'X', "blockRedstone" // Item.getItemFromBlock(Blocks.REDSTONE_BLOCK)
+        );
     }
 
     @Nullable

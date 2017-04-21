@@ -1,6 +1,5 @@
 package net.ndrei.teslacorelib.items;
 
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraftforge.oredict.ShapedOreRecipe;
@@ -19,7 +18,8 @@ public class SpeedUpgradeTier1 extends SpeedUpgrade {
         return new ShapedOreRecipe(new ItemStack(this, 1),
                 "rgr", "rbr", "rgr",
                 'b', TeslaCoreLib.baseAddon,
-                'r', Items.REDSTONE,
-                'g', TeslaCoreLib.gearGold);
+                'r', "dustRedstone", //  Items.REDSTONE,
+                'g', "gearGold" // TeslaCoreLib.gearGold
+        );
     }
 }
