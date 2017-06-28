@@ -1,4 +1,5 @@
 buildscript {
+    ext.kotlin_version = '1.1.2-5'
     repositories {
         mavenCentral()
         maven { url = "http://files.minecraftforge.net/maven" }
@@ -6,10 +7,12 @@ buildscript {
         maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 apply plugin: "net.minecraftforge.gradle.forge"
+apply plugin: 'kotlin'
 apply plugin: "maven-publish"
 apply plugin: "maven"
 
@@ -44,14 +47,19 @@ configurations {
 
 repositories {
     mavenCentral()
+    jcenter()
     maven { url 'http://maven.epoxide.xyz' }
     maven { url 'http://maven.ndrei.net' }
+    // For Kotlin lang adapter
+    // maven { url 'http://mvn.rx14.co.uk/shadowfacts/' }
     mavenLocal()
 }
 
 dependencies {
-    compile "net.darkhax.tesla:Tesla:${tesla_version}:deobf"
+    compile "net.darkhax.tesla:Tesla-1.12:${tesla_version}:deobf"
     deployerJars 'org.apache.maven.wagon:wagon-ftp:2.2'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    // compile group: "net.shadowfacts", name: "Forgelin", version: "LATEST_VERSION"
 }
 
 processResources {
