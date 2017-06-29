@@ -16,7 +16,7 @@ import net.minecraftforge.registries.IForgeRegistry
 abstract class RegisteredItem(modId: String, tab: CreativeTabs?, registryName: String) : Item() {
     init {
         this.setRegistryName(modId, registryName)
-        this.unlocalizedName = modId + "_" + registryName
+        this.unlocalizedName = modId + "." + registryName
         if (tab != null) {
             this.creativeTab = tab
         }
@@ -39,5 +39,5 @@ abstract class RegisteredItem(modId: String, tab: CreativeTabs?, registryName: S
         }
 
     @SideOnly(Side.CLIENT)
-    fun registerRenderer() = ModelLoader.setCustomModelResourceLocation(this, 0, ModelResourceLocation(this.registryName!!, "inventory"))
+    open fun registerRenderer() = ModelLoader.setCustomModelResourceLocation(this, 0, ModelResourceLocation(this.registryName!!, "inventory"))
 }

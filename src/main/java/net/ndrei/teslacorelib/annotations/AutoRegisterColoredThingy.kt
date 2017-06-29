@@ -1,7 +1,7 @@
 package net.ndrei.teslacorelib.annotations
 
 /**
- * Created by CF on 2017-06-22.
+ * Created by CF on 2017-06-29.
  */
 @Target(AnnotationTarget.CLASS)
-annotation class AutoRegisterBlock
+annotation class AutoRegisterColoredThingy

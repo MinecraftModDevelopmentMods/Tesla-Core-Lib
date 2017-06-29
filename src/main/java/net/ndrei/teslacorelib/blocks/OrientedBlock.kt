@@ -47,7 +47,7 @@ abstract class OrientedBlock<T : TileEntity>
 
     init {
         this.setRegistryName(modId, registryName)
-        this.unlocalizedName = modId + "_" + registryName
+        this.unlocalizedName = modId + "." + registryName
         if (tab != null) {
             this.setCreativeTab(tab)
         }

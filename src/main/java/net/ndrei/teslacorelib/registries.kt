@@ -2,12 +2,15 @@ package net.ndrei.teslacorelib
 
 import net.minecraft.block.Block
 import net.minecraft.item.Item
+import net.minecraft.item.crafting.IRecipe
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.registry.GameRegistry
+import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.oredict.OreDictionary
 import net.minecraftforge.registries.IForgeRegistry
 import net.minecraftforge.registries.IForgeRegistryEntry
+import net.ndrei.teslacorelib.annotations.AutoRegisterRecipesHandler
 import net.ndrei.teslacorelib.blocks.OrientedBlock
 import net.ndrei.teslacorelib.items.RegisteredItem
 
@@ -66,17 +69,31 @@ abstract class MaterialRegistry<T: IForgeRegistryEntry<T>>(private val oreDictif
 
 abstract class MaterialItemRegistry(oreDictify: (material: String) -> String) : MaterialRegistry<Item>(oreDictify) {
     fun addMaterial(material: String, item: RegisteredItem)
-            = this.addMaterial(material, { registry -> registry.register(item); item })
+            = this.addMaterial(material, {registry ->
+        registry.register(item)
+        item.registerRecipe { AutoRegisterRecipesHandler.registerRecipe(GameRegistry.findRegistry(IRecipe::class.java), it) }
+        if (TeslaCoreLib.proxy.side == Side.CLIENT) {
+            item.registerRenderer()
+        }
+        item
+    })
 }
 
 abstract class MaterialBlockRegistry(oreDictify: (material: String) -> String) : MaterialRegistry<Block>(oreDictify) {
     fun addMaterial(material: String, block: OrientedBlock<*>)
-            = this.addMaterial(material, { registry -> registry.register(block); block })
+            = this.addMaterial(material, { registry ->
+        registry.register(block)
+        block.registerRecipe { AutoRegisterRecipesHandler.registerRecipe(GameRegistry.findRegistry(IRecipe::class.java), it) }
+        if (TeslaCoreLib.proxy.side == Side.CLIENT) {
+            block.registerRenderer()
+        }
+        block
+    })
 }
 
-object DustRegistry : MaterialItemRegistry({ "dust${it.capitalize()}" })
+object PowderRegistry : MaterialItemRegistry({ "dust${it.capitalize()}" })
 object GearRegistry : MaterialItemRegistry({ "gear${it.capitalize()}" })
-object PlateRegistry : MaterialItemRegistry({ "plate${it.capitalize()}" })
+object SheetRegistry : MaterialItemRegistry({ "plate${it.capitalize()}" })
 
 @Mod(modid = TeslaCoreRegistries.MODID, version = TeslaCoreLib.VERSION, name = "Tesla Core Registries",
         dependencies = "after:*", useMetadata = true,

@@ -1,16 +1,19 @@
-package net.ndrei.teslacorelib.items
+package net.ndrei.teslacorelib.items.gears
 
 import net.minecraft.init.Blocks
 import net.minecraft.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
 import net.minecraftforge.oredict.ShapedOreRecipe
-import net.ndrei.teslacorelib.annotations.AutoRegisterItem
+import net.ndrei.teslacorelib.COLOR_STONE
+import net.ndrei.teslacorelib.MATERIAL_STONE
+import net.ndrei.teslacorelib.annotations.AutoRegisterColoredThingy
 
 /**
  * Created by CF on 2017-06-22.
  */
-@AutoRegisterItem
-object GearStoneItem : BaseGearItem("stone") {
+@AutoRegisterGear
+@AutoRegisterColoredThingy
+object GearStoneItem : ColoredGearItem(MATERIAL_STONE, COLOR_STONE) {
     override val recipes: List<IRecipe>
         get() {
             val recipes = super.recipes.toMutableList()

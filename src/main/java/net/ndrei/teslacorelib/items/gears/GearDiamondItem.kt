@@ -1,15 +1,18 @@
-package net.ndrei.teslacorelib.items
+package net.ndrei.teslacorelib.items.gears
 
 import net.minecraft.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
 import net.minecraftforge.oredict.ShapedOreRecipe
-import net.ndrei.teslacorelib.annotations.AutoRegisterItem
+import net.ndrei.teslacorelib.COLOR_DIAMOND
+import net.ndrei.teslacorelib.MATERIAL_DIAMOND
+import net.ndrei.teslacorelib.annotations.AutoRegisterColoredThingy
 
 /**
  * Created by CF on 2017-06-22.
  */
-@AutoRegisterItem
-object GearDiamondItem : BaseGearItem("diamond") {
+@AutoRegisterGear
+@AutoRegisterColoredThingy
+object GearDiamondItem : ColoredGearItem(MATERIAL_DIAMOND, COLOR_DIAMOND) {
     override val recipes: List<IRecipe>
         get() {
             val recipes = super.recipes.toMutableList()
