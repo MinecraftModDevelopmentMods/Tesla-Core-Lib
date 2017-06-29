@@ -5,6 +5,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 /**
@@ -12,8 +13,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
  */
 @SuppressWarnings("unused")
 public class SimpleNBTMessage implements IMessage {
-    private NBTTagCompound compound;
-    private BlockPos pos;
+    private NBTTagCompound compound = null;
+    private BlockPos pos = null;
     private int dimension;
 
     @SuppressWarnings("unused")
@@ -54,6 +55,13 @@ public class SimpleNBTMessage implements IMessage {
         pos.setInteger("dim", this.dimension);
         ByteBufUtils.writeTag(buf, pos);
         ByteBufUtils.writeTag(buf, (this.compound != null) ? this.compound : new NBTTagCompound());
+    }
+
+    public NetworkRegistry.TargetPoint getTargetPoint() {
+        if (this.pos != null) {
+            return new NetworkRegistry.TargetPoint(this.dimension, this.pos.getX(), this.pos.getY(), this.pos.getZ(), 64);
+        }
+        return null;
     }
 }
 

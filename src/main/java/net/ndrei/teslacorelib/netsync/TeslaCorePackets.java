@@ -1,5 +1,6 @@
 package net.ndrei.teslacorelib.netsync;
 
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
@@ -20,7 +21,17 @@ public class TeslaCorePackets implements ITeslaCorePackets {
 
     @Override
     public void send(IMessage message) {
-        this.wrapper.sendToAll(message);
+        NetworkRegistry.TargetPoint target = null;
+        if (message instanceof SimpleNBTMessage) {
+            target = ((SimpleNBTMessage)message).getTargetPoint();
+        }
+
+        if (target == null) {
+            this.wrapper.sendToAll(message);
+        }
+        else {
+            this.wrapper.sendToAllAround(message, target);
+        }
     }
 
     @Override
