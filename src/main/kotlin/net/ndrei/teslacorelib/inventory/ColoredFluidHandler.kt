@@ -7,7 +7,7 @@ import net.minecraftforge.fluids.IFluidTank
 /**
  * Created by CF on 2017-06-28.
  */
-class ColoredFluidHandler : FilteredFluidTank {
+open class ColoredFluidHandler : FilteredFluidTank {
     val color: EnumDyeColor
     val name: String
     val boundingBox: BoundingRectangle

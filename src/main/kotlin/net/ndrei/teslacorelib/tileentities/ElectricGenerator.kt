@@ -92,7 +92,7 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
     override val energyOutputRate: Long
         get() = 80
 
-    protected val energyFillRate: Long
+    protected open val energyFillRate: Long
         get() = 160
 
     //endregion
@@ -100,7 +100,7 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
     //#region work              methods
 
     protected abstract fun consumeFuel(): Long
-    protected fun fuelConsumed() {}
+    protected open fun fuelConsumed() {}
 
     protected val isGeneratedPowerLostIfFull: Boolean
         get() = true

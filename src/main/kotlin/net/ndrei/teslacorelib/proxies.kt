@@ -16,16 +16,13 @@ import net.ndrei.teslacorelib.gui.TeslaCoreGuiProxy
 /**
  * Created by CF on 2017-06-27.
  */
-abstract class CommonProxy(val side: Side) {
+abstract class BaseProxy(val side: Side) {
     protected lateinit var asm: ASMDataTable
 
     @SuppressWarnings("unused")
     open fun preInit(ev: FMLPreInitializationEvent) {
         this.asm = ev.asmData
         processPreInitAnnotations(ev.asmData)
-
-        TeslaCoreCapabilities.register()
-        NetworkRegistry.INSTANCE.registerGuiHandler(TeslaCoreLib.instance, TeslaCoreGuiProxy())
     }
 
     @SuppressWarnings("unused")
@@ -36,6 +33,15 @@ abstract class CommonProxy(val side: Side) {
     @SuppressWarnings("unused")
     open fun postInit(ev: FMLPostInitializationEvent) {
         processPostInitAnnotations(this.asm)
+    }
+}
+
+abstract class CommonProxy(side: Side): BaseProxy(side) {
+    override fun preInit(ev: FMLPreInitializationEvent) {
+        super.preInit(ev)
+
+        TeslaCoreCapabilities.register()
+        NetworkRegistry.INSTANCE.registerGuiHandler(TeslaCoreLib.instance, TeslaCoreGuiProxy())
     }
 }
 

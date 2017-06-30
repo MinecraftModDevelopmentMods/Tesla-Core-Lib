@@ -383,10 +383,10 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     }
 
     protected fun acceptsFluidItem(stack: ItemStack): Boolean {
-        return this.fluidHandler != null && this.fluidHandler!!.acceptsFluidFrom(stack)
+        return this.fluidHandler.acceptsFluidFrom(stack)
     }
 
-    protected val fluidItemsBoundingBox: BoundingRectangle
+    protected open val fluidItemsBoundingBox: BoundingRectangle
         get() {
             var x = 0
             var y = 0
@@ -400,14 +400,12 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
             return BoundingRectangle(x, y, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT)
         }
 
-    protected fun addFluidItemsBackground(pieces: MutableList<IGuiContainerPiece>, box: BoundingRectangle) {
+    protected open fun addFluidItemsBackground(pieces: MutableList<IGuiContainerPiece>, box: BoundingRectangle) {
         pieces.add(BasicRenderedGuiPiece(box.left, box.top, 18, 54,
                 BasicTeslaGuiContainer.MACHINE_BACKGROUND, 78, 189))
     }
 
-    protected fun shouldAddFluidItemsInventory(): Boolean {
-        return !(this.fluidHandler == null || this.fluidHandler!!.tankCount() == 0)
-    }
+    protected open fun shouldAddFluidItemsInventory(): Boolean = this.fluidHandler.tankCount() != 0
 
     //endregion
 

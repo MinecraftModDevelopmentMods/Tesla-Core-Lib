@@ -148,13 +148,13 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
 
     //region work              methods
 
-    protected val minimumWorkTicks: Int
+    protected open val minimumWorkTicks: Int
         get() = 10
 
-    protected val energyForWork: Int
+    protected open val energyForWork: Int
         get() = 600
 
-    protected val energyForWorkRate: Int
+    protected open val energyForWorkRate: Int
         get() = 20
 
     protected val energyForWorkRateMultiplier: Float

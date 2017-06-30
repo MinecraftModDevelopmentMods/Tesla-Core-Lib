@@ -91,7 +91,7 @@ abstract class OrientedBlock<T : TileEntity>
         }
     }
 
-    protected val specialRenderer: TileEntitySpecialRenderer<T>?
+    protected open val specialRenderer: TileEntitySpecialRenderer<T>?
         @SideOnly(Side.CLIENT)
         get() = HudInfoRenderer()
 
