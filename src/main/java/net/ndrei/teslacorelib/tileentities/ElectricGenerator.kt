@@ -38,7 +38,7 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
                 return 1
             }
         }
-        super.addInventory(object : ColoredItemHandler(this.chargePadItems!!, EnumDyeColor.BROWN, "Charge Pad", BoundingRectangle(34, 34, 18, 36)) {
+        super.addInventory(object : ColoredItemHandler(this.chargePadItems!!, EnumDyeColor.BROWN, "Charge Pad", -10, BoundingRectangle(34, 34, 18, 36)) {
             override fun canInsertItem(slot: Int, stack: ItemStack): Boolean {
                 return !ItemStackUtil.isEmpty(stack) && stack.hasCapability(TeslaCapabilities.CAPABILITY_CONSUMER, null)
             }

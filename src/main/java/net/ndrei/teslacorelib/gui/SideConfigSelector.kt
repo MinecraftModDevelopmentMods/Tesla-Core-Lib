@@ -15,16 +15,17 @@ class SideConfigSelector(left: Int, top: Int, width: Int, height: Int, private v
     @SideOnly(Side.CLIENT)
     override fun drawBackgroundLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, partialTicks: Float, mouseX: Int, mouseY: Int) {
         val colors = this.sidedConfig.coloredInfo
+                .take(8) // to make sure there is no overflow
         if (colors.isNotEmpty()) {
             container.bindDefaultTexture()
             var i = 0
-            while (i < colors.size && i < 8) {
+            colors.forEach {
                 container.drawTexturedRect(
                         this.left + 2 + i * 18, this.top + 2,
                         if (i == this.selectedInventory) 128 else 110, 210, 14, 14)
                 container.drawFilledRect(
                         guiX + this.left + 4 + i * 18, guiY + this.top + 4,
-                        10, 10, 0xFF000000.toInt() + colors[i].color.colorValue)
+                        10, 10, 0xFF000000.toInt() + it.color.colorValue)
                 i++
             }
         }
@@ -67,11 +68,11 @@ class SideConfigSelector(left: Int, top: Int, width: Int, height: Int, private v
                 var localX = mouseX - guiX - this.left
                 val index = localX / 18
                 val colors = this.sidedConfig.coloredInfo
-                if (index >= 0 && index < colors.size && index < 8 && colors[index].highlight != null) {
+                if (index >= 0 && index < colors.size && index < 8) {
                     localX -= index * 18
                     if (localX in 2..14) {
                         val label = colors[index].name
-                        if (label != null && label.length > 0) {
+                        if (label.isNotEmpty()) {
                             container.drawTooltip(Lists.newArrayList(label),
                                     this.left + index * 18 + 9,
                                     this.top + this.height / 2)

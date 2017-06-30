@@ -91,7 +91,7 @@ object AnnotationInitHandlerHandlerHandler: BaseAnnotationHandler<BaseAnnotation
 @Suppress("unused")
 @AnnotationPostInitHandler
 object AutoRegisterColoredThingyHandler: BaseAnnotationHandler<Any>({ it, _ ->
-    if (TeslaCoreLib.proxy.side == Side.CLIENT) {
+    if (TeslaCoreLib.isClientSide) {
         when (it) {
             is IItemColor -> when (it) {
                 is Item -> Minecraft.getMinecraft().itemColors.registerItemColorHandler(it, it)
@@ -115,7 +115,7 @@ fun processPreInitAnnotations(asm: ASMDataTable) {
     AutoRegisterBlockHandler.process(asm)
     AutoRegisterRecipesHandler.process(asm)
 
-    if (TeslaCoreLib.proxy.side == Side.CLIENT) {
+    if (TeslaCoreLib.isClientSide) {
         AutoRegisterRendererHandler.process(asm)
     }
 

@@ -26,4 +26,4 @@ object DiamondPowder : ColoredPowderItem(MATERIAL_DIAMOND, COLOR_DIAMOND)
 
 @AutoRegisterPowder
 @AutoRegisterColoredThingy
-object EmeraldPowder : ColoredPowderItem(MATERIAL_DIAMOND, COLOR_EMERALD)
+object EmeraldPowder : ColoredPowderItem(MATERIAL_EMERALD, COLOR_EMERALD)

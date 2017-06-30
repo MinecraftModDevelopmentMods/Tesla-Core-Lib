@@ -3,6 +3,7 @@ package net.ndrei.teslacorelib.gui
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.inventory.GuiContainer
+import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.RenderItem
 import net.minecraft.inventory.Container
 import net.minecraft.util.ResourceLocation
@@ -37,42 +38,35 @@ open class BasicTeslaGuiContainer<out T : SidedTileEntity>(val guiId: Int, conta
         BasicTeslaGuiContainer.bindDefaultTexture(this)
     }
 
+    override fun drawScreen(mouseX: Int, mouseY: Int, partialTicks: Float) {
+        super.drawScreen(mouseX, mouseY, partialTicks)
+        super.renderHoveredToolTip(mouseX, mouseY)
+    }
+
     override fun drawGuiContainerBackgroundLayer(partialTicks: Float, mouseX: Int, mouseY: Int) {
         this.bindDefaultTexture()
         this.drawTexturedModalRect(super.guiLeft, super.guiTop, 0, 0, super.getXSize(), super.getYSize())
 
-        for (piece in this.pieces!!) {
-            if (!piece.isVisible) {
-                continue
-            }
+        if (this.pieces != null) {
+            this.pieces!!
+                    .filter { it.isVisible }
+                    .forEach { it.drawBackgroundLayer(this, super.guiLeft, super.guiTop, partialTicks, mouseX, mouseY) }
 
-            piece.drawBackgroundLayer(this, super.guiLeft, super.guiTop, partialTicks, mouseX, mouseY)
-        }
-
-        for (piece in this.pieces!!) {
-            if (!piece.isVisible) {
-                continue
-            }
-
-            piece.drawMiddleLayer(this, super.guiLeft, super.guiTop, partialTicks, mouseX, mouseY)
+            this.pieces!!
+                    .filter { it.isVisible }
+                    .forEach { it.drawMiddleLayer(this, super.guiLeft, super.guiTop, partialTicks, mouseX, mouseY) }
         }
     }
 
     override fun drawGuiContainerForegroundLayer(mouseX: Int, mouseY: Int) {
-        for (piece in this.pieces!!) {
-            if (!piece.isVisible) {
-                continue
-            }
+        if (this.pieces != null) {
+            this.pieces!!
+                    .filter { it.isVisible }
+                    .forEach { it.drawForegroundLayer(this, super.guiLeft, super.guiTop, mouseX, mouseY) }
 
-            piece.drawForegroundLayer(this, super.guiLeft, super.guiTop, mouseX, mouseY)
-        }
-
-        for (piece in this.pieces!!) {
-            if (!piece.isVisible) {
-                continue
-            }
-
-            piece.drawForegroundTopLayer(this, super.guiLeft, super.guiTop, mouseX, mouseY)
+            this.pieces!!
+                    .filter { it.isVisible }
+                    .forEach { it.drawForegroundTopLayer(this, super.guiLeft, super.guiTop, mouseX, mouseY) }
         }
     }
 
@@ -80,10 +74,10 @@ open class BasicTeslaGuiContainer<out T : SidedTileEntity>(val guiId: Int, conta
     override fun mouseClicked(mouseX: Int, mouseY: Int, mouseButton: Int) {
         super.mouseClicked(mouseX, mouseY, mouseButton)
 
-        for (piece in this.pieces!!) {
-            if (piece.isVisible && BasicContainerGuiPiece.isInside(this, piece, mouseX, mouseY)) {
-                piece.mouseClicked(this, mouseX, mouseY, mouseButton)
-            }
+        if (this.pieces != null) {
+            this.pieces!!
+                    .filter { it.isVisible && BasicContainerGuiPiece.isInside(this, it, mouseX, mouseY) }
+                    .forEach { it.mouseClicked(this, mouseX, mouseY, mouseButton) }
         }
     }
 
@@ -106,6 +100,8 @@ open class BasicTeslaGuiContainer<out T : SidedTileEntity>(val guiId: Int, conta
         super.drawVerticalLine(x, y, y + height - 1, strokeColor)
         super.drawVerticalLine(x + width - 1, y, y + height - 1, strokeColor)
         super.drawHorizontalLine(x, x + width - 1, y + height - 1, strokeColor)
+
+        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
     }
 
     val itemRenderer: RenderItem

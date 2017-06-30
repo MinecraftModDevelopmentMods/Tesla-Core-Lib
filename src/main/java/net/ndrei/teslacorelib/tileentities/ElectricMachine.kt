@@ -41,7 +41,7 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
                 this@ElectricMachine.markDirty()
             }
         }
-        super.addInventory(object : ColoredItemHandler(this.energyItems!!, EnumDyeColor.CYAN, "Energy Items", BoundingRectangle(25, 25, 18, 54)) {
+        super.addInventory(object : ColoredItemHandler(this.energyItems!!, EnumDyeColor.CYAN, "Energy Items", -10, BoundingRectangle(25, 25, 18, 54)) {
             override fun canInsertItem(slot: Int, stack: ItemStack): Boolean {
                 return this@ElectricMachine.canInsertEnergyItem(slot, stack)
             }

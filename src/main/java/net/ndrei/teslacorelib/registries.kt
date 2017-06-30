@@ -6,7 +6,6 @@ import net.minecraft.item.crafting.IRecipe
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.registry.GameRegistry
-import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.oredict.OreDictionary
 import net.minecraftforge.registries.IForgeRegistry
 import net.minecraftforge.registries.IForgeRegistryEntry
@@ -72,7 +71,7 @@ abstract class MaterialItemRegistry(oreDictify: (material: String) -> String) : 
             = this.addMaterial(material, {registry ->
         registry.register(item)
         item.registerRecipe { AutoRegisterRecipesHandler.registerRecipe(GameRegistry.findRegistry(IRecipe::class.java), it) }
-        if (TeslaCoreLib.proxy.side == Side.CLIENT) {
+        if (TeslaCoreLib.isClientSide) {
             item.registerRenderer()
         }
         item
@@ -84,7 +83,7 @@ abstract class MaterialBlockRegistry(oreDictify: (material: String) -> String) :
             = this.addMaterial(material, { registry ->
         registry.register(block)
         block.registerRecipe { AutoRegisterRecipesHandler.registerRecipe(GameRegistry.findRegistry(IRecipe::class.java), it) }
-        if (TeslaCoreLib.proxy.side == Side.CLIENT) {
+        if (TeslaCoreLib.isClientSide) {
             block.registerRenderer()
         }
         block

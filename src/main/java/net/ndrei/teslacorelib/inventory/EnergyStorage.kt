@@ -338,7 +338,7 @@ open class EnergyStorage(maxStoredEnergy: Long, inputRate: Long, outputRate: Lon
         this.sidedConfig = sidedConfig
         this.color = color
         if ((this.sidedConfig != null) && (this.color != null)) {
-            this.sidedConfig!!.addColoredInfo("Energy", this.color!!, highlight)
+            this.sidedConfig!!.addColoredInfo("Energy", this.color!!, highlight, -20)
         }
     }
 

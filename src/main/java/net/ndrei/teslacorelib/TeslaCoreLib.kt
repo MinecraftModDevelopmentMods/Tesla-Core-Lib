@@ -58,5 +58,8 @@ class TeslaCoreLib {
                 return this.iconItemStack
             }
         }
+
+        val isClientSide
+            get() = TeslaCoreLib.proxy.side == net.minecraftforge.fml.relauncher.Side.CLIENT
     }
 }

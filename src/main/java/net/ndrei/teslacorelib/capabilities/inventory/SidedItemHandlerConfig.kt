@@ -27,7 +27,7 @@ open class SidedItemHandlerConfig : ISidedItemHandlerConfig, INBTSerializable<NB
 //                        return true
 //                    }
 //                }
-                return true;
+                return true
             }
         }
         return false
@@ -52,11 +52,17 @@ open class SidedItemHandlerConfig : ISidedItemHandlerConfig, INBTSerializable<NB
     }
 
     override val coloredInfo: List<ColoredItemHandlerInfo>
-        get() = this.information.toList()
-
+        get() = this.information
+                .toList()
+                .filter { !it.highlight.isEmpty }
+                .sortedBy { it.index }
 
     override fun addColoredInfo(name: String, color: EnumDyeColor, highlight: BoundingRectangle) {
-        this.addColoredInfo(ColoredItemHandlerInfo(name, color, highlight))
+        this.addColoredInfo(name, color, highlight, (this.information.map { it.index }.max() ?: 0) + 10)
+    }
+
+    override fun addColoredInfo(name: String, color: EnumDyeColor, highlight: BoundingRectangle, index: Int) {
+        this.addColoredInfo(ColoredItemHandlerInfo(name, color, highlight, index))
     }
 
     override fun addColoredInfo(info: ColoredItemHandlerInfo) {

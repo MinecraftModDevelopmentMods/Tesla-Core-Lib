@@ -86,6 +86,51 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         this.createAddonsInventory()
     }
 
+    protected fun addInventory(handler: IItemHandler?) {
+        if (handler == null) {
+            return
+        }
+        this.itemHandler.addItemHandler(handler)
+
+        if (handler is ColoredItemHandler) {
+            if (handler.index == null) {
+                this.sideConfig.addColoredInfo(handler.name, handler.color, handler.boundingBox)
+            }
+            else {
+                this.sideConfig.addColoredInfo(handler.name, handler.color, handler.boundingBox, handler.index)
+            }
+        }
+    }
+
+    protected fun addInventoryToStorage(handler: ItemStackHandler, storageKey: String) {
+        this.inventoryStorage!!.add(SidedTileEntity.InventoryStorageInfo(handler, storageKey))
+    }
+
+    private class InventoryStorageInfo internal constructor(internal val inventory: ItemStackHandler, internal val storageKey: String)
+
+    protected open fun toggleInventoryLock(color: EnumDyeColor) {
+        val inventory = (0..this.itemHandler.inventories)
+                .map { this.itemHandler.getInventory(it) }
+                .firstOrNull { (it is ColoredItemHandler) && (it.color == color) }
+
+        if ((inventory != null) && (inventory is ColoredItemHandler)) {
+            val inner = inventory.innerHandler
+            if (inner is LockableItemHandler) {
+                inner.locked = !inner.locked
+
+                if (TeslaCoreLib.isClientSide) {
+                    val message = this.setupSpecialNBTMessage("TOGGLE_LOCK")
+                    message.setInteger("color", color.metadata)
+                    this.sendToServer(message)
+                }
+            }
+        }
+    }
+
+    //endregion
+
+    //region inventory addons  methods
+
     protected fun createAddonsInventory() {
         this.addonItems = object : ItemStackHandler(4) {
             private val items = arrayOf<ItemStack?>(null, null, null, null)
@@ -234,26 +279,6 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
         return ItemStackUtil.emptyStack
     }
-
-    protected fun addInventory(handler: IItemHandler?) {
-        if (handler == null) {
-            return
-        }
-        this.itemHandler!!.addItemHandler(handler)
-
-        if (handler is ColoredItemHandler) {
-            val colored = handler as ColoredItemHandler?
-            if (colored!!.color != null && colored.boundingBox != null) {
-                this.sideConfig.addColoredInfo(colored.name, colored.color, colored.boundingBox)
-            }
-        }
-    }
-
-    protected fun addInventoryToStorage(handler: ItemStackHandler, storageKey: String) {
-        this.inventoryStorage!!.add(SidedTileEntity.InventoryStorageInfo(handler, storageKey))
-    }
-
-    private class InventoryStorageInfo internal constructor(internal val inventory: ItemStackHandler, internal val storageKey: String)
 
     //endregion
 
@@ -452,14 +477,14 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     }
 
     private fun writeToNBT(): NBTTagCompound {
-        val compound = this.setupSpecialNBTMessage(null)
+        val compound = this.setupSpecialNBTMessage()
         return this.writeToNBT(compound)
     }
 
-    fun setupSpecialNBTMessage(messageType: String?): NBTTagCompound {
+    fun setupSpecialNBTMessage(messageType: String? = null): NBTTagCompound {
         val compound = NBTTagCompound()
         compound.setInteger("__tetId", this.entityTypeId)
-        if (messageType != null && messageType.length > 0) {
+        if ((messageType != null) && messageType.isNotEmpty()) {
             compound.setString("__messageType", messageType)
         }
         return compound
@@ -491,19 +516,27 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         this.readFromNBT(compound)
     }
 
-    protected fun processServerMessage(messageType: String, compound: NBTTagCompound): SimpleNBTMessage? {
+    protected open fun processServerMessage(messageType: String, compound: NBTTagCompound): SimpleNBTMessage? {
         return null
     }
 
-    protected fun processClientMessage(messageType: String?, compound: NBTTagCompound): SimpleNBTMessage? {
+    protected open fun processClientMessage(messageType: String?, compound: NBTTagCompound): SimpleNBTMessage? {
         if (messageType != null && messageType == "TOGGLE_SIDE") {
             val color = EnumDyeColor.byMetadata(compound.getInteger("color"))
             val facing = EnumFacing.getFront(compound.getInteger("side"))
             this.sideConfig.toggleSide(color, facing)
             this.markDirty()
         }
+        else if (messageType == "TOGGLE_LOCK") {
+            val color = EnumDyeColor.byMetadata(compound.getInteger("color"))
+            this.toggleInventoryLock(color)
+        }
 
         return null
+    }
+
+    protected fun sendToServer(compound: NBTTagCompound) {
+        TeslaCoreLib.network.sendToServer(SimpleNBTMessage(this, compound))
     }
 
     //endregion
@@ -629,18 +662,18 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         pieces.add(configurator)
         pieces.add(SideConfigSelector(7, 81, 162, 18, this.sideConfig, configurator))
 
-        for (i in 0..this.itemHandler!!.inventories - 1) {
+        for (i in 0..this.itemHandler.inventories - 1) {
             val handler = this.itemHandler.getInventory(i)
             if (handler is IGuiContainerPiecesProvider) {
                 val childPieces = (handler as IGuiContainerPiecesProvider).getGuiContainerPieces(container)
-                if (childPieces != null && childPieces.size > 0) {
+                if (childPieces.size > 0) {
                     pieces.addAll(childPieces)
                 }
             }
         }
 
         val fluidPieces = this.fluidHandler!!.getGuiContainerPieces(container)
-        if (fluidPieces != null && fluidPieces.size > 0) {
+        if (fluidPieces.size > 0) {
             pieces.addAll(fluidPieces)
         }
 

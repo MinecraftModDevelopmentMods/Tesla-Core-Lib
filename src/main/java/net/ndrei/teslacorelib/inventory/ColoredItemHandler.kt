@@ -14,8 +14,11 @@ import net.ndrei.teslacorelib.gui.IGuiContainerPiecesProvider
 /**
  * Created by CF on 2017-06-28.
  */
-open class ColoredItemHandler(handler: IItemHandler, val color: EnumDyeColor, val name: String, val boundingBox: BoundingRectangle)
+open class ColoredItemHandler(handler: IItemHandler, val color: EnumDyeColor, val name: String, val index: Int?, val boundingBox: BoundingRectangle)
     : FilteredItemHandler(handler), IContainerSlotsProvider, IGuiContainerPiecesProvider {
+
+    constructor(handler: IItemHandler, color: EnumDyeColor, name: String, boundingBox: BoundingRectangle)
+        : this(handler, color, name, null, boundingBox)
 
     private var containerItemHandler: IFilteredItemHandler? = null
 
@@ -30,7 +33,7 @@ open class ColoredItemHandler(handler: IItemHandler, val color: EnumDyeColor, va
     protected val itemHandlerForContainer: IFilteredItemHandler
         get() {
             if (this.containerItemHandler == null) {
-                this.containerItemHandler = object : FilteredItemHandler(this.handler) {
+                this.containerItemHandler = object : FilteredItemHandler(this.innerHandler) {
                     override fun canInsertItem(slot: Int, stack: ItemStack): Boolean {
                         return this@ColoredItemHandler.canInsertItem(slot, stack)
                     }

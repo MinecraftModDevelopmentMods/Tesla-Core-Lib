@@ -14,15 +14,15 @@ abstract class ToggleButtonPiece(left: Int, top: Int, width: Int, height: Int)
     : BasicContainerGuiPiece(left, top, width, height) {
 
     protected abstract val currentState: Int
+    protected open fun getStateToolTip(state: Int): List<String> = listOf()
     protected abstract fun renderState(container: BasicTeslaGuiContainer<*>, state: Int, box: BoundingRectangle)
     protected abstract fun clicked()
 
     override fun drawBackgroundLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, partialTicks: Float, mouseX: Int, mouseY: Int) {
-        var mouseX = mouseX
-        var mouseY = mouseY
-        mouseX -= container.guiLeft
-        mouseY -= container.guiTop
-        if (mouseX >= this.left && mouseY >= this.top && mouseX <= this.left + this.width && mouseY <= this.top + this.height) {
+//        val mx = mouseX - container.guiLeft
+//        val my = mouseY - container.guiTop
+//        if ((mx in this.left..(this.left + this.width)) && (my in this.top..(this.top + this.height))) {
+        if (super.isInside(container, mouseX, mouseY)) {
             container.drawFilledRect(container.guiLeft + this.left, container.guiTop + this.top, this.width, this.height, 0x42FFFFFF)
         }
     }
@@ -32,6 +32,15 @@ abstract class ToggleButtonPiece(left: Int, top: Int, width: Int, height: Int)
         val x = this.left + (this.width - 16) / 2
         val y = this.top + (this.height - 16) / 2
         this.renderState(container, state, BoundingRectangle(x, y, 16, 16))
+    }
+
+    override fun drawForegroundTopLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, mouseX: Int, mouseY: Int) {
+        if (super.isInside(container, mouseX, mouseY)) {
+            val tt = this.getStateToolTip(this.currentState)
+            if (!tt.isEmpty()) {
+                container.drawTooltip(tt, this.left + this.width / 2, this.top + this.height / 2)
+            }
+        }
     }
 
     protected fun renderItemStack(container: BasicTeslaGuiContainer<*>, stack: ItemStack?, box: BoundingRectangle) {
@@ -51,7 +60,7 @@ abstract class ToggleButtonPiece(left: Int, top: Int, width: Int, height: Int)
     }
 
     override fun mouseClicked(container: BasicTeslaGuiContainer<*>, mouseX: Int, mouseY: Int, mouseButton: Int) {
-        if (BasicContainerGuiPiece.isInside(container, this, mouseX, mouseY)) {
+        if (super.isInside(container, mouseX, mouseY)) {
             this.clicked()
         }
     }

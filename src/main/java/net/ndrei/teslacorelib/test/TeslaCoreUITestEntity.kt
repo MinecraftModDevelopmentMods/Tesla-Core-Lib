@@ -19,6 +19,7 @@ import net.ndrei.teslacorelib.gui.IGuiContainerPiece
 import net.ndrei.teslacorelib.gui.TiledRenderedGuiPiece
 import net.ndrei.teslacorelib.inventory.BoundingRectangle
 import net.ndrei.teslacorelib.inventory.ColoredItemHandler
+import net.ndrei.teslacorelib.inventory.LockableItemHandler
 import net.ndrei.teslacorelib.tileentities.ElectricMachine
 
 /**
@@ -28,8 +29,8 @@ class TeslaCoreUITestEntity : ElectricMachine(-1) {
     private var waterTank: IFluidTank? = null
     private var lavaTank: IFluidTank? = null
 
-    private var inputs: ItemStackHandler? = null
-    private var outputs: ItemStackHandler? = null
+    private lateinit var inputs: LockableItemHandler
+    private lateinit var outputs: ItemStackHandler
 
     //#region inventories       methods
 
@@ -42,12 +43,12 @@ class TeslaCoreUITestEntity : ElectricMachine(-1) {
                 BoundingRectangle(43 + 18, 25, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT))
         super.ensureFluidItems()
 
-        this.inputs = object : ItemStackHandler(3) {
+        this.inputs = object : LockableItemHandler(3) {
             override fun onContentsChanged(slot: Int) {
                 this@TeslaCoreUITestEntity.markDirty()
             }
         }
-        super.addInventory(object : ColoredItemHandler(this.inputs!!, EnumDyeColor.GREEN, "Input Items", BoundingRectangle(115, 25, 54, 18)) {
+        super.addInventory(object : ColoredItemHandler(this.inputs, EnumDyeColor.GREEN, "Input Items", BoundingRectangle(115, 25, 54, 18)) {
             override fun canExtractItem(slot: Int): Boolean {
                 return false
             }

@@ -11,6 +11,7 @@ import net.ndrei.teslacorelib.inventory.ColoredItemHandlerInfo
 interface ISidedItemHandlerConfig {
     val coloredInfo: List<ColoredItemHandlerInfo>
     fun addColoredInfo(name: String, color: EnumDyeColor, highlight: BoundingRectangle)
+    fun addColoredInfo(name: String, color: EnumDyeColor, highlight: BoundingRectangle, index: Int)
     fun addColoredInfo(info: ColoredItemHandlerInfo)
 
     fun getSidesForColor(color: EnumDyeColor): List<EnumFacing>
