@@ -26,26 +26,24 @@ open class BaseTieredAddon(modId: String, tab: CreativeTabs, registryName: Strin
         val tiers = HashMap<Int, BaseAddon>()
 
         val addons = machine.addons
-        if (addons != null) {
-            for (addon in addons) {
-                if (addon !is BaseTieredAddon) {
-                    break
-                }
-                val tiered = addon
+        for (addon in addons) {
+            if (addon !is BaseTieredAddon) {
+                break
+            }
+            val tiered = addon
 
-                if (this.hasSameFunction(tiered)) {
-                    if (tiered.tier == tier && !ignoreSameTier) {
-                        // already has an addon with same tier and function
-                        return false
-                    }
-
-                    tiers.put(tiered.tier, tiered)
+            if (this.hasSameFunction(tiered)) {
+                if (tiered.tier == tier && !ignoreSameTier) {
+                    // already has an addon with same tier and function
+                    return false
                 }
+
+                tiers.put(tiered.tier, tiered)
             }
         }
 
         // missing an addon with an inferior tier
-        return (1..tier - 1).any { tiers.containsKey(it) }
+        return ((tier == 1) && (tiers.count() == 0)) || (1..tier - 1).any { tiers.containsKey(it) }
     }
 
     override fun canBeAddedTo(machine: SidedTileEntity): Boolean {

@@ -169,11 +169,11 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
             return ratio
         }
 
-    fun supportsSpeedUpgrades(): Boolean {
+    open fun supportsSpeedUpgrades(): Boolean {
         return true
     }
 
-    fun supportsEnergyUpgrades(): Boolean {
+    open fun supportsEnergyUpgrades(): Boolean {
         return true
     }
 
