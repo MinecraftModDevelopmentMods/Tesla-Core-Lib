@@ -108,8 +108,22 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
     private class InventoryStorageInfo internal constructor(internal val inventory: ItemStackHandler, internal val storageKey: String)
 
-    protected open fun toggleInventoryLock(color: EnumDyeColor) {
-        val inventory = (0..this.itemHandler.inventories)
+    open fun getInventoryLockState(color: EnumDyeColor): Boolean? {
+        val inventory = (0..this.itemHandler.inventories-1)
+                .map { this.itemHandler.getInventory(it) }
+                .firstOrNull { (it is ColoredItemHandler) && (it.color == color) }
+
+        if ((inventory != null) && (inventory is ColoredItemHandler)) {
+            val inner = inventory.innerHandler
+            if (inner is LockableItemHandler) {
+                return inner.locked
+            }
+        }
+        return null
+    }
+
+    open fun toggleInventoryLock(color: EnumDyeColor) {
+        val inventory = (0..this.itemHandler.inventories-1)
                 .map { this.itemHandler.getInventory(it) }
                 .firstOrNull { (it is ColoredItemHandler) && (it.color == color) }
 

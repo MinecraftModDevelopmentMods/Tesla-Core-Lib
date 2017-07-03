@@ -13,6 +13,7 @@ class SideConfigurator(left: Int, top: Int, width: Int, height: Int, private val
     : BasicContainerGuiPiece(left, top, width, height) {
 
     private var selectedInventory = -1
+    private var lockPiece: LockedInventoryTogglePiece? = null
 
     init {
         this.setSelectedInventory(-1)
@@ -20,7 +21,19 @@ class SideConfigurator(left: Int, top: Int, width: Int, height: Int, private val
 
     fun setSelectedInventory(index: Int) {
         this.selectedInventory = index
+        this.lockPiece = null
         this.setVisibility(this.selectedInventory >= 0)
+
+        val colors = this.sidedConfig.coloredInfo
+        if (this.selectedInventory in 0..colors.size - 1) {
+            val color = colors[this.selectedInventory].color
+            if (this.entity.getInventoryLockState(color) != null) {
+                this.lockPiece = LockedInventoryTogglePiece(
+                        this.left + 6 * 18 + 2,
+                        this.top + 1 * 18 + 2,
+                        this.entity, color)
+            }
+        }
     }
 
     override fun drawBackgroundLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, partialTicks: Float, mouseX: Int, mouseY: Int) {
@@ -38,6 +51,20 @@ class SideConfigurator(left: Int, top: Int, width: Int, height: Int, private val
         this.drawSide(container, sides, EnumFacing.EAST, 3, 1, mouseX, mouseY)
         this.drawSide(container, sides, EnumFacing.DOWN, 2, 2, mouseX, mouseY)
         this.drawSide(container, sides, EnumFacing.NORTH, 3, 2, mouseX, mouseY)
+
+        this.lockPiece?.drawBackgroundLayer(container, guiX, guiY, partialTicks, mouseX, mouseY)
+    }
+
+    override fun drawForegroundLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, mouseX: Int, mouseY: Int) {
+        super.drawForegroundLayer(container, guiX, guiY, mouseX, mouseY)
+
+        this.lockPiece?.drawForegroundLayer(container, guiX, guiY, mouseX, mouseY)
+    }
+
+    override fun drawForegroundTopLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, mouseX: Int, mouseY: Int) {
+        super.drawForegroundTopLayer(container, guiX, guiY, mouseX, mouseY)
+
+        this.lockPiece?.drawForegroundTopLayer(container, guiX, guiY, mouseX, mouseY)
     }
 
     override fun mouseClicked(container: BasicTeslaGuiContainer<*>, mouseX: Int, mouseY: Int, mouseButton: Int) {
@@ -83,6 +110,10 @@ class SideConfigurator(left: Int, top: Int, width: Int, height: Int, private val
                         }
                     }
                 }
+            }
+
+            if ((this.lockPiece != null) && Companion.isInside(container, this.lockPiece!!, mouseX, mouseY)) {
+                this.lockPiece?.mouseClicked(container, mouseX, mouseY, mouseButton)
             }
         }
     }

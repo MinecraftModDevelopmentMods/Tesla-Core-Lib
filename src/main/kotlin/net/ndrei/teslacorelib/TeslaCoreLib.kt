@@ -60,6 +60,7 @@ class TeslaCoreLib {
         }
 
         val isClientSide
-            get() = TeslaCoreLib.proxy.side == net.minecraftforge.fml.relauncher.Side.CLIENT
+            get() = net.minecraftforge.fml.common.FMLCommonHandler.instance().effectiveSide?.isClient ?: false
+
     }
 }

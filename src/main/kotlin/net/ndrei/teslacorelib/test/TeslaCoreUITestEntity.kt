@@ -13,10 +13,7 @@ import net.minecraftforge.items.ItemStackHandler
 import net.ndrei.teslacorelib.compatibility.ItemStackUtil
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer
 import net.ndrei.teslacorelib.containers.FilteredSlot
-import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer
-import net.ndrei.teslacorelib.gui.FluidTankPiece
-import net.ndrei.teslacorelib.gui.IGuiContainerPiece
-import net.ndrei.teslacorelib.gui.TiledRenderedGuiPiece
+import net.ndrei.teslacorelib.gui.*
 import net.ndrei.teslacorelib.inventory.BoundingRectangle
 import net.ndrei.teslacorelib.inventory.ColoredItemHandler
 import net.ndrei.teslacorelib.inventory.LockableItemHandler
@@ -71,6 +68,8 @@ class TeslaCoreUITestEntity : ElectricMachine(-1) {
                 pieces.add(TiledRenderedGuiPiece(box.left, box.top, 18, 18,
                         3, 1,
                         BasicTeslaGuiContainer.MACHINE_BACKGROUND, 108, 225, EnumDyeColor.GREEN))
+
+                pieces.add(LockedInventoryTogglePiece(box.left - 16, box.top + 2, this@TeslaCoreUITestEntity, EnumDyeColor.GREEN))
 
                 return pieces
             }
