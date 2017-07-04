@@ -51,7 +51,7 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
             }
 
             override fun getSlots(container: BasicTeslaContainer<*>): MutableList<Slot> {
-                val slots = super.getSlots(container)
+                val slots = mutableListOf<Slot>()
 
                 slots.add(FilteredSlot(this.itemHandlerForContainer, 0, 26, 26))
                 slots.add(FilteredSlot(this.itemHandlerForContainer, 1, 26, 62))
@@ -60,7 +60,7 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
             }
 
             override fun getGuiContainerPieces(container: BasicTeslaGuiContainer<*>): MutableList<IGuiContainerPiece> {
-                val pieces = super.getGuiContainerPieces(container)
+                val pieces = mutableListOf<IGuiContainerPiece>()
 
                 pieces.add(BasicRenderedGuiPiece(25, 25, 18, 54,
                         BasicTeslaGuiContainer.MACHINE_BACKGROUND, 78, 189))

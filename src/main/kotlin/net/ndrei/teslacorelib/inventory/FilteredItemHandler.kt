@@ -11,9 +11,11 @@ import net.ndrei.teslacorelib.compatibility.ItemStackUtil
 open class FilteredItemHandler protected constructor(val innerHandler: IItemHandler)
     : IFilteredItemHandler {
 
-    override fun canInsertItem(slot: Int, stack: ItemStack) = true
+    override fun canInsertItem(slot: Int, stack: ItemStack)
+            = if (this.innerHandler is IFilteredItemHandler) this.innerHandler.canInsertItem(slot, stack) else true
 
-    override fun canExtractItem(slot: Int) = true
+    override fun canExtractItem(slot: Int)
+            = if (this.innerHandler is IFilteredItemHandler) this.innerHandler.canExtractItem(slot) else true
 
     override fun getSlots() = this.innerHandler.slots
 

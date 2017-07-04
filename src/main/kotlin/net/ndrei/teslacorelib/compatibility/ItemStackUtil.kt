@@ -93,4 +93,14 @@ object ItemStackUtil {
 
         return stack
     }
+
+    fun areEqualIgnoreSize(a: ItemStack, b: ItemStack) =
+        if (a.isEmpty && b.isEmpty)
+            true
+        else if (a.isEmpty != b.isEmpty)
+            false
+        else {
+            val x = ItemStackUtil.copyWithSize(a, b.count)
+            ItemStack.areItemStacksEqual(x, b)
+        }
 }

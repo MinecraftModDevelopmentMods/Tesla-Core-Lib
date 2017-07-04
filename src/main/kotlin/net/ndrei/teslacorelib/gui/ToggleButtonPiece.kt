@@ -54,8 +54,7 @@ abstract class ToggleButtonPiece(left: Int, top: Int, width: Int, height: Int)
             container.itemRenderer.renderItemOverlayIntoGUI(FontRendererUtil.fontRenderer, stack, box.left, box.top, null)
             GlStateManager.popMatrix()
             RenderHelper.disableStandardItemLighting()
-            item.renderItemOverlayIntoGUI(container.fontRenderer, stack,
-                    box.left, box.top, null)
+            item.renderItemOverlayIntoGUI(container.fontRenderer, stack, box.left, box.top, null)
         }
     }
 
