@@ -2,6 +2,7 @@ package net.ndrei.teslacorelib.gui
 
 import net.minecraft.client.renderer.RenderHelper
 import net.minecraft.item.ItemStack
+import net.ndrei.teslacorelib.render.GhostedItemRenderer
 
 /**
  * Created by CF on 2017-07-04.
@@ -17,10 +18,13 @@ open class ItemStackRenderPiece(left: Int, top: Int, val stack: ItemStack? = nul
         val stack = this.getRenderStack()
         if (!stack.isEmpty) {
             RenderHelper.enableGUIStandardItemLighting()
-            container.itemRenderer.renderItemAndEffectIntoGUI(stack, left, top)
+            // container.itemRenderer.renderItemAndEffectIntoGUI(stack, left, top)
+
+            GhostedItemRenderer.renderItemInGUI(container.itemRenderer, stack, left, top)
+
             RenderHelper.disableStandardItemLighting()
 
-            container.itemRenderer.renderItemOverlayIntoGUI(container.fontRenderer, stack, left, top, "0")
+            // container.itemRenderer.renderItemOverlayIntoGUI(container.fontRenderer, stack, left, top, "0")
         }
     }
 

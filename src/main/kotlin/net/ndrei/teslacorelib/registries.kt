@@ -1,15 +1,21 @@
 package net.ndrei.teslacorelib
 
 import net.minecraft.block.Block
+import net.minecraft.client.renderer.color.IBlockColor
+import net.minecraft.client.renderer.color.IItemColor
 import net.minecraft.item.Item
 import net.minecraft.item.crafting.IRecipe
 import net.minecraftforge.fml.common.Mod
+import net.minecraftforge.fml.common.discovery.ASMDataTable
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.registry.GameRegistry
 import net.minecraftforge.oredict.OreDictionary
 import net.minecraftforge.registries.IForgeRegistry
 import net.minecraftforge.registries.IForgeRegistryEntry
+import net.ndrei.teslacorelib.annotations.AutoRegisterColoredThingyHandler
 import net.ndrei.teslacorelib.annotations.AutoRegisterRecipesHandler
+import net.ndrei.teslacorelib.annotations.BaseAnnotationHandler
 import net.ndrei.teslacorelib.blocks.OrientedBlock
 import net.ndrei.teslacorelib.items.RegisteredItem
 
@@ -21,7 +27,7 @@ class MaterialInfo<T: IForgeRegistryEntry<T>>(val oreDictName: String, private v
             .map { it.item }
             .toList()
 
-    fun registerItem(registry: IForgeRegistry<T>): MaterialInfo<T> {
+    fun registerItem(registry: IForgeRegistry<T>): T {
         val item = this.registerCallback(registry)
         when (item) {
             is Item -> OreDictionary.registerOre(this.oreDictName, item)
@@ -30,7 +36,7 @@ class MaterialInfo<T: IForgeRegistryEntry<T>>(val oreDictName: String, private v
                 TeslaCoreLib.logger.warn("Don't know how to register '$item' in ore dictionary.")
             }
         }
-        return this
+        return item
     }
 }
 
@@ -42,6 +48,7 @@ object MaterialRegistries {
 
 abstract class MaterialRegistry<T: IForgeRegistryEntry<T>>(private val oreDictify: (material: String) -> String) {
     private val materials = mutableMapOf<String, MaterialInfo<T>>()
+    private val registeredMaterials = mutableListOf<T>()
 
     init {
         MaterialRegistries.registerRegistry(this) // YES, YES, I know this is bad!
@@ -62,7 +69,20 @@ abstract class MaterialRegistry<T: IForgeRegistryEntry<T>>(private val oreDictif
         this.materials
                 .values
                 .filter { it.getItems().isEmpty() }
-                .map { it.registerItem(registry) }
+                .map {
+                    val item = it.registerItem(registry)
+                    this.registeredMaterials.add(item)
+                    item
+                }
+    }
+
+    fun postRegister(asm: ASMDataTable) {
+        this.registeredMaterials
+                .forEach {
+                    if ((it is IItemColor) || (it is IBlockColor)) {
+                        AutoRegisterColoredThingyHandler.handler(it, asm)
+                    }
+                }
     }
 }
 
@@ -94,14 +114,34 @@ object PowderRegistry : MaterialItemRegistry({ "dust${it.capitalize()}" })
 object GearRegistry : MaterialItemRegistry({ "gear${it.capitalize()}" })
 object SheetRegistry : MaterialItemRegistry({ "plate${it.capitalize()}" })
 
+@Target(AnnotationTarget.CLASS)
+annotation class AfterAllModsRegistry
+
+interface IAfterAllModsRegistry {
+    fun registerBeforeMaterials(asm : ASMDataTable) {}
+    fun registerAfterMaterials(asm: ASMDataTable) {}
+}
+
+//object AfterAllModsRegistryHandler: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm ->
+//    it.process(asm)
+//}, AfterAllModsRegistry::class)
+
 @Mod(modid = TeslaCoreRegistries.MODID, version = TeslaCoreLib.VERSION, name = "Tesla Core Registries",
         dependencies = "after:*", useMetadata = true,
         modLanguage = "kotlin", modLanguageAdapter = "net.shadowfacts.forgelin.KotlinAdapter")
 class TeslaCoreRegistries {
+    private lateinit var asm: ASMDataTable
+
     @Mod.EventHandler
     fun preInit(event: FMLPreInitializationEvent) {
+        this.asm = event.asmData
+
         val itemRegistry = GameRegistry.findRegistry(Item::class.java)
         val blockRegistry = GameRegistry.findRegistry(Block::class.java)
+
+        object : BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm ->
+            it.registerBeforeMaterials(asm)
+        }, AfterAllModsRegistry::class) {}.process(event.asmData)
 
         MaterialRegistries.getRegistries()
                 .forEach {
@@ -113,6 +153,17 @@ class TeslaCoreRegistries {
                         }
                     }
                 }
+    }
+
+    @Mod.EventHandler
+    fun postInit(event: FMLPostInitializationEvent) {
+        MaterialRegistries.getRegistries()
+                .forEach {
+                    it.postRegister(this.asm)
+                }
+        object: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm ->
+            it.registerAfterMaterials(asm)
+        }, AfterAllModsRegistry::class) {}.process(this.asm)
     }
 
     companion object {

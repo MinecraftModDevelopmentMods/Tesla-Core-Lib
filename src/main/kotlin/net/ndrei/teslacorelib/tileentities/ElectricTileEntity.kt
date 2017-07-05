@@ -97,8 +97,10 @@ abstract class ElectricTileEntity protected constructor(typeId: Int) : SidedTile
     override fun hasCapability(capability: Capability<*>, facing: EnumFacing?): Boolean {
         val oriented = this.orientFacing(facing)
 
-        if (this.energyStorage != null && this.energyStorage!!.hasCapability(capability, oriented)) {
-            return true
+        if (!this.isPaused()) {
+            if (this.energyStorage.hasCapability(capability, oriented)) {
+                return true
+            }
         }
 
         return super.hasCapability(capability, facing)
@@ -107,11 +109,9 @@ abstract class ElectricTileEntity protected constructor(typeId: Int) : SidedTile
     override fun <T> getCapability(capability: Capability<T>, facing: EnumFacing?): T? {
         val oriented = this.orientFacing(facing)
 
-        if (this.energyStorage != null) {
-            val c = this.energyStorage!!.getCapability(capability, oriented)
-            if (c != null) {
-                return c
-            }
+        val c = this.energyStorage.getCapability(capability, oriented)
+        if (c != null) {
+            return c
         }
 
         return super.getCapability(capability, facing)

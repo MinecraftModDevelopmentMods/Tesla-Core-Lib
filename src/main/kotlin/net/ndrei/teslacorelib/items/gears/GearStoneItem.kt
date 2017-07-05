@@ -4,8 +4,8 @@ import net.minecraft.init.Blocks
 import net.minecraft.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
 import net.minecraftforge.oredict.ShapedOreRecipe
-import net.ndrei.teslacorelib.COLOR_STONE
 import net.ndrei.teslacorelib.MATERIAL_STONE
+import net.ndrei.teslacorelib.MaterialColors
 import net.ndrei.teslacorelib.annotations.AutoRegisterColoredThingy
 
 /**
@@ -13,7 +13,7 @@ import net.ndrei.teslacorelib.annotations.AutoRegisterColoredThingy
  */
 @AutoRegisterGear
 @AutoRegisterColoredThingy
-object GearStoneItem : ColoredGearItem(MATERIAL_STONE, COLOR_STONE) {
+object GearStoneItem : ColoredGearItem(MATERIAL_STONE, MaterialColors.STONE.color) {
     override val recipes: List<IRecipe>
         get() {
             val recipes = super.recipes.toMutableList()

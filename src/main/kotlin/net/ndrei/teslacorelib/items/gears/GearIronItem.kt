@@ -1,7 +1,7 @@
 package net.ndrei.teslacorelib.items.gears
 
-import net.ndrei.teslacorelib.COLOR_IRON
 import net.ndrei.teslacorelib.MATERIAL_IRON
+import net.ndrei.teslacorelib.MaterialColors
 import net.ndrei.teslacorelib.annotations.AutoRegisterColoredThingy
 
 /**
@@ -9,4 +9,4 @@ import net.ndrei.teslacorelib.annotations.AutoRegisterColoredThingy
  */
 @AutoRegisterGear
 @AutoRegisterColoredThingy
-object GearIronItem : ColoredGearItem(MATERIAL_IRON, COLOR_IRON, "gearStone", "ingotIron")
+object GearIronItem : ColoredGearItem(MATERIAL_IRON, MaterialColors.IRON.color, "gearStone", "ingotIron")

@@ -3,8 +3,8 @@ package net.ndrei.teslacorelib.items.gears
 import net.minecraft.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
 import net.minecraftforge.oredict.ShapedOreRecipe
-import net.ndrei.teslacorelib.COLOR_GOLD
 import net.ndrei.teslacorelib.MATERIAL_GOLD
+import net.ndrei.teslacorelib.MaterialColors
 import net.ndrei.teslacorelib.annotations.AutoRegisterColoredThingy
 
 /**
@@ -13,7 +13,7 @@ import net.ndrei.teslacorelib.annotations.AutoRegisterColoredThingy
 @AutoRegisterGear
 @AutoRegisterColoredThingy
 @Suppress("unused")
-object GearGoldItem : ColoredGearItem(MATERIAL_GOLD, COLOR_GOLD) {
+object GearGoldItem : ColoredGearItem(MATERIAL_GOLD, MaterialColors.GOLD.color) {
     override val recipes: List<IRecipe>
         get() {
             val recipes = super.recipes.toMutableList()

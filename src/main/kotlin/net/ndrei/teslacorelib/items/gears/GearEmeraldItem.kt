@@ -1,6 +1,6 @@
 package net.ndrei.teslacorelib.items.gears
 
-import net.ndrei.teslacorelib.COLOR_EMERALD
+import net.ndrei.teslacorelib.MaterialColors
 import net.ndrei.teslacorelib.annotations.AutoRegisterColoredThingy
 
 /**
@@ -8,4 +8,4 @@ import net.ndrei.teslacorelib.annotations.AutoRegisterColoredThingy
  */
 @AutoRegisterGear
 @AutoRegisterColoredThingy
-object GearEmeraldItem : ColoredGearItem("emerald", COLOR_EMERALD, "gearIron", "gemEmerald")
+object GearEmeraldItem : ColoredGearItem("emerald", MaterialColors.EMERALD.color, "gearIron", "gemEmerald")

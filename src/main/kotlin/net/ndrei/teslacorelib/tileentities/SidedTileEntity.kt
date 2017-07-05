@@ -60,6 +60,8 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
     private var wasPickedUpInItemStack = false
 
+    private var paused = false
+
     init {
         this.sideConfig = object : SidedItemHandlerConfig() {
             override fun updated() {
@@ -458,13 +460,15 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
             this.sideConfig.deserializeNBT(list)
         }
 
-        if (this.inventoryStorage != null && !this.inventoryStorage!!.isEmpty()) {
+        if (!this.inventoryStorage!!.isEmpty()) {
             for (storage in this.inventoryStorage!!) {
                 if (compound.hasKey(storage.storageKey, Constants.NBT.TAG_COMPOUND)) {
                     storage.inventory.deserializeNBT(compound.getCompoundTag(storage.storageKey))
                 }
             }
         }
+
+        this.paused = if (compound.hasKey("paused")) compound.getBoolean("paused") else false
     }
 
     override fun writeToNBT(compound: NBTTagCompound): NBTTagCompound {
@@ -488,6 +492,9 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                 compound.setTag(storage.storageKey, storage.inventory.serializeNBT())
             }
         }
+
+        if (this.canBePaused())
+            compound.setBoolean("paused", this.paused)
 
         return compound
     }
@@ -547,6 +554,12 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
             val color = EnumDyeColor.byMetadata(compound.getInteger("color"))
             this.toggleInventoryLock(color)
         }
+        else if (messageType == "PAUSE_MACHINE") {
+            val pause = compound.getBoolean("pause")
+            if (pause != this.isPaused()) {
+                this.togglePause()
+            }
+        }
 
         return null
     }
@@ -584,27 +597,32 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     override fun hasCapability(capability: Capability<*>, facing: EnumFacing?): Boolean {
         val oriented = this.orientFacing(facing)
 
-        if (capability === CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            val slots = this.itemHandler!!.getSlotsForFace(oriented)
-            return slots != null && slots.size > 0
-        } else if (capability === TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
+        if (capability === TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
             return true
         } else if (capability === TeslaCoreCapabilities.CAPABILITY_GUI_CONTAINER) {
             return true
         } else if (capability === TeslaCoreCapabilities.CAPABILITY_WRENCH) {
             return true
-        } else if (this.fluidHandler != null && this.fluidHandler!!.hasCapability(capability, oriented)) {
-            return true
+        }
+
+        if (!this.isPaused()) {
+            if (capability === CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+                val slots = this.itemHandler.getSlotsForFace(oriented)
+                return slots.isNotEmpty()
+            } else if (this.fluidHandler.hasCapability(capability, oriented)) {
+                return true
+            }
         }
 
         return super.hasCapability(capability, facing)
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T> getCapability(capability: Capability<T>, facing: EnumFacing?): T? {
         val oriented = this.orientFacing(facing)
 
         if (capability === CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return this.itemHandler!!.getSideWrapper(oriented) as T
+            return this.itemHandler.getSideWrapper(oriented) as T
         } else if (capability === TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
             return this as T
         } else if (capability === TeslaCoreCapabilities.CAPABILITY_GUI_CONTAINER) {
@@ -613,11 +631,9 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
             return this as T
         }
 
-        if (this.fluidHandler != null) {
-            val c = this.fluidHandler!!.getCapability(capability, oriented)
-            if (c != null) {
-                return c
-            }
+        val c = this.fluidHandler.getCapability(capability, oriented)
+        if (c != null) {
+            return c
         }
 
         return super.getCapability(capability, facing)
@@ -670,6 +686,26 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     override fun getGuiContainerPieces(container: BasicTeslaGuiContainer<*>): MutableList<IGuiContainerPiece> {
         val pieces = Lists.newArrayList<IGuiContainerPiece>()
 
+        // side drawer
+        if (this.canBePaused()) {
+            pieces.add(object: PauseMachinePiece(0) {
+                override val currentState: Int
+                    get() = if (this@SidedTileEntity.isPaused()) 1 else 0
+
+                override fun renderState(container: BasicTeslaGuiContainer<*>, state: Int, box: BoundingRectangle) {
+                    container.bindDefaultTexture()
+                    container.drawTexturedModalRect(box.left, box.top, 218, when(state % 2) {
+                        0 -> 196
+                        else -> 210
+                    }, 14, 14)
+                }
+
+                override fun clicked() {
+                    this@SidedTileEntity.togglePause()
+                }
+            })
+        }
+
         pieces.add(MachineNameGuiPiece(this.getBlockType().unlocalizedName + ".name",
                 7, 7, 162, 12))
 
@@ -714,10 +750,28 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
     //#endregion
 
-    override fun update() {
-        this.innerUpdate()
+    open fun canBePaused() = true
 
-        this.processImmediateInventories()
+    fun isPaused() = (this.canBePaused() && this.paused)
+
+    fun togglePause() {
+        if (!this.canBePaused()) {
+            return
+        }
+        this.paused = !this.isPaused()
+
+        if (TeslaCoreLib.isClientSide) {
+            val nbt = this.setupSpecialNBTMessage("PAUSE_MACHINE")
+            nbt.setBoolean("pause", this.isPaused())
+            this.sendToServer(nbt)
+        }
+    }
+
+    override fun update() {
+        if (!this.canBePaused() || !this.paused) {
+            this.innerUpdate()
+            this.processImmediateInventories()
+        }
 
         if (!this.getWorld().isRemote) {
             this.syncTick++

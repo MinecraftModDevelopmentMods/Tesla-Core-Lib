@@ -10,16 +10,16 @@ import net.ndrei.teslacorelib.annotations.AutoRegisterColoredThingy
  */
 @AutoRegisterSheet
 @AutoRegisterColoredThingy
-object IronSheet : ColoredSheetItem(MATERIAL_IRON, COLOR_IRON)
+object IronSheet : ColoredSheetItem(MATERIAL_IRON, MaterialColors.IRON.color)
 
 @AutoRegisterSheet
 @AutoRegisterColoredThingy
-object GoldSheet : ColoredSheetItem(MATERIAL_GOLD, COLOR_GOLD)
+object GoldSheet : ColoredSheetItem(MATERIAL_GOLD, MaterialColors.GOLD.color)
 
 @AutoRegisterSheet
 @AutoRegisterColoredThingy
-object DiamondSheet : ColoredSheetItem(MATERIAL_DIAMOND, COLOR_DIAMOND)
+object DiamondSheet : ColoredSheetItem(MATERIAL_DIAMOND, MaterialColors.DIAMOND.color)
 
 @AutoRegisterSheet
 @AutoRegisterColoredThingy
-object EmeraldSheet : ColoredSheetItem(MATERIAL_EMERALD, COLOR_EMERALD)
+object EmeraldSheet : ColoredSheetItem(MATERIAL_EMERALD, MaterialColors.EMERALD.color)
