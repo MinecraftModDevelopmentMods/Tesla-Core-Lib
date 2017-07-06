@@ -41,38 +41,30 @@ open class ColoredItemHandler(handler: IItemHandler, val color: EnumDyeColor, va
         val result = mutableListOf<IGuiContainerPiece>()
 
         val box = this.boundingBox
-        if (!box.isEmpty) {
-            result.add(TiledRenderedGuiPiece(box.left, box.top, 18, 18,
-                    box.width / 18, box.height / 18,
-                    BasicTeslaGuiContainer.MACHINE_BACKGROUND, 108, 225, this.color))
+        if ((!box.isEmpty) && (container.teslaContainer != null)) {
+            this.getSlots(container.teslaContainer!!).forEachIndexed { index, it ->
+                result.add(TiledRenderedGuiPiece(it.xPos - 1, it.yPos - 1,
+                        18, 18,1, 1,
+                        BasicTeslaGuiContainer.MACHINE_BACKGROUND, 108, 225, this.color))
 
-            if (this.innerHandler is LockableItemHandler) {
-                result.add(object: BasicContainerGuiPiece(box.left, box.top, box.width, box.height) {
-                    override fun drawMiddleLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, partialTicks: Float, mouseX: Int, mouseY: Int) {
-                        val handler = this@ColoredItemHandler.innerHandler
-                        val textureX = if (handler.locked) 163 else 181
-                        for (x in 0..this.width / 18 - 1) {
-                            for (y in 0..this.height / 18 - 1) {
-                                container.drawTexturedModalRect(
-                                        guiX + this.left + 1 + x * 18,
-                                        guiY + this.top + 1 + y * 18,
-                                        textureX, 191, 16, 16)
-                            }
+                if (this.innerHandler is LockableItemHandler) {
+                    result.add(object : BasicContainerGuiPiece(it.xPos, it.yPos, 18, 18) {
+                        override fun drawMiddleLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, partialTicks: Float, mouseX: Int, mouseY: Int) {
+                            container.drawTexturedModalRect(
+                                    guiX + this.left,
+                                    guiY + this.top,
+                                    if (this@ColoredItemHandler.innerHandler.locked) 163 else 181, 191, 16, 16)
                         }
-                    }
-                })
+                    })
 
-                val columns = box.width / 18
-                (0..this.innerHandler.slots - 1).mapTo(result) {
-                    object: ItemStackRenderPiece(
-                            box.left + (it % columns) * 18,
-                            box.top + (it / columns) * 18) {
-                        override val isVisible: Boolean
-                            get() = this@ColoredItemHandler.innerHandler.getStackInSlot(it).isEmpty
+                    result.add(
+                        object : GhostedItemStackRenderPiece(box.left, box.top) {
+                            override val isVisible: Boolean
+                                get() = this@ColoredItemHandler.innerHandler.getStackInSlot(index).isEmpty
 
-                        override fun getRenderStack()
-                            = this@ColoredItemHandler.innerHandler.getFilterStack(it)
-                    }
+                            override fun getRenderStack()
+                                    = this@ColoredItemHandler.innerHandler.getFilterStack(index)
+                        })
                 }
             }
         }
