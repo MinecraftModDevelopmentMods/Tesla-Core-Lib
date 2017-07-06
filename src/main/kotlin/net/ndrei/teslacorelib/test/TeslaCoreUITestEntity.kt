@@ -1,7 +1,6 @@
 package net.ndrei.teslacorelib.test
 
 import net.minecraft.init.Blocks
-import net.minecraft.inventory.Slot
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -11,9 +10,7 @@ import net.minecraftforge.fluids.IFluidTank
 import net.minecraftforge.items.ItemHandlerHelper
 import net.minecraftforge.items.ItemStackHandler
 import net.ndrei.teslacorelib.compatibility.ItemStackUtil
-import net.ndrei.teslacorelib.containers.BasicTeslaContainer
-import net.ndrei.teslacorelib.containers.FilteredSlot
-import net.ndrei.teslacorelib.gui.*
+import net.ndrei.teslacorelib.gui.FluidTankPiece
 import net.ndrei.teslacorelib.inventory.BoundingRectangle
 import net.ndrei.teslacorelib.inventory.ColoredItemHandler
 import net.ndrei.teslacorelib.inventory.LockableItemHandler
@@ -49,30 +46,6 @@ class TeslaCoreUITestEntity : ElectricMachine(-1) {
             override fun canExtractItem(slot: Int): Boolean {
                 return false
             }
-
-            override fun getSlots(container: BasicTeslaContainer<*>): MutableList<Slot> {
-                val slots = super.getSlots(container)
-
-                val box = this.boundingBox
-                for (x in 0..2) {
-                    slots.add(FilteredSlot(this.itemHandlerForContainer, x, box.left + 1 + x * 18, box.top + 1))
-                }
-
-                return slots
-            }
-
-            override fun getGuiContainerPieces(container: BasicTeslaGuiContainer<*>): MutableList<IGuiContainerPiece> {
-                val pieces = super.getGuiContainerPieces(container)
-
-                val box = this.boundingBox
-                pieces.add(TiledRenderedGuiPiece(box.left, box.top, 18, 18,
-                        3, 1,
-                        BasicTeslaGuiContainer.MACHINE_BACKGROUND, 108, 225, EnumDyeColor.GREEN))
-
-                pieces.add(LockedInventoryTogglePiece(box.left - 16, box.top + 2, this@TeslaCoreUITestEntity, EnumDyeColor.GREEN))
-
-                return pieces
-            }
         })
 
         this.outputs = object : ItemStackHandler(6) {
@@ -83,31 +56,6 @@ class TeslaCoreUITestEntity : ElectricMachine(-1) {
         super.addInventory(object : ColoredItemHandler(this.outputs!!, EnumDyeColor.PURPLE, "Output Items", BoundingRectangle(115, 43, 54, 36)) {
             override fun canInsertItem(slot: Int, stack: ItemStack): Boolean {
                 return false
-            }
-
-            override fun getSlots(container: BasicTeslaContainer<*>): MutableList<Slot> {
-                val slots = super.getSlots(container)
-
-                val box = this.boundingBox
-                for (x in 0..2) {
-                    for (y in 0..1) {
-                        slots.add(FilteredSlot(this.itemHandlerForContainer, y * 3 + x,
-                                box.left + 1 + x * 18, box.top + 1 + y * 18))
-                    }
-                }
-
-                return slots
-            }
-
-            override fun getGuiContainerPieces(container: BasicTeslaGuiContainer<*>): MutableList<IGuiContainerPiece> {
-                val pieces = super.getGuiContainerPieces(container)
-
-                val box = this.boundingBox
-                pieces.add(TiledRenderedGuiPiece(box.left, box.top, 18, 18,
-                        3, 2,
-                        BasicTeslaGuiContainer.MACHINE_BACKGROUND, 108, 225, EnumDyeColor.PURPLE))
-
-                return pieces
             }
         })
     }
