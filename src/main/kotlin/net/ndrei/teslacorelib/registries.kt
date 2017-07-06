@@ -4,6 +4,7 @@ import net.minecraft.block.Block
 import net.minecraft.client.renderer.color.IBlockColor
 import net.minecraft.client.renderer.color.IItemColor
 import net.minecraft.item.Item
+import net.minecraft.item.crafting.FurnaceRecipes
 import net.minecraft.item.crafting.IRecipe
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.discovery.ASMDataTable
@@ -18,6 +19,7 @@ import net.ndrei.teslacorelib.annotations.AutoRegisterRecipesHandler
 import net.ndrei.teslacorelib.annotations.BaseAnnotationHandler
 import net.ndrei.teslacorelib.blocks.OrientedBlock
 import net.ndrei.teslacorelib.items.RegisteredItem
+import net.ndrei.teslacorelib.items.powders.ColoredPowderItem
 
 /**
  * Created by CF on 2017-06-28.
@@ -82,7 +84,11 @@ abstract class MaterialRegistry<T: IForgeRegistryEntry<T>>(private val oreDictif
                     if ((it is IItemColor) || (it is IBlockColor)) {
                         AutoRegisterColoredThingyHandler.handler(it, asm)
                     }
+                    this.postProcessThing(it)
                 }
+    }
+
+    open fun postProcessThing(item: T) {
     }
 }
 
@@ -110,7 +116,18 @@ abstract class MaterialBlockRegistry(oreDictify: (material: String) -> String) :
     })
 }
 
-object PowderRegistry : MaterialItemRegistry({ "dust${it.capitalize()}" })
+object PowderRegistry : MaterialItemRegistry({ "dust${it.capitalize()}" }) {
+    override fun postProcessThing(item: Item) {
+        if (item is ColoredPowderItem) {
+            val stack = OreDictionary.getOres("ore${item.materialName.capitalize()}")
+                    .firstOrNull()
+            if (stack != null) {
+                FurnaceRecipes.instance().addSmelting(item, stack, 0.0f);
+            }
+        }
+    }
+}
+
 object GearRegistry : MaterialItemRegistry({ "gear${it.capitalize()}" })
 object SheetRegistry : MaterialItemRegistry({ "plate${it.capitalize()}" })
 
