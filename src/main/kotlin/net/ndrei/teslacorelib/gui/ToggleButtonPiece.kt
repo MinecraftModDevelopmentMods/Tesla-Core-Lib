@@ -13,7 +13,7 @@ import net.ndrei.teslacorelib.inventory.BoundingRectangle
 abstract class ToggleButtonPiece(left: Int, top: Int, width: Int, height: Int)
     : BasicContainerGuiPiece(left, top, width, height) {
 
-    protected abstract val currentState: Int
+    protected open val currentState: Int = 0
     protected open fun getStateToolTip(state: Int): List<String> = listOf()
     protected abstract fun renderState(container: BasicTeslaGuiContainer<*>, state: Int, box: BoundingRectangle)
     protected abstract fun clicked()

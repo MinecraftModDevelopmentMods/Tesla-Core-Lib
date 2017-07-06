@@ -688,7 +688,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
         // side drawer
         if (this.canBePaused()) {
-            pieces.add(object: PauseMachinePiece(0) {
+            pieces.add(object: SideDrawerPiece(0) {
                 override val currentState: Int
                     get() = if (this@SidedTileEntity.isPaused()) 1 else 0
 
@@ -824,12 +824,10 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     }
 
     protected fun processBlockBroken() {
-        if (this.itemHandler != null) {
-            for (i in 0..this.itemHandler.slots - 1) {
-                val stack = this.itemHandler.getStackInSlot(i)
-                if (!ItemStackUtil.isEmpty(stack)) {
-                    InventoryHelper.spawnItemStack(this.getWorld(), pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(), stack)
-                }
+        for (i in 0..this.itemHandler.slots - 1) {
+            val stack = this.itemHandler.getStackInSlot(i)
+            if (!ItemStackUtil.isEmpty(stack)) {
+                InventoryHelper.spawnItemStack(this.getWorld(), pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(), stack)
             }
         }
     }
@@ -853,6 +851,6 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     }
 
     companion object {
-        private val SYNC_ON_TICK = 20
+        private const val SYNC_ON_TICK = 20
     }
 }
