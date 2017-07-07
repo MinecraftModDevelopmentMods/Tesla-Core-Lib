@@ -6,22 +6,17 @@ import net.minecraft.block.ITileEntityProvider
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.BlockStateContainer
 import net.minecraft.block.state.IBlockState
-import net.minecraft.client.renderer.block.model.ModelResourceLocation
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.Item
-import net.minecraft.item.ItemBlock
 import net.minecraft.item.ItemStack
-import net.minecraft.item.crafting.IRecipe
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.EnumHand
-import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
-import net.minecraftforge.client.model.ModelLoader
 import net.minecraftforge.common.util.Constants
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
@@ -41,16 +36,11 @@ import net.ndrei.teslacorelib.tileentities.ElectricTileEntity
  */
 abstract class OrientedBlock<T : TileEntity>
     protected constructor(modId: String, tab: CreativeTabs?, registryName: String, private val teClass: Class<T>, material: Material)
-        : Block(material), ITileEntityProvider {
+        : RegisteredBlock(modId, tab, registryName, material), ITileEntityProvider {
     protected constructor(modId: String, tab: CreativeTabs, registryName: String, teClass: Class<T>)
         : this(modId, tab, registryName, teClass, Material.ROCK)
 
     init {
-        this.setRegistryName(modId, registryName)
-        this.unlocalizedName = modId + "." + registryName
-        if (tab != null) {
-            this.setCreativeTab(tab)
-        }
         this.setHarvestLevel("pickaxe", 0)
         this.setHardness(3.0f)
 
@@ -58,32 +48,15 @@ abstract class OrientedBlock<T : TileEntity>
                 .withProperty(FACING, EnumFacing.NORTH)
     }
 
-    fun register(blockRegistry: IForgeRegistry<Block>, itemRegistry: IForgeRegistry<Item>) {
-        // GameRegistry.register(this)
-        blockRegistry.register(this)
-        // GameRegistry.register(ItemBlock(this), this.registryName)
-        val item = ItemBlock(this)
-        item.registryName = this.registryName
-        itemRegistry.register(item)
+    override fun register(blockRegistry: IForgeRegistry<Block>, itemRegistry: IForgeRegistry<Item>) {
+        super.register(blockRegistry, itemRegistry)
 
         GameRegistry.registerTileEntity(this.teClass, this.registryName!!.toString() + "_tile")
     }
 
-    fun registerRecipe(registry: (recipe: IRecipe) -> ResourceLocation) = this.recipes.forEach { registry(it) }
-
-    protected open val recipe: IRecipe?
-        get() = null
-
-    protected open val recipes: List<IRecipe>
-        get() {
-            val recipe = this.recipe
-            return if (recipe != null) listOf(recipe) else listOf()
-        }
-
     @SideOnly(Side.CLIENT)
-    fun registerRenderer() {
-        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, ModelResourceLocation(this.registryName!!, "inventory")
-        )
+    override fun registerRenderer() {
+        super.registerRenderer()
 
         val renderer = this.specialRenderer
         if (renderer != null) {
@@ -105,7 +78,6 @@ abstract class OrientedBlock<T : TileEntity>
             TeslaCoreLib.logger.error(e)
             return null
         }
-
     }
 
     override fun onBlockActivated(world: World?, pos: BlockPos?, state: IBlockState?, player: EntityPlayer?, hand: EnumHand?,
