@@ -17,7 +17,7 @@ import java.awt.Color
  * Created by CF on 2017-06-28.
  */
 open class HudInfoRenderer<T : TileEntity> : TileEntitySpecialRenderer<T>() {
-    override final fun render(te: T, x: Double, y: Double, z: Double, partialTicks: Float, destroyStage: Int, alpha: Float) {
+    override fun render(te: T, x: Double, y: Double, z: Double, partialTicks: Float, destroyStage: Int, alpha: Float) {
         if (te.hasCapability(TeslaCoreCapabilities.CAPABILITY_HUD_INFO, null)) {
             val info = te.getCapability(TeslaCoreCapabilities.CAPABILITY_HUD_INFO, null)
             val lines = info!!.hudLines

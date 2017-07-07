@@ -1,5 +1,6 @@
 package net.ndrei.teslacorelib.annotations
 
+import net.minecraftforge.fml.common.ModContainer
 import net.minecraftforge.fml.common.discovery.ASMDataTable
 import net.ndrei.teslacorelib.TeslaCoreLib
 import kotlin.reflect.KClass
@@ -7,14 +8,19 @@ import kotlin.reflect.KClass
 /**
  * Created by CF on 2017-06-29.
  */
-abstract class BaseAnnotationHandler<in T> protected constructor(val handler: (thing: T, asm: ASMDataTable) -> Unit, vararg val annotations: KClass<*>) {
-    fun process(asm: ASMDataTable) {
+abstract class BaseAnnotationHandler<in T> protected constructor(val handler: (thing: T, asm: ASMDataTable, container: ModContainer?) -> Unit, vararg val annotations: KClass<*>) {
+    fun process(asm: ASMDataTable, container: ModContainer?) {
         val all = mutableSetOf<ASMDataTable.ASMData>()
         annotations.forEach {
             all.addAll(asm.getAll(it.java.canonicalName))
         }
 
-        all.sortedBy { it.className }.forEach {
+        val packages = container?.ownedPackages ?: listOf<String>()
+
+        all
+                .filter { packages.isEmpty() || packages.any { p -> it.className.startsWith(p) } }
+                .sortedBy { it.className }
+                .forEach {
             val c = try {
                 Class.forName(it.className)
             } catch (e: ClassNotFoundException) {
@@ -32,7 +38,7 @@ abstract class BaseAnnotationHandler<in T> protected constructor(val handler: (t
                 }
 
                 if (instance != null) {
-                    this.handler(instance, asm)
+                    this.handler(instance, asm, container)
                 }
             }
         }

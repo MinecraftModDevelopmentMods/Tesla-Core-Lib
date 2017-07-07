@@ -1,0 +1,14 @@
+{
+  "type": "forge:ore_shaped",
+  "group": "tesla.addons",
+  "result": { "item": "teslacorelib:base_addon" },
+  "pattern": [
+    "xyx",
+    "xxx",
+    "xyx"
+  ],
+  "key": {
+    "x": { "type": "forge:ore_dict", "ore": "paper" },
+    "y": { "type": "forge:ore_dict", "ore": "dustRedstone" }
+  }
+}

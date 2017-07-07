@@ -1,0 +1,14 @@
+{
+  "type": "forge:ore_shaped",
+  "group": "tesla.addons",
+  "result": { "item": "teslacorelib:energy_tier2" },
+  "pattern": [
+    " d ",
+    "dbd",
+    " d "
+  ],
+  "key": {
+    "b": { "item": "teslacorelib:energy_tier1" },
+    "d": { "type": "forge:ore_dict", "ore": "gemDiamond" }
+  }
+}

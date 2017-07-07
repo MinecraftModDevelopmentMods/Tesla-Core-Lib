@@ -7,7 +7,6 @@ import net.darkhax.tesla.capability.TeslaCapabilities
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.item.ItemStack
-import net.minecraft.item.crafting.IRecipe
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.NonNullList
 import net.minecraft.util.ResourceLocation
@@ -15,7 +14,6 @@ import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
-import net.minecraftforge.oredict.ShapedOreRecipe
 import net.ndrei.teslacorelib.TeslaCoreLib
 import net.ndrei.teslacorelib.annotations.AutoRegisterItem
 
@@ -39,15 +37,15 @@ object TeslaBattery : RegisteredItem(TeslaCoreLib.MODID, TeslaCoreLib.creativeTa
                 })
     }
 
-    override val recipe: IRecipe?
-        get() = ShapedOreRecipe(null, ItemStack(this, 1),
-                "IRI",
-                "RXR",
-                "IRI",
-                'I', "ingotIron",
-                'R', "dustRedstone",
-                'X', "blockRedstone"
-        )
+//    override val recipe: IRecipe?
+//        get() = ShapedOreRecipe(null, ItemStack(this, 1),
+//                "IRI",
+//                "RXR",
+//                "IRI",
+//                'I', "ingotIron",
+//                'R', "dustRedstone",
+//                'X', "blockRedstone"
+//        )
 
     override fun initCapabilities(stack: ItemStack?, nbt: NBTTagCompound?): ICapabilityProvider? {
         return BaseTeslaContainerProvider(object : BaseTeslaContainer(10000, 100, 100) { })

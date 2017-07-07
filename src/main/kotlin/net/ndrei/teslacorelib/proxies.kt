@@ -1,5 +1,6 @@
 package net.ndrei.teslacorelib
 
+import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.discovery.ASMDataTable
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
@@ -22,17 +23,17 @@ abstract class BaseProxy(val side: Side) {
     @SuppressWarnings("unused")
     open fun preInit(ev: FMLPreInitializationEvent) {
         this.asm = ev.asmData
-        processPreInitAnnotations(ev.asmData)
+        processPreInitAnnotations(ev.asmData, Loader.instance().activeModContainer())
     }
 
     @SuppressWarnings("unused")
     open fun init(ev: FMLInitializationEvent) {
-        processInitAnnotations(this.asm)
+        processInitAnnotations(this.asm, Loader.instance().activeModContainer())
     }
 
     @SuppressWarnings("unused")
     open fun postInit(ev: FMLPostInitializationEvent) {
-        processPostInitAnnotations(this.asm)
+        processPostInitAnnotations(this.asm, Loader.instance().activeModContainer())
     }
 }
 

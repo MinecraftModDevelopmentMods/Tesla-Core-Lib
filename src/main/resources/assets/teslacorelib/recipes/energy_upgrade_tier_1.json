@@ -1,0 +1,15 @@
+{
+  "type": "forge:ore_shaped",
+  "group": "tesla.addons",
+  "result": { "item": "teslacorelib:energy_tier1" },
+  "pattern": [
+    " g ",
+    "rbr",
+    "rrr"
+  ],
+  "key": {
+    "b": { "item": "teslacorelib:base_addon" },
+    "r": { "type": "forge:ore_dict", "ore": "dustRedstone" },
+    "g": { "type": "forge:ore_dict", "ore": "gearGold" }
+  }
+}

@@ -82,7 +82,7 @@ abstract class MaterialRegistry<T: IForgeRegistryEntry<T>>(private val oreDictif
         this.registeredMaterials
                 .forEach {
                     if ((it is IItemColor) || (it is IBlockColor)) {
-                        AutoRegisterColoredThingyHandler.handler(it, asm)
+                        AutoRegisterColoredThingyHandler.handler(it, asm, null)
                     }
                     this.postProcessThing(it)
                 }
@@ -156,9 +156,9 @@ class TeslaCoreRegistries {
         val itemRegistry = GameRegistry.findRegistry(Item::class.java)
         val blockRegistry = GameRegistry.findRegistry(Block::class.java)
 
-        object : BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm ->
+        object : BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
             it.registerBeforeMaterials(asm)
-        }, AfterAllModsRegistry::class) {}.process(event.asmData)
+        }, AfterAllModsRegistry::class) {}.process(event.asmData, null)
 
         MaterialRegistries.getRegistries()
                 .forEach {
@@ -178,9 +178,9 @@ class TeslaCoreRegistries {
                 .forEach {
                     it.postRegister(this.asm)
                 }
-        object: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm ->
+        object: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
             it.registerAfterMaterials(asm)
-        }, AfterAllModsRegistry::class) {}.process(this.asm)
+        }, AfterAllModsRegistry::class) {}.process(this.asm, null)
     }
 
     companion object {

@@ -1,0 +1,15 @@
+{
+  "type": "forge:ore_shaped",
+  "group": "tesla.addons",
+  "result": { "item": "teslacorelib:speed_tier2" },
+  "pattern": [
+    "rgr",
+    "rbr",
+    "rgr"
+  ],
+  "key": {
+    "b": { "item": "teslacorelib:base_addon" },
+    "r": { "type": "forge:ore_dict", "ore": "dustRedstone" },
+    "g": { "type": "forge:ore_dict", "ore": "gearDiamond" }
+  }
+}

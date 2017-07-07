@@ -1,0 +1,15 @@
+{
+  "type": "forge:ore_shaped",
+  "group": "tesla.addons",
+  "result": { "item": "teslacorelib:battery", "data": 0 },
+  "pattern": [
+    "IRI",
+    "RXR",
+    "IRI"
+  ],
+  "key": {
+    "I": { "type": "forge:ore_dict", "ore": "ingotIron" },
+    "R": { "type": "forge:ore_dict", "ore": "dustRedstone" },
+    "X": { "type": "forge:ore_dict", "ore": "blockRedstone" }
+  }
+}

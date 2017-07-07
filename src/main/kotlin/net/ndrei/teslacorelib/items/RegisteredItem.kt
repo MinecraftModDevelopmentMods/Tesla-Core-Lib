@@ -26,12 +26,15 @@ abstract class RegisteredItem(modId: String, tab: CreativeTabs?, registryName: S
         registry.register(this)
     }
 
+    @Deprecated("One should really use JSON resources for recipes.", ReplaceWith("A JSON File!"), DeprecationLevel.WARNING)
     fun registerRecipe(registry: (recipe: IRecipe) -> ResourceLocation)
             = this.recipes.forEach { registry(it) }
 
+    @Deprecated("One should really use JSON resources for recipes.", ReplaceWith("A JSON File!"), DeprecationLevel.WARNING)
     protected open val recipe: IRecipe?
         get() = null
 
+    @Deprecated("One should really use JSON resources for recipes.", ReplaceWith("A JSON File!"), DeprecationLevel.WARNING)
     protected open val recipes: List<IRecipe>
         get() {
             val recipe = this.recipe

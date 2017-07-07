@@ -12,6 +12,6 @@ annotation class AutoRegisterSheet
 
 @AnnotationPreInitHandler
 @Suppress("unused")
-object AutoRegisterPlateHandler : BaseAnnotationHandler<ColoredSheetItem>({ it, _ ->
+object AutoRegisterPlateHandler : BaseAnnotationHandler<ColoredSheetItem>({ it, _, _ ->
     SheetRegistry.addMaterial(it.materialName, it)
 }, AutoRegisterSheet::class)

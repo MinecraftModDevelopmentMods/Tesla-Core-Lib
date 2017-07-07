@@ -12,6 +12,6 @@ annotation class AutoRegisterPowder
 
 @AnnotationPreInitHandler
 @Suppress("unused")
-object AutoRegisterGearHandler : BaseAnnotationHandler<ColoredPowderItem>({ it, _ ->
+object AutoRegisterGearHandler : BaseAnnotationHandler<ColoredPowderItem>({ it, _, _ ->
     PowderRegistry.addMaterial(it.materialName, it)
 }, AutoRegisterPowder::class)

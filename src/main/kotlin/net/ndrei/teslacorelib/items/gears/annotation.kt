@@ -12,6 +12,6 @@ annotation class AutoRegisterGear
 
 @AnnotationPreInitHandler
 @Suppress("unused")
-object AutoRegisterGearHandler : BaseAnnotationHandler<BaseGearItem>({ it, _ ->
+object AutoRegisterGearHandler : BaseAnnotationHandler<BaseGearItem>({ it, _, _ ->
     GearRegistry.addMaterial(it.materialName, it)
 }, AutoRegisterGear::class)
