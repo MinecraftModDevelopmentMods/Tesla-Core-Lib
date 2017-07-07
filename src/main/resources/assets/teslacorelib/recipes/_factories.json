@@ -1,0 +1,5 @@
+{
+  "ingredients": {
+    "fluid_container": "net.ndrei.teslacorelib.crafting.FluidIngredientFactory"
+  }
+}
