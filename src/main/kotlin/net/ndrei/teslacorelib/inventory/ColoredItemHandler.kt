@@ -48,6 +48,15 @@ open class ColoredItemHandler(handler: IItemHandler, val color: EnumDyeColor, va
                         BasicTeslaGuiContainer.MACHINE_BACKGROUND, 108, 225, this.color))
 
                 if (this.innerHandler is LockableItemHandler) {
+                    result.add(
+                            object : GhostedItemStackRenderPiece(it.xPos - 1, it.yPos - 1) {
+                                override val isVisible: Boolean
+                                    get() = this@ColoredItemHandler.innerHandler.getStackInSlot(index).isEmpty
+
+                                override fun getRenderStack()
+                                        = this@ColoredItemHandler.innerHandler.getFilterStack(index)
+                            })
+
                     result.add(object : BasicContainerGuiPiece(it.xPos, it.yPos, 18, 18) {
                         override fun drawMiddleLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, partialTicks: Float, mouseX: Int, mouseY: Int) {
                             container.drawTexturedModalRect(
@@ -56,15 +65,6 @@ open class ColoredItemHandler(handler: IItemHandler, val color: EnumDyeColor, va
                                     if (this@ColoredItemHandler.innerHandler.locked) 163 else 181, 191, 16, 16)
                         }
                     })
-
-                    result.add(
-                        object : GhostedItemStackRenderPiece(box.left, box.top) {
-                            override val isVisible: Boolean
-                                get() = this@ColoredItemHandler.innerHandler.getStackInSlot(index).isEmpty
-
-                            override fun getRenderStack()
-                                    = this@ColoredItemHandler.innerHandler.getFilterStack(index)
-                        })
                 }
             }
         }

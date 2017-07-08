@@ -76,9 +76,9 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
             return false
         }
 
-        val tesla = stack.getCapability(TeslaCapabilities.CAPABILITY_PRODUCER, null)
+        val tesla = if (stack.hasCapability(TeslaCapabilities.CAPABILITY_PRODUCER, null)) stack.getCapability(TeslaCapabilities.CAPABILITY_PRODUCER, null) else null
         if (tesla != null) {
-            val holder = stack.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null)
+            val holder = if (stack.hasCapability(TeslaCapabilities.CAPABILITY_HOLDER, null)) stack.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null) else null
             if (holder == null || holder.storedPower > 0) {
                 return true
             }

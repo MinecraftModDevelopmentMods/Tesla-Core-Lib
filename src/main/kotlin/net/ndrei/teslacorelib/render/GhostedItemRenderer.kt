@@ -13,6 +13,8 @@ import net.minecraft.item.ItemStack
 import net.minecraft.util.ReportedException
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import net.ndrei.teslacorelib.compatibility.findDeclaredField
+import net.ndrei.teslacorelib.compatibility.findDeclaredMethod
 
 /**
  * Created by CF on 2017-07-05.
@@ -23,7 +25,7 @@ class GhostedItemRenderer(private val render: RenderItem) {
 
     fun renderItemInGUI(stack: ItemStack, x: Int, y: Int, alpha: Float = .42f) {
         this.currentAlpha = alpha
-        if (!stack.isEmpty()) {
+        if (!stack.isEmpty) {
             val player = Minecraft.getMinecraft().player
             this.render.zLevel += 50.0f
 
@@ -44,15 +46,14 @@ class GhostedItemRenderer(private val render: RenderItem) {
     }
 
     private fun renderItemModelIntoGUI(stack: ItemStack, x: Int, y: Int, bakedmodel: IBakedModel) {
-        val tmField = this.render.javaClass.getDeclaredField("textureManager")
+        val tmField = this.render.javaClass.findDeclaredField("textureManager") ?: return
         tmField.isAccessible = true
         val textureManager = tmField.get(this.render) as TextureManager
 
-        val sgtMethod = this.render.javaClass.getDeclaredMethod("setupGuiTransform",
-                java.lang.Integer.TYPE, java.lang.Integer.TYPE, java.lang.Boolean.TYPE)
+        val sgtMethod = this.render.javaClass.findDeclaredMethod("setupGuiTransform",
+                java.lang.Integer.TYPE, java.lang.Integer.TYPE, java.lang.Boolean.TYPE) ?: return
         sgtMethod.isAccessible = true
 
-        var bakedmodel = bakedmodel
         GlStateManager.pushMatrix()
         textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
         textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false)
@@ -64,9 +65,9 @@ class GhostedItemRenderer(private val render: RenderItem) {
         GlStateManager.color(1.0f, 1.0f, 1.0f, .42f)
         // this.render.setupGuiTransform(x, y, bakedmodel.isGui3d)
         sgtMethod.invoke(this.render, x, y, bakedmodel.isGui3d)
-        bakedmodel = net.minecraftforge.client.ForgeHooksClient.handleCameraTransforms(bakedmodel, ItemCameraTransforms.TransformType.GUI, false)
+        val itemBakedModel = net.minecraftforge.client.ForgeHooksClient.handleCameraTransforms(bakedmodel, ItemCameraTransforms.TransformType.GUI, false)
         // this.render.renderItem(stack, bakedmodel)
-        this.renderItem(stack, bakedmodel)
+        this.renderItem(stack, itemBakedModel)
         GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
         GlStateManager.disableAlpha()
         GlStateManager.disableRescaleNormal()
@@ -77,12 +78,12 @@ class GhostedItemRenderer(private val render: RenderItem) {
     }
 
     private fun renderItem(stack: ItemStack, model: IBakedModel) {
-        val rmMethod = this.render.javaClass.getDeclaredMethod("renderModel",
-                IBakedModel::class.java, java.lang.Integer.TYPE, ItemStack::class.java)
+        val rmMethod = this.render.javaClass.findDeclaredMethod("renderModel",
+                IBakedModel::class.java, java.lang.Integer.TYPE, ItemStack::class.java) ?: return
         rmMethod.isAccessible = true
 
-        val reMethod = this.render.javaClass.getDeclaredMethod("renderEffect",
-                IBakedModel::class.java)
+        val reMethod = this.render.javaClass.findDeclaredMethod("renderEffect",
+                IBakedModel::class.java) ?: return
         reMethod.isAccessible = true
 
         if (!stack.isEmpty) {

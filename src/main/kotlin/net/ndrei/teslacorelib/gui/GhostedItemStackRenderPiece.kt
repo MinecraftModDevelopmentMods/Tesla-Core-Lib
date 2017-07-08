@@ -7,10 +7,11 @@ import net.ndrei.teslacorelib.render.GhostedItemRenderer
 /**
  * Created by CF on 2017-07-04.
  */
-open class GhostedItemStackRenderPiece(left: Int, top: Int, val alpha: Float = .42f, val stack: ItemStack? = null): BasicContainerGuiPiece(left, top, 18, 18) {
+open class GhostedItemStackRenderPiece(left: Int, top: Int, val alpha: Float = .42f, val stack: ItemStack? = null)
+    : BasicContainerGuiPiece(left, top, 18, 18) {
 
-    override fun drawMiddleLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, partialTicks: Float, mouseX: Int, mouseY: Int) {
-        super.drawMiddleLayer(container, guiX, guiY, partialTicks, mouseX, mouseY)
+    override fun drawBackgroundLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, partialTicks: Float, mouseX: Int, mouseY: Int) {
+        super.drawBackgroundLayer(container, guiX, guiY, partialTicks, mouseX, mouseY)
 
         val left = this.left + guiX + 1
         val top = this.top + guiY + 1
