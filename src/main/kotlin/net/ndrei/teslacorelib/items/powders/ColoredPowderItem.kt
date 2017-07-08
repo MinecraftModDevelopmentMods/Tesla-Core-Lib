@@ -22,7 +22,7 @@ abstract class ColoredPowderItem(modId: String, creativeTabs: CreativeTabs, val 
         ModelLoader.setCustomModelResourceLocation(
                 this,
                 0,
-                ModelResourceLocation(ResourceLocation(TeslaCoreLib.MODID, "colored_powder_base_32"), "inventory"))
+                ModelResourceLocation(ResourceLocation(TeslaCoreLib.MODID, "colored_powder_base_16"), "inventory"))
     }
 
     override fun getColorFromItemstack(stack: ItemStack?, tintIndex: Int): Int {
