@@ -95,9 +95,13 @@ public abstract class ElectricMachine extends ElectricTileEntity implements IWor
             return false;
         }
 
-        ITeslaProducer tesla = stack.getCapability(TeslaCapabilities.CAPABILITY_PRODUCER, null);
+        ITeslaProducer tesla = stack.hasCapability(TeslaCapabilities.CAPABILITY_PRODUCER, null)
+                ? stack.getCapability(TeslaCapabilities.CAPABILITY_PRODUCER, null)
+                : null;
         if (tesla != null) {
-            ITeslaHolder holder = stack.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null);
+            ITeslaHolder holder = stack.hasCapability(TeslaCapabilities.CAPABILITY_HOLDER, null)
+                    ? stack.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null)
+                    : null;
             if ((holder == null) || (holder.getStoredPower() > 0)) {
                 return true;
             }
