@@ -59,6 +59,7 @@ open class ColoredItemHandler(handler: IItemHandler, val color: EnumDyeColor, va
 
                     result.add(object : BasicContainerGuiPiece(it.xPos, it.yPos, 18, 18) {
                         override fun drawMiddleLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, partialTicks: Float, mouseX: Int, mouseY: Int) {
+                            container.bindDefaultTexture()
                             container.drawTexturedModalRect(
                                     guiX + this.left,
                                     guiY + this.top,
