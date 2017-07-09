@@ -13,6 +13,11 @@ item.teslacorelib.powder_gold.name=Gold Powder
 item.teslacorelib.powder_diamond.name=Diamond Powder
 item.teslacorelib.powder_emerald.name=Emerald Powder
 
+item.teslacorelib.sheet_iron.name=Iron Sheet
+item.teslacorelib.sheet_gold.name=Gold Sheet
+item.teslacorelib.sheet_diamond.name=Diamond Sheet
+item.teslacorelib.sheet_emerald.name=Emerald Sheet
+
 item.teslacorelib.energy_tier1.name=Energy Upgrade I
 item.teslacorelib.energy_tier2.name=Energy Upgrade II
 item.teslacorelib.speed_tier1.name=Speed Upgrade I
