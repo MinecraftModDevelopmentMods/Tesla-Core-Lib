@@ -1,8 +1,6 @@
 package net.ndrei.teslacorelib
 
 import net.minecraft.block.Block
-import net.minecraft.client.renderer.color.IBlockColor
-import net.minecraft.client.renderer.color.IItemColor
 import net.minecraft.item.Item
 import net.minecraft.item.crafting.FurnaceRecipes
 import net.minecraft.item.crafting.IRecipe
@@ -18,6 +16,8 @@ import net.ndrei.teslacorelib.annotations.AutoRegisterColoredThingyHandler
 import net.ndrei.teslacorelib.annotations.AutoRegisterRecipesHandler
 import net.ndrei.teslacorelib.annotations.BaseAnnotationHandler
 import net.ndrei.teslacorelib.blocks.OrientedBlock
+import net.ndrei.teslacorelib.compatibility.IBlockColorDelegate
+import net.ndrei.teslacorelib.compatibility.IItemColorDelegate
 import net.ndrei.teslacorelib.items.RegisteredItem
 import net.ndrei.teslacorelib.items.powders.ColoredPowderItem
 
@@ -81,7 +81,7 @@ abstract class MaterialRegistry<T: IForgeRegistryEntry<T>>(private val oreDictif
     fun postRegister(asm: ASMDataTable) {
         this.registeredMaterials
                 .forEach {
-                    if ((it is IItemColor) || (it is IBlockColor)) {
+                    if ((it is IItemColorDelegate) || (it is IBlockColorDelegate)) {
                         AutoRegisterColoredThingyHandler.handler(it, asm, null)
                     }
                     this.postProcessThing(it)
