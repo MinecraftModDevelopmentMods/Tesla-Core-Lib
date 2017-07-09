@@ -71,17 +71,19 @@ object TeslaBattery : RegisteredItem(TeslaCoreLib.MODID, TeslaCoreLib.creativeTa
 
     @SideOnly(Side.CLIENT)
     override fun getSubItems(tab: CreativeTabs, subItems: NonNullList<ItemStack>) {
-        subItems.add(ItemStack(this))
-        val full = ItemStack(this)
-        val holder = full.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null)
-        val consumer = full.getCapability(TeslaCapabilities.CAPABILITY_CONSUMER, null)
-        if (holder != null && consumer != null) {
-            var cycle = 0 // just in case something goes wrong :)
-            while (holder.capacity > holder.storedPower && cycle++ < 100) {
-                // fill it up
-                consumer.givePower(holder.capacity - holder.storedPower, false)
+        if (this.isInCreativeTab(tab)) {
+            subItems.add(ItemStack(this))
+            val full = ItemStack(this)
+            val holder = full.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null)
+            val consumer = full.getCapability(TeslaCapabilities.CAPABILITY_CONSUMER, null)
+            if (holder != null && consumer != null) {
+                var cycle = 0 // just in case something goes wrong :)
+                while (holder.capacity > holder.storedPower && cycle++ < 100) {
+                    // fill it up
+                    consumer.givePower(holder.capacity - holder.storedPower, false)
+                }
             }
+            subItems.add(full)
         }
-        subItems.add(full)
     }
 }
