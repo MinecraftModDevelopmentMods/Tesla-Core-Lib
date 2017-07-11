@@ -10,5 +10,20 @@
   "credits": "The Forge, FML guys and my wife.",
   "logoFile": "",
   "screenshots": [],
-  "dependencies": []
+  "requiredMods": [ "tesla", "forgelin" ],
+  "dependencies": [ "tesla", "forgelin" ]
+}, {
+  "modid": "teslacoreregistries",
+  "name": "Tesla Core Registries",
+  "description": "used to register stuff after all mods did... ignore it.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Face_of_Cat"],
+  "credits": "The Forge, FML guys and my wife.",
+  "logoFile": "",
+  "screenshots": [],
+  "requiredMods": [ "forgelin" ],
+  "dependencies": [ "forgelin" ]
 }]
