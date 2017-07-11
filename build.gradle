@@ -50,7 +50,8 @@ repositories {
     jcenter()
     maven { url 'http://maven.epoxide.xyz' }
     maven { url 'http://maven.ndrei.net' }
-    maven { url 'http://maven.shadowfacts.net/' }
+    maven { url 'http://maven.shadowfacts.net' }
+    maven { url 'http://maven.covers1624.net' }
     mavenLocal()
 }
 
@@ -59,6 +60,7 @@ dependencies {
     deployerJars 'org.apache.maven.wagon:wagon-ftp:2.2'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile "net.shadowfacts:Forgelin:$forgelin_version"
+    compile "cofh:RedstoneFlux:1.12-$redstoneflux_version:universal"
 }
 
 processResources {

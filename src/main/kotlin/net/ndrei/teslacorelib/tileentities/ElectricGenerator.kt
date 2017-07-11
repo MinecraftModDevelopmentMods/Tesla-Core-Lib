@@ -1,15 +1,16 @@
 package net.ndrei.teslacorelib.tileentities
 
-import com.google.common.collect.Lists
-import net.darkhax.tesla.api.ITeslaConsumer
+import cofh.redstoneflux.api.IEnergyProvider
 import net.darkhax.tesla.capability.TeslaCapabilities
 import net.minecraft.inventory.Slot
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
+import net.minecraftforge.fml.common.Optional
 import net.minecraftforge.items.ItemStackHandler
 import net.ndrei.teslacorelib.compatibility.ItemStackUtil
+import net.ndrei.teslacorelib.compatibility.RFPowerProxy
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer
 import net.ndrei.teslacorelib.containers.FilteredSlot
 import net.ndrei.teslacorelib.gui.BasicRenderedGuiPiece
@@ -22,7 +23,8 @@ import net.ndrei.teslacorelib.inventory.EnergyStorage
 /**
  * Created by CF on 2017-06-27.
  */
-abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTileEntity(typeId) {
+@Optional.Interface(iface = "cofh.redstoneflux.api.IEnergyProvider", modid = RFPowerProxy.MODID, striprefs = true)
+abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTileEntity(typeId), IEnergyProvider {
     private var generatedPower: EnergyStorage? = null
     private var chargePadItems: ItemStackHandler? = null
 
@@ -135,23 +137,26 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
         // TODO: research if this should be done only on server side or not
         if (!this.energyStorage.isEmpty) {
             val powerSides = this.sideConfig.getSidesForColor(this.energyStorage.color!!)
-            if (powerSides != null && powerSides.size > 0) {
-                val consumers = Lists.newArrayList<ITeslaConsumer>()
+            if (powerSides.isNotEmpty()) {
+                val consumers = mutableListOf<(power: Long) -> Long>()
 
                 val pos = this.getPos()
                 val facing = this.facing
                 for (side in powerSides) {
                     var oriented: EnumFacing = this.orientFacing(side)
                     if ((oriented != EnumFacing.DOWN) && oriented != EnumFacing.UP && (facing == EnumFacing.EAST || facing == EnumFacing.WEST)) {
-                        oriented = oriented!!.opposite
+                        oriented = oriented.opposite
                     }
 
                     val entity = this.getWorld().getTileEntity(pos.offset(oriented))
                     if (entity != null && entity.hasCapability(TeslaCapabilities.CAPABILITY_CONSUMER, oriented.opposite)) {
                         val consumer = entity.getCapability(TeslaCapabilities.CAPABILITY_CONSUMER, oriented.opposite)
                         if (consumer != null) {
-                            consumers.add(consumer)
+                            consumers.add({ consumer.givePower(it, false) })
                         }
+                    }
+                    else if ((entity != null) && RFPowerProxy.isRFAvailable && RFPowerProxy.isRFAcceptor(entity, oriented.opposite)) {
+                        consumers.add({ RFPowerProxy.givePowerTo(entity, oriented.opposite, it) })
                     }
                 }
 
@@ -164,7 +169,7 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
                         val perConsumer = total / consumerCount
                         consumerCount--
                         if (perConsumer > 0) {
-                            val consumed = consumer.givePower(perConsumer, false)
+                            val consumed = consumer(perConsumer)
                             if (consumed > 0) {
                                 totalConsumed += consumed
                             }
@@ -240,4 +245,39 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
 
     val generatedPowerReleaseRate: Long
         get() = if (this.generatedPower == null) 0 else this.generatedPower!!.getOutputRate()
+
+    //#region RF Power Support
+
+    @Optional.Method(modid = RFPowerProxy.MODID)
+    override fun getMaxEnergyStored(from: EnumFacing?): Int {
+        if (this.hasCapability(TeslaCapabilities.CAPABILITY_HOLDER, from)) {
+            val cap = this.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, from)
+            return cap?.capacity?.toInt() ?: 0
+        }
+        return 0
+    }
+
+    @Optional.Method(modid = RFPowerProxy.MODID)
+    override fun getEnergyStored(from: EnumFacing?): Int {
+        if (this.hasCapability(TeslaCapabilities.CAPABILITY_HOLDER, from)) {
+            val cap = this.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, from)
+            return cap?.storedPower?.toInt() ?: 0
+        }
+        return 0
+    }
+
+    @Optional.Method(modid = RFPowerProxy.MODID)
+    override fun extractEnergy(from: EnumFacing?, maxExtract: Int, simulate: Boolean): Int {
+        if (this.hasCapability(TeslaCapabilities.CAPABILITY_PRODUCER, from)) {
+            val cap = this.getCapability(TeslaCapabilities.CAPABILITY_PRODUCER, from)
+            return cap?.takePower(maxExtract.toLong(), simulate)?.toInt() ?: 0
+        }
+        return 0
+    }
+
+    @Optional.Method(modid = RFPowerProxy.MODID)
+    override fun canConnectEnergy(from: EnumFacing?)
+            = (this.hasCapability(TeslaCapabilities.CAPABILITY_HOLDER, from))
+
+    //#endregion
 }
