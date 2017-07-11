@@ -22,7 +22,7 @@ abstract class ColoredSheetItem(modId: String, creativeTabs: CreativeTabs, val m
         ModelLoader.setCustomModelResourceLocation(
                 this,
                 0,
-                ModelResourceLocation(ResourceLocation(TeslaCoreLib.MODID, "colored_sheet_base_16"), "inventory"))
+                ModelResourceLocation(ResourceLocation(TeslaCoreLib.MODID, "colored_sheet_base"), "inventory"))
     }
 
     override fun getColorFromItemStack(stack: ItemStack, tintIndex: Int): Int {
