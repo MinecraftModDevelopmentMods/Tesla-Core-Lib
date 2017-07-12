@@ -14,7 +14,7 @@ abstract class SideDrawerPiece(private val topIndex: Int) : ToggleButtonPiece(-1
     }
 
     companion object {
-        fun findFreeSpot(pieces: List<BasicContainerGuiPiece>): Int
+        fun findFreeSpot(pieces: List<IGuiContainerPiece>): Int
             = (pieces.map { (it as? SideDrawerPiece)?.topIndex ?: -1 }.max() ?: -1) + 1
     }
 }
