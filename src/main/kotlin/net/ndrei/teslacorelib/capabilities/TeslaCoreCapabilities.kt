@@ -12,8 +12,6 @@ import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
 import net.minecraftforge.common.capabilities.CapabilityManager
 import net.ndrei.teslacorelib.capabilities.container.IGuiContainerProvider
-import net.ndrei.teslacorelib.capabilities.hud.HudInfoLine
-import net.ndrei.teslacorelib.capabilities.hud.IHudInfoProvider
 import net.ndrei.teslacorelib.capabilities.wrench.ITeslaWrenchHandler
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer
 import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer
@@ -24,8 +22,8 @@ import net.ndrei.teslacorelib.items.TeslaWrench
  * Created by CF on 2017-06-28.
  */
 object TeslaCoreCapabilities {
-    @CapabilityInject(IHudInfoProvider::class)
-    lateinit var CAPABILITY_HUD_INFO: Capability<IHudInfoProvider>
+//    @CapabilityInject(IHudInfoProvider::class)
+//    lateinit var CAPABILITY_HUD_INFO: Capability<IHudInfoProvider>
 
     @CapabilityInject(ITeslaWrenchHandler::class)
     lateinit var CAPABILITY_WRENCH: Capability<ITeslaWrenchHandler>
@@ -33,13 +31,13 @@ object TeslaCoreCapabilities {
     @CapabilityInject(IGuiContainerProvider::class)
     lateinit var CAPABILITY_GUI_CONTAINER: Capability<IGuiContainerProvider>
 
-    internal class CapabilityHudInfoProvider<T : IHudInfoProvider> : Capability.IStorage<IHudInfoProvider> {
-        override fun writeNBT(capability: Capability<IHudInfoProvider>, instance: IHudInfoProvider, side: EnumFacing): NBTBase? {
-            return null
-        }
-
-        override fun readNBT(capability: Capability<IHudInfoProvider>, instance: IHudInfoProvider, side: EnumFacing, nbt: NBTBase) {}
-    }
+//    internal class CapabilityHudInfoProvider<T : IHudInfoProvider> : Capability.IStorage<IHudInfoProvider> {
+//        override fun writeNBT(capability: Capability<IHudInfoProvider>, instance: IHudInfoProvider, side: EnumFacing): NBTBase? {
+//            return null
+//        }
+//
+//        override fun readNBT(capability: Capability<IHudInfoProvider>, instance: IHudInfoProvider, side: EnumFacing, nbt: NBTBase) {}
+//    }
 
     internal class CapabilityWrenchHandler<T : ITeslaWrenchHandler> : Capability.IStorage<ITeslaWrenchHandler> {
         override fun writeNBT(capability: Capability<ITeslaWrenchHandler>, instance: ITeslaWrenchHandler, side: EnumFacing): NBTBase? {
@@ -57,10 +55,10 @@ object TeslaCoreCapabilities {
         override fun readNBT(capability: Capability<IGuiContainerProvider>, instance: IGuiContainerProvider, side: EnumFacing, nbt: NBTBase) {}
     }
 
-    internal class DefaultHudInfo : IHudInfoProvider {
-        override val hudLines: List<HudInfoLine>
-            get() = listOf()
-    }
+//    internal class DefaultHudInfo : IHudInfoProvider {
+//        override val hudLines: List<HudInfoLine>
+//            get() = listOf()
+//    }
 
     internal class DefaultWrenchHandler : ITeslaWrenchHandler {
         override fun onWrenchUse(wrench: TeslaWrench, player: EntityPlayer, worldIn: World, pos: BlockPos, hand: EnumHand, facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): EnumActionResult {
@@ -87,7 +85,7 @@ object TeslaCoreCapabilities {
     }
 
     fun register() {
-        CapabilityManager.INSTANCE.register(IHudInfoProvider::class.java, TeslaCoreCapabilities.CapabilityHudInfoProvider<IHudInfoProvider>(), DefaultHudInfo::class.java)
+//        CapabilityManager.INSTANCE.register(IHudInfoProvider::class.java, TeslaCoreCapabilities.CapabilityHudInfoProvider<IHudInfoProvider>(), DefaultHudInfo::class.java)
         CapabilityManager.INSTANCE.register(ITeslaWrenchHandler::class.java, TeslaCoreCapabilities.CapabilityWrenchHandler<ITeslaWrenchHandler>(), DefaultWrenchHandler::class.java)
         CapabilityManager.INSTANCE.register(IGuiContainerProvider::class.java, TeslaCoreCapabilities.CapabilityGuiContainer<IGuiContainerProvider>(), DefaultGuiContainer::class.java)
     }

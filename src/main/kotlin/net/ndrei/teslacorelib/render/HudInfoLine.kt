@@ -1,4 +1,4 @@
-package net.ndrei.teslacorelib.capabilities.hud
+package net.ndrei.teslacorelib.render
 
 import java.awt.Color
 

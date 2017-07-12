@@ -22,11 +22,6 @@ open class SidedItemHandlerConfig : ISidedItemHandlerConfig, INBTSerializable<NB
         if (this.facesConfig.containsKey(color)) {
             val list = this.facesConfig[color]
             if ((list != null) && list.contains(side)) {
-//                for (facing in list) {
-//                    if (facing == side) {
-//                        return true
-//                    }
-//                }
                 return true
             }
         }
@@ -69,17 +64,12 @@ open class SidedItemHandlerConfig : ISidedItemHandlerConfig, INBTSerializable<NB
         this.information.add(info)
     }
 
-    override fun getSidesForColor(color: EnumDyeColor): List<EnumFacing> {
-        val list: List<EnumFacing>
-
-        if (this.facesConfig.containsKey(color)) {
-            list = this.facesConfig[color]!!
+    override fun getSidesForColor(color: EnumDyeColor)
+        = if (this.facesConfig.containsKey(color)) {
+            this.facesConfig[color] ?: listOf<EnumFacing>()
         } else {
-            list = Lists.newArrayList<EnumFacing>()
+            listOf<EnumFacing>()
         }
-
-        return list
-    }
 
     override fun setSidesForColor(color: EnumDyeColor, sides: List<EnumFacing>) {
         this.facesConfig.put(color, sides.toMutableList())
