@@ -77,19 +77,19 @@ object AnnotationPostInitHandlerHandlerHandler: BaseAnnotationHandler<BaseAnnota
 
 fun processPreInitAnnotations(asm: ASMDataTable, container: ModContainer?) {
     // not registering these as handlers to make sure they are registered first and in order (if that matters?)
-    AutoRegisterItemHandler.process(asm, container)
+//    AutoRegisterItemHandler.process(asm, container)
     AutoRegisterFluidHandler.process(asm, container)
-    AutoRegisterBlockHandler.process(asm, container)
+//    AutoRegisterBlockHandler.process(asm, container)
 
-    if (TeslaCoreLib.isClientSide) {
-        AutoRegisterRendererHandler.process(asm, container)
-    }
+//    if (TeslaCoreLib.isClientSide) {
+//        AutoRegisterRendererHandler.process(asm, container)
+//    }
 
     AnnotationPreInitHandlerHandlerHandler.process(asm, container)
 }
 
 fun processInitAnnotations(asm: ASMDataTable, container: ModContainer?) {
-    AutoRegisterRecipesHandler.process(asm, container)
+//    AutoRegisterRecipesHandler.process(asm, container)
 
     AnnotationInitHandlerHandlerHandler.process(asm, container)
 }
