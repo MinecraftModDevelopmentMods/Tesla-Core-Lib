@@ -54,6 +54,11 @@ object WorkingAreaRenderer : TileEntitySpecialRenderer<TileEntity>() {
 
         this.renderCubeFaces(box)
 
+        GlStateManager.glLineWidth(1f)
+        GlStateManager.color(1f, 1f, 1f, 1f)
+        GlStateManager.enableLighting()
+        RenderHelper.enableStandardItemLighting()
+
         Minecraft.getMinecraft().entityRenderer.enableLightmap()
         GlStateManager.enableTexture2D()
         GlStateManager.popAttrib()
