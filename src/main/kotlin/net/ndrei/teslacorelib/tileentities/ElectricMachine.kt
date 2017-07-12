@@ -6,7 +6,6 @@ import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.items.ItemStackHandler
-import net.ndrei.teslacorelib.capabilities.hud.HudInfoLine
 import net.ndrei.teslacorelib.compatibility.ItemStackUtil
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer
 import net.ndrei.teslacorelib.containers.FilteredSlot
@@ -16,6 +15,7 @@ import net.ndrei.teslacorelib.inventory.ColoredItemHandler
 import net.ndrei.teslacorelib.inventory.EnergyStorage
 import net.ndrei.teslacorelib.items.SpeedUpgradeTier1
 import net.ndrei.teslacorelib.items.SpeedUpgradeTier2
+import net.ndrei.teslacorelib.render.HudInfoLine
 import java.awt.Color
 
 /**

@@ -1,6 +1,7 @@
 package net.ndrei.teslacorelib.tileentities
 
 import com.google.common.collect.Lists
+import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.InventoryHelper
@@ -20,6 +21,8 @@ import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.util.Constants
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.IFluidTank
+import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.relauncher.SideOnly
 import net.minecraftforge.items.CapabilityItemHandler
 import net.minecraftforge.items.IItemHandler
 import net.minecraftforge.items.ItemStackHandler
@@ -27,8 +30,6 @@ import net.ndrei.teslacorelib.TeslaCoreLib
 import net.ndrei.teslacorelib.blocks.OrientedBlock
 import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities
 import net.ndrei.teslacorelib.capabilities.container.IGuiContainerProvider
-import net.ndrei.teslacorelib.capabilities.hud.HudInfoLine
-import net.ndrei.teslacorelib.capabilities.hud.IHudInfoProvider
 import net.ndrei.teslacorelib.capabilities.inventory.SidedItemHandlerConfig
 import net.ndrei.teslacorelib.capabilities.wrench.ITeslaWrenchHandler
 import net.ndrei.teslacorelib.compatibility.ItemStackUtil
@@ -41,6 +42,9 @@ import net.ndrei.teslacorelib.items.BaseAddon
 import net.ndrei.teslacorelib.items.TeslaWrench
 import net.ndrei.teslacorelib.netsync.ISimpleNBTMessageHandler
 import net.ndrei.teslacorelib.netsync.SimpleNBTMessage
+import net.ndrei.teslacorelib.render.HudInfoLine
+import net.ndrei.teslacorelib.render.HudInfoRenderer
+import net.ndrei.teslacorelib.render.IHudInfoProvider
 
 /**
  * Created by CF on 2017-06-27.
@@ -597,9 +601,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     override fun hasCapability(capability: Capability<*>, facing: EnumFacing?): Boolean {
         val oriented = this.orientFacing(facing)
 
-        if (capability === TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
-            return true
-        } else if (capability === TeslaCoreCapabilities.CAPABILITY_GUI_CONTAINER) {
+        if (capability === TeslaCoreCapabilities.CAPABILITY_GUI_CONTAINER) {
             return true
         } else if (capability === TeslaCoreCapabilities.CAPABILITY_WRENCH) {
             return true
@@ -623,8 +625,6 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
         if (capability === CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             return this.itemHandler.getSideWrapper(oriented) as T
-        } else if (capability === TeslaCoreCapabilities.CAPABILITY_HUD_INFO) {
-            return this as T
         } else if (capability === TeslaCoreCapabilities.CAPABILITY_GUI_CONTAINER) {
             return this as T
         } else if (capability === TeslaCoreCapabilities.CAPABILITY_WRENCH) {
@@ -669,6 +669,11 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         }
 
         return EnumActionResult.PASS
+    }
+
+    @SideOnly(Side.CLIENT)
+    open fun getRenderers(): MutableList<TileEntitySpecialRenderer<in TileEntity>> {
+        return mutableListOf(HudInfoRenderer)
     }
 
     //endregion

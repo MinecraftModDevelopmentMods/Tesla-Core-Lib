@@ -28,13 +28,14 @@ import net.minecraftforge.registries.IForgeRegistry
 import net.ndrei.teslacorelib.TeslaCoreLib
 import net.ndrei.teslacorelib.compatibility.ItemStackUtil
 import net.ndrei.teslacorelib.getFacingFromEntity
-import net.ndrei.teslacorelib.render.HudInfoRenderer
+import net.ndrei.teslacorelib.render.SidedTileEntityRenderer
 import net.ndrei.teslacorelib.tileentities.ElectricTileEntity
+import net.ndrei.teslacorelib.tileentities.SidedTileEntity
 
 /**
  * Created by CF on 2017-06-27.
  */
-abstract class OrientedBlock<T : TileEntity>
+abstract class OrientedBlock<T : SidedTileEntity>
     protected constructor(modId: String, tab: CreativeTabs?, registryName: String, private val teClass: Class<T>, material: Material)
         : RegisteredBlock(modId, tab, registryName, material), ITileEntityProvider {
     protected constructor(modId: String, tab: CreativeTabs, registryName: String, teClass: Class<T>)
@@ -58,15 +59,13 @@ abstract class OrientedBlock<T : TileEntity>
     override fun registerRenderer() {
         super.registerRenderer()
 
-        val renderer = this.specialRenderer
-        if (renderer != null) {
-            ClientRegistry.bindTileEntitySpecialRenderer(this.teClass, renderer)
-        }
+        ClientRegistry.bindTileEntitySpecialRenderer(this.teClass, this.specialRenderer)
     }
 
-    protected open val specialRenderer: TileEntitySpecialRenderer<T>?
+    @Deprecated("One should not override this.", ReplaceWith("One should use the SidedTileEntity.getRenderers!"), DeprecationLevel.WARNING)
+    protected open val specialRenderer: TileEntitySpecialRenderer<SidedTileEntity>
         @SideOnly(Side.CLIENT)
-        get() = HudInfoRenderer()
+        get() = SidedTileEntityRenderer
 
     override fun createNewTileEntity(worldIn: World, meta: Int): TileEntity? {
         try {

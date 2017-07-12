@@ -6,8 +6,8 @@ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
-import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities
-import net.ndrei.teslacorelib.capabilities.hud.HudInfoLine
+import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.relauncher.SideOnly
 import net.ndrei.teslacorelib.compatibility.FontRendererUtil
 import net.ndrei.teslacorelib.getFacingFromEntity
 import org.lwjgl.opengl.GL11
@@ -16,41 +16,39 @@ import java.awt.Color
 /**
  * Created by CF on 2017-06-28.
  */
-open class HudInfoRenderer<T : TileEntity> : TileEntitySpecialRenderer<T>() {
-    override fun render(te: T, x: Double, y: Double, z: Double, partialTicks: Float, destroyStage: Int, alpha: Float) {
-        if (te.hasCapability(TeslaCoreCapabilities.CAPABILITY_HUD_INFO, null)) {
-            val info = te.getCapability(TeslaCoreCapabilities.CAPABILITY_HUD_INFO, null)
-            val lines = info!!.hudLines
+@SideOnly(Side.CLIENT)
+object HudInfoRenderer : TileEntitySpecialRenderer<TileEntity>() {
+    override fun render(te: TileEntity, x: Double, y: Double, z: Double, partialTicks: Float, destroyStage: Int, alpha: Float) {
+        val provider = (te as? IHudInfoProvider) ?: return
+        val lines = provider.hudLines
 
-            if (lines != null && lines.size > 0 && this.shouldRender(te)) {
-                var side = this.rendererDispatcher.cameraHitResult.sideHit
-                if (side == EnumFacing.DOWN || side == EnumFacing.UP) {
-                    side = getFacingFromEntity(te.pos, this.rendererDispatcher.entityX, this.rendererDispatcher.entityZ)
-                }
-
-                GlStateManager.pushMatrix()
-
-                GlStateManager.translate(x.toFloat() + 0.5f, y.toFloat() + 1.0f, z.toFloat() + 0.5f)
-                when (side) {
-                    EnumFacing.NORTH -> GlStateManager.rotate(180f, 0.0f, 1.0f, 0.0f)
-                    EnumFacing.WEST -> GlStateManager.rotate(-90f, 0.0f, 1.0f, 0.0f)
-                    EnumFacing.EAST -> GlStateManager.rotate(90f, 0.0f, 1.0f, 0.0f)
-                    /*EnumFacing.SOUTH*/ else -> {
-                    }
-                }
-                GlStateManager.translate(0.0, 0.0, 0.5)
-
-                super.setLightmapDisabled(true)
-                renderText(lines, 1f)
-                super.setLightmapDisabled(false)
-                GlStateManager.popMatrix()
+        if (lines.isNotEmpty() && this.shouldRender(te)) {
+            var side = this.rendererDispatcher.cameraHitResult.sideHit
+            if (side == EnumFacing.DOWN || side == EnumFacing.UP) {
+                side = getFacingFromEntity(te.pos, this.rendererDispatcher.entityX, this.rendererDispatcher.entityZ)
             }
+
+            GlStateManager.pushMatrix()
+
+            GlStateManager.translate(x.toFloat() + 0.5f, y.toFloat() + 1.0f, z.toFloat() + 0.5f)
+            when (side) {
+                EnumFacing.NORTH -> GlStateManager.rotate(180f, 0.0f, 1.0f, 0.0f)
+                EnumFacing.WEST -> GlStateManager.rotate(-90f, 0.0f, 1.0f, 0.0f)
+                EnumFacing.EAST -> GlStateManager.rotate(90f, 0.0f, 1.0f, 0.0f)
+                /*EnumFacing.SOUTH*/ else -> {
+                }
+            }
+            GlStateManager.translate(0.0, 0.0, 0.5)
+
+            super.setLightmapDisabled(true)
+            renderText(lines, 1f)
+            super.setLightmapDisabled(false)
+            GlStateManager.popMatrix()
         }
     }
 
-    protected open fun shouldRender(te: T): Boolean {
-        return this.rendererDispatcher.cameraHitResult != null && te.pos == this.rendererDispatcher.cameraHitResult.blockPos
-    }
+    private fun shouldRender(te: TileEntity)
+        = (this.rendererDispatcher.cameraHitResult != null) && (te.pos == this.rendererDispatcher.cameraHitResult.blockPos)
 
     private fun renderText(messages: List<HudInfoLine>, scale: Float) {
         val font = FontRendererUtil.fontRenderer
