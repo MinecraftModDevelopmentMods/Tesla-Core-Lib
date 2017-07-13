@@ -11,9 +11,19 @@ enum class MaterialColors(val color: Int) {
     GOLD(0xFCEE4B), // FFD700),
     COAL(0x3F3F3F), // 333344),
     DIAMOND(0x5DECF5), // 4DFFFF),
-    EMERALD(0x17DD62); // 33FF33);
+    EMERALD(0x17DD62), // 33FF33);
 
-    companion object {
+    COPPER(0xFF7F15),
+    TIN(0xC7ECFF),
+    SILVER(0xE5FCFF),
+    LEAD(0x8CA3E2),
+    ALUMINUM(0xFFB094),
+    NICKEL(0xE1E2C9),
+    PLATINUM(0x48ECFF),
+    IRIDIUM(0xD3D2E1),
+
+
+    ; companion object {
         @Suppress("unused")
         fun getColor(material: String): Int? =
                 MaterialColors
