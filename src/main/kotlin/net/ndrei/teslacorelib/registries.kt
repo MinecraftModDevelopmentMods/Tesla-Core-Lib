@@ -4,10 +4,15 @@ import net.minecraft.block.Block
 import net.minecraft.item.Item
 import net.minecraft.item.crafting.FurnaceRecipes
 import net.minecraft.item.crafting.IRecipe
+import net.minecraftforge.client.event.ModelRegistryEvent
+import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.discovery.ASMDataTable
+import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.registry.GameRegistry
 import net.minecraftforge.oredict.OreDictionary
 import net.minecraftforge.registries.IForgeRegistry
@@ -119,8 +124,10 @@ abstract class MaterialBlockRegistry(oreDictify: (material: String) -> String) :
 object PowderRegistry : MaterialItemRegistry({ "dust${it.capitalize()}" }) {
     override fun postProcessThing(item: Item) {
         if (item is ColoredPowderItem) {
-            val stack = OreDictionary.getOres("ore${item.materialName.capitalize()}")
-                    .firstOrNull()
+            var stack = OreDictionary.getOres("ingot${item.materialName.capitalize()}").firstOrNull()
+            if (stack == null) {
+                stack = OreDictionary.getOres("gem${item.materialName.capitalize()}").firstOrNull()
+            }
             if (stack != null) {
                 FurnaceRecipes.instance().addSmelting(item, stack, 0.0f);
             }
@@ -135,8 +142,14 @@ object SheetRegistry : MaterialItemRegistry({ "plate${it.capitalize()}" })
 annotation class AfterAllModsRegistry
 
 interface IAfterAllModsRegistry {
-    fun registerBeforeMaterials(asm : ASMDataTable) {}
-    fun registerAfterMaterials(asm: ASMDataTable) {}
+    fun preInit(asm : ASMDataTable) {}
+    fun init(asm: ASMDataTable) {}
+    fun postInit(asm: ASMDataTable) {}
+
+    fun registerItems(asm: ASMDataTable, registry: IForgeRegistry<Item>) {}
+    fun registerBlocks(asm: ASMDataTable, registry: IForgeRegistry<Block>) {}
+    fun registerRecipes(asm: ASMDataTable, registry: IForgeRegistry<IRecipe>) {}
+    fun registerRenderers(asm: ASMDataTable) {}
 }
 
 //object AfterAllModsRegistryHandler: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm ->
@@ -149,27 +162,38 @@ interface IAfterAllModsRegistry {
 class TeslaCoreRegistries {
     private lateinit var asm: ASMDataTable
 
+    init {
+        MinecraftForge.EVENT_BUS.register(this)
+    }
+
     @Mod.EventHandler
     fun preInit(event: FMLPreInitializationEvent) {
         this.asm = event.asmData
 
-        val itemRegistry = GameRegistry.findRegistry(Item::class.java)
-        val blockRegistry = GameRegistry.findRegistry(Block::class.java)
+//        val itemRegistry = GameRegistry.findRegistry(Item::class.java)
+//        val blockRegistry = GameRegistry.findRegistry(Block::class.java)
 
         object : BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
-            it.registerBeforeMaterials(asm)
-        }, AfterAllModsRegistry::class) {}.process(event.asmData, null)
+            it.preInit(asm)
+        }, AfterAllModsRegistry::class) {}.process(this.asm, null)
 
-        MaterialRegistries.getRegistries()
-                .forEach {
-                    when (it) {
-                        is MaterialItemRegistry -> it.registerMissing(itemRegistry)
-                        is MaterialBlockRegistry -> it.registerMissing(blockRegistry)
-                        else -> {
-                            TeslaCoreLib.logger.warn("Don't know how to register missing entries from '$it'.")
-                        }
-                    }
-                }
+//        MaterialRegistries.getRegistries()
+//                .forEach {
+//                    when (it) {
+//                        is MaterialItemRegistry -> it.registerMissing(itemRegistry)
+//                        is MaterialBlockRegistry -> it.registerMissing(blockRegistry)
+//                        else -> {
+//                            TeslaCoreLib.logger.warn("Don't know how to register missing entries from '$it'.")
+//                        }
+//                    }
+//                }
+    }
+
+    @Mod.EventHandler
+    fun init(event: FMLInitializationEvent) {
+        object : BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
+            it.init(asm)
+        }, AfterAllModsRegistry::class) {}.process(this.asm, null)
     }
 
     @Mod.EventHandler
@@ -178,8 +202,53 @@ class TeslaCoreRegistries {
                 .forEach {
                     it.postRegister(this.asm)
                 }
+
         object: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
-            it.registerAfterMaterials(asm)
+            it.postInit(asm)
+        }, AfterAllModsRegistry::class) {}.process(this.asm, null)
+    }
+
+    @SubscribeEvent
+    fun registerBlocks(ev: RegistryEvent.Register<Block>) {
+        object: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
+            it.registerBlocks(asm, ev.registry)
+        }, AfterAllModsRegistry::class) {}.process(this.asm, null)
+
+        MaterialRegistries.getRegistries()
+                .forEach {
+                    when (it) {
+                        is MaterialBlockRegistry -> it.registerMissing(ev.registry)
+                        else -> { }
+                    }
+                }
+    }
+
+    @SubscribeEvent
+    fun registerItems(ev: RegistryEvent.Register<Item>) {
+        object: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
+            it.registerItems(asm, ev.registry)
+        }, AfterAllModsRegistry::class) {}.process(this.asm, null)
+
+        MaterialRegistries.getRegistries()
+                .forEach {
+                    when (it) {
+                        is MaterialItemRegistry -> it.registerMissing(ev.registry)
+                        else -> { }
+                    }
+                }
+    }
+
+    @SubscribeEvent
+    fun registerRecipes(ev: RegistryEvent.Register<IRecipe>) {
+        object: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
+            it.registerRecipes(asm, ev.registry)
+        }, AfterAllModsRegistry::class) {}.process(this.asm, null)
+    }
+
+    @SubscribeEvent
+    fun registerRenderers(ev: ModelRegistryEvent) {
+        object: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
+            it.registerRenderers(asm)
         }, AfterAllModsRegistry::class) {}.process(this.asm, null)
     }
 
