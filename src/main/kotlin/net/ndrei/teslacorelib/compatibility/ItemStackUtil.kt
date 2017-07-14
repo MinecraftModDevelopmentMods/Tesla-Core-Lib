@@ -31,8 +31,6 @@ object ItemStackUtil {
         return result
     }
 
-    fun ItemStack.copyWithCount(size: Int): ItemStack =  ItemStackUtil.copyWithSize(this, size)
-
     @Deprecated("This was for the stupid 1.10 / 1.11 compatibility. Stop using it!", ReplaceWith("ItemStack.EMPTY"))
     val emptyStack: ItemStack
         get() = ItemStack.EMPTY
@@ -85,22 +83,22 @@ object ItemStackUtil {
     }
 
     fun insertItemInExistingStacks(dest: IItemHandler?, stack: ItemStack, simulate: Boolean): ItemStack {
-        var stack = stack
-        if (dest == null || stack.isEmpty)
+        var remaining = stack
+        if (dest == null || remaining.isEmpty)
             return ItemStack.EMPTY
 
         for (i in 0..dest.slots - 1) {
-            if (ItemStackUtil.isEmpty(dest.getStackInSlot(i))) {
+            if (dest.getStackInSlot(i).isEmpty) {
                 continue
             }
 
-            stack = dest.insertItem(i, stack, simulate)
-            if (stack.isEmpty) {
+            remaining = dest.insertItem(i, remaining, simulate)
+            if (remaining.isEmpty) {
                 return ItemStack.EMPTY
             }
         }
 
-        return stack
+        return remaining
     }
 
     fun insertItems(dest: IItemHandler, stack: ItemStack, simulate: Boolean): ItemStack {
@@ -118,7 +116,6 @@ object ItemStackUtil {
             val x = ItemStackUtil.copyWithSize(a, b.count)
             ItemStack.areItemStacksEqualUsingNBTShareTag(x, b)
         }
-    fun ItemStack.equalsIgnoreSize(b: ItemStack) = ItemStackUtil.areEqualIgnoreSize(this, b)
 
     fun areEqualIgnoreSizeAndNBT(a: ItemStack, b: ItemStack) =
             if (a.isEmpty && b.isEmpty)
@@ -129,5 +126,4 @@ object ItemStackUtil {
                 val x = ItemStackUtil.copyWithSize(a, b.count)
                 ItemStack.areItemStacksEqual(x, b)
             }
-    fun ItemStack.equalsIgnoreSizeAndNBT(b: ItemStack) = ItemStackUtil.areEqualIgnoreSizeAndNBT(this, b)
 }

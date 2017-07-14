@@ -22,6 +22,8 @@ object WorkingAreaRenderer : TileEntitySpecialRenderer<TileEntity>() {
     private var cG: Float = .7f
     private var cB: Float = .0f
 
+    override fun isGlobalRenderer(te: TileEntity?) = true
+
     override fun render(te: TileEntity, x: Double, y: Double, z: Double, partialTicks: Float, destroyStage: Int, alpha: Float) {
         val provider = (te as? IWorkAreaProvider) ?: return
 

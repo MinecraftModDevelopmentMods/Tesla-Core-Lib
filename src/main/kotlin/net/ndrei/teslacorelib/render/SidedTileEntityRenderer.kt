@@ -17,4 +17,8 @@ object SidedTileEntityRenderer : TileEntitySpecialRenderer<SidedTileEntity>() {
             it.render(te, x, y, z, partialTicks, destroyStage, alpha)
         }
     }
+
+    override fun isGlobalRenderer(te: SidedTileEntity): Boolean {
+        return te.getRenderers().any { it.isGlobalRenderer(te) }
+    }
 }

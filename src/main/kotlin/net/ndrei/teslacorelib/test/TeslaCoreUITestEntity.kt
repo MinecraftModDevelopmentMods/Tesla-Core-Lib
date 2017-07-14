@@ -7,7 +7,6 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.common.util.Constants
 import net.minecraftforge.fluids.FluidRegistry
 import net.minecraftforge.fluids.IFluidTank
-import net.minecraftforge.items.ItemHandlerHelper
 import net.minecraftforge.items.ItemStackHandler
 import net.ndrei.teslacorelib.compatibility.ItemStackUtil
 import net.ndrei.teslacorelib.gui.FluidTankPiece
@@ -101,12 +100,12 @@ class TeslaCoreUITestEntity : ElectricMachine(-1) {
     override fun performWork(): Float {
         var result = 0.0f
 
-        if (this.waterTank != null && this.lavaTank != null && this.outputs != null) {
+        if (this.waterTank != null && this.lavaTank != null) {
             val water = this.waterTank!!.drain(250, false)
             val lava = this.lavaTank!!.drain(125, false)
             if (water != null && water.amount == 250 && lava != null && lava.amount == 125) {
                 var cobble = ItemStack(Blocks.COBBLESTONE, 1)
-                cobble = ItemHandlerHelper.insertItem(this.outputs, cobble, false)
+                cobble = ItemStackUtil.insertItems(this.outputs, cobble, false)
                 if (ItemStackUtil.isEmpty(cobble)) {
                     this.waterTank!!.drain(250, true)
                     this.lavaTank!!.drain(125, true)
@@ -115,22 +114,20 @@ class TeslaCoreUITestEntity : ElectricMachine(-1) {
             }
         }
 
-        if (this.inputs != null && this.outputs != null) {
-            var moved = true
-            while (moved && result <= .85f) {
-                moved = false
-                for (x in 0..2) {
-                    var stack = this.inputs!!.extractItem(x, 1, true)
-                    if (ItemStackUtil.isEmpty(stack)) {
-                        continue
-                    }
-                    stack = ItemHandlerHelper.insertItem(this.outputs, stack, false)
-                    if (ItemStackUtil.isEmpty(stack)) {
-                        this.inputs!!.extractItem(x, 1, false)
-                        result += .15f
-                        moved = true
-                        break
-                    }
+        var moved = true
+        while (moved && result <= .85f) {
+            moved = false
+            for (x in 0..2) {
+                var stack = this.inputs!!.extractItem(x, 1, true)
+                if (ItemStackUtil.isEmpty(stack)) {
+                    continue
+                }
+                stack = ItemStackUtil.insertItems(this.outputs, stack, false)
+                if (ItemStackUtil.isEmpty(stack)) {
+                    this.inputs!!.extractItem(x, 1, false)
+                    result += .15f
+                    moved = true
+                    break
                 }
             }
         }

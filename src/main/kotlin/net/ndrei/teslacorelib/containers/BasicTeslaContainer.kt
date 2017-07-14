@@ -1,6 +1,5 @@
 package net.ndrei.teslacorelib.containers
 
-import com.google.common.collect.Lists
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.Container
@@ -165,7 +164,7 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
         val playerSlots = this.playerSlots + this.playerQuickSlots + this.playerExtraSlots
         val containerSlots = slots - playerSlots
 
-        val list = Lists.newArrayList<SlotRange>()
+        val list = mutableListOf<SlotRange>()
 
         if (sourceIndex < containerSlots) {
             // transfer from container to player
