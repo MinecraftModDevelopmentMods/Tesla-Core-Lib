@@ -6,7 +6,6 @@ import net.minecraft.item.crafting.IRecipe
 import net.minecraftforge.client.event.ModelRegistryEvent
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.RegistryEvent
-import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.discovery.ASMDataTable
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
@@ -25,42 +24,59 @@ import net.ndrei.teslacorelib.gui.TeslaCoreGuiProxy
 abstract class BaseProxy(val side: Side) {
     protected lateinit var asm: ASMDataTable
 
+    private val container
+        get() = net.minecraftforge.fml.common.Loader.instance().activeModContainer()
+
+    private fun processRegistryHandlers(handler: (handler: IRegistryHandler) -> Unit) {
+        object: BaseAnnotationHandler<IRegistryHandler>({ it, _, _ ->
+            handler(it)
+        }, RegistryHandler::class) {}.process(this.asm, this.container)
+    }
+
     @SuppressWarnings("unused")
     open fun preInit(ev: FMLPreInitializationEvent) {
         this.asm = ev.asmData
         MinecraftForge.EVENT_BUS.register(this)
-        processPreInitAnnotations(ev.asmData, Loader.instance().activeModContainer())
+
+        processPreInitAnnotations(ev.asmData, this.container)
+        this.processRegistryHandlers { it.preInit(this.asm) }
     }
 
     @SuppressWarnings("unused")
     open fun init(ev: FMLInitializationEvent) {
-        processInitAnnotations(this.asm, Loader.instance().activeModContainer())
+        processInitAnnotations(this.asm, this.container)
+        this.processRegistryHandlers { it.init(this.asm) }
     }
 
     @SuppressWarnings("unused")
     open fun postInit(ev: FMLPostInitializationEvent) {
-        processPostInitAnnotations(this.asm, Loader.instance().activeModContainer())
+        processPostInitAnnotations(this.asm, this.container)
+        this.processRegistryHandlers { it.postInit(this.asm) }
     }
 
     @SubscribeEvent
     fun registerBlocks(ev: RegistryEvent.Register<Block>) {
-        AutoRegisterBlockHandler.process(this.asm, Loader.instance().activeModContainer())
+        AutoRegisterBlockHandler.process(this.asm, this.container)
+        this.processRegistryHandlers { it.registerBlocks(this.asm, ev.registry) }
     }
 
     @SubscribeEvent
     fun registerItems(ev: RegistryEvent.Register<Item>) {
-        AutoRegisterItemHandler.process(this.asm, Loader.instance().activeModContainer())
+        AutoRegisterItemHandler.process(this.asm, this.container)
+        this.processRegistryHandlers { it.registerItems(this.asm, ev.registry) }
     }
 
     @SubscribeEvent
     fun registerRecipes(ev: RegistryEvent.Register<IRecipe>) {
-        AutoRegisterRecipesHandler.process(this.asm, Loader.instance().activeModContainer())
+        AutoRegisterRecipesHandler.process(this.asm, this.container)
+        this.processRegistryHandlers { it.registerRecipes(this.asm, ev.registry) }
     }
 
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     fun registerModel(ev: ModelRegistryEvent) {
-        AutoRegisterRendererHandler.process(asm, Loader.instance().activeModContainer())
+        AutoRegisterRendererHandler.process(asm, this.container)
+        this.processRegistryHandlers { it.registerRenderers(this.asm) }
     }
 }
 

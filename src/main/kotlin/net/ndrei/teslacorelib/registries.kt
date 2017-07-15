@@ -20,6 +20,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry
 import net.ndrei.teslacorelib.annotations.AutoRegisterColoredThingyHandler
 import net.ndrei.teslacorelib.annotations.AutoRegisterRecipesHandler
 import net.ndrei.teslacorelib.annotations.BaseAnnotationHandler
+import net.ndrei.teslacorelib.annotations.IRegistryHandler
 import net.ndrei.teslacorelib.blocks.OrientedBlock
 import net.ndrei.teslacorelib.compatibility.IBlockColorDelegate
 import net.ndrei.teslacorelib.compatibility.IItemColorDelegate
@@ -141,18 +142,7 @@ object SheetRegistry : MaterialItemRegistry({ "plate${it.capitalize()}" })
 @Target(AnnotationTarget.CLASS)
 annotation class AfterAllModsRegistry
 
-interface IAfterAllModsRegistry {
-    fun preInit(asm : ASMDataTable) {}
-    fun init(asm: ASMDataTable) {}
-    fun postInit(asm: ASMDataTable) {}
-
-    fun registerItems(asm: ASMDataTable, registry: IForgeRegistry<Item>) {}
-    fun registerBlocks(asm: ASMDataTable, registry: IForgeRegistry<Block>) {}
-    fun registerRecipes(asm: ASMDataTable, registry: IForgeRegistry<IRecipe>) {}
-    fun registerRenderers(asm: ASMDataTable) {}
-}
-
-//object AfterAllModsRegistryHandler: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm ->
+//object AfterAllModsRegistryHandler: BaseAnnotationHandler<IRegistryHandler>({ it, asm ->
 //    it.process(asm)
 //}, AfterAllModsRegistry::class)
 
@@ -173,7 +163,7 @@ class TeslaCoreRegistries {
 //        val itemRegistry = GameRegistry.findRegistry(Item::class.java)
 //        val blockRegistry = GameRegistry.findRegistry(Block::class.java)
 
-        object : BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
+        object : BaseAnnotationHandler<IRegistryHandler>({ it, asm, _ ->
             it.preInit(asm)
         }, AfterAllModsRegistry::class) {}.process(this.asm, null)
 
@@ -191,7 +181,7 @@ class TeslaCoreRegistries {
 
     @Mod.EventHandler
     fun init(event: FMLInitializationEvent) {
-        object : BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
+        object : BaseAnnotationHandler<IRegistryHandler>({ it, asm, _ ->
             it.init(asm)
         }, AfterAllModsRegistry::class) {}.process(this.asm, null)
     }
@@ -203,14 +193,14 @@ class TeslaCoreRegistries {
                     it.postRegister(this.asm)
                 }
 
-        object: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
+        object: BaseAnnotationHandler<IRegistryHandler>({ it, asm, _ ->
             it.postInit(asm)
         }, AfterAllModsRegistry::class) {}.process(this.asm, null)
     }
 
     @SubscribeEvent
     fun registerBlocks(ev: RegistryEvent.Register<Block>) {
-        object: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
+        object: BaseAnnotationHandler<IRegistryHandler>({ it, asm, _ ->
             it.registerBlocks(asm, ev.registry)
         }, AfterAllModsRegistry::class) {}.process(this.asm, null)
 
@@ -225,7 +215,7 @@ class TeslaCoreRegistries {
 
     @SubscribeEvent
     fun registerItems(ev: RegistryEvent.Register<Item>) {
-        object: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
+        object: BaseAnnotationHandler<IRegistryHandler>({ it, asm, _ ->
             it.registerItems(asm, ev.registry)
         }, AfterAllModsRegistry::class) {}.process(this.asm, null)
 
@@ -240,14 +230,14 @@ class TeslaCoreRegistries {
 
     @SubscribeEvent
     fun registerRecipes(ev: RegistryEvent.Register<IRecipe>) {
-        object: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
+        object: BaseAnnotationHandler<IRegistryHandler>({ it, asm, _ ->
             it.registerRecipes(asm, ev.registry)
         }, AfterAllModsRegistry::class) {}.process(this.asm, null)
     }
 
     @SubscribeEvent
     fun registerRenderers(ev: ModelRegistryEvent) {
-        object: BaseAnnotationHandler<IAfterAllModsRegistry>({ it, asm, _ ->
+        object: BaseAnnotationHandler<IRegistryHandler>({ it, asm, _ ->
             it.registerRenderers(asm)
         }, AfterAllModsRegistry::class) {}.process(this.asm, null)
     }
