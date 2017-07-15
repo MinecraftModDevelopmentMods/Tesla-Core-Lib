@@ -20,14 +20,17 @@ import java.awt.Color
 object HudInfoRenderer : TileEntitySpecialRenderer<TileEntity>() {
     override fun render(te: TileEntity, x: Double, y: Double, z: Double, partialTicks: Float, destroyStage: Int, alpha: Float) {
         val provider = (te as? IHudInfoProvider) ?: return
-        val lines = provider.hudLines
+        if (!this.shouldRender(te)) {
+            return
+        }
 
-        if (lines.isNotEmpty() && this.shouldRender(te)) {
-            var side = this.rendererDispatcher.cameraHitResult.sideHit
-            if (side == EnumFacing.DOWN || side == EnumFacing.UP) {
-                side = getFacingFromEntity(te.pos, this.rendererDispatcher.entityX, this.rendererDispatcher.entityZ)
-            }
+        var side = this.rendererDispatcher.cameraHitResult.sideHit
+        if (side == EnumFacing.DOWN || side == EnumFacing.UP) {
+            side = getFacingFromEntity(te.pos, this.rendererDispatcher.entityX, this.rendererDispatcher.entityZ)
+        }
+        val lines = provider.getHudLines(side)
 
+        if (lines.isNotEmpty()) {
             GlStateManager.pushMatrix()
 
             GlStateManager.translate(x.toFloat() + 0.5f, y.toFloat() + 1.0f, z.toFloat() + 0.5f)

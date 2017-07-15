@@ -3,24 +3,22 @@ package net.ndrei.teslacorelib.test
 import net.minecraft.init.Blocks
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraftforge.common.util.Constants
 import net.minecraftforge.fluids.FluidRegistry
+import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.IFluidTank
 import net.minecraftforge.items.ItemStackHandler
 import net.ndrei.teslacorelib.compatibility.ItemStackUtil
 import net.ndrei.teslacorelib.gui.FluidTankPiece
-import net.ndrei.teslacorelib.inventory.BoundingRectangle
-import net.ndrei.teslacorelib.inventory.ColoredItemHandler
-import net.ndrei.teslacorelib.inventory.LockableItemHandler
+import net.ndrei.teslacorelib.inventory.*
 import net.ndrei.teslacorelib.tileentities.ElectricMachine
 
 /**
  * Created by CF on 2017-06-27.
  */
 class TeslaCoreUITestEntity : ElectricMachine(-1) {
-    private var waterTank: IFluidTank? = null
-    private var lavaTank: IFluidTank? = null
+    private lateinit var waterTank: IFluidTank
+    private lateinit var lavaTank: IFluidTank
+    private lateinit var tempTank: IFluidTank
 
     private lateinit var inputs: LockableItemHandler
     private lateinit var outputs: ItemStackHandler
@@ -30,10 +28,31 @@ class TeslaCoreUITestEntity : ElectricMachine(-1) {
     override fun initializeInventories() {
         super.initializeInventories()
 
+        // auto filtered
         this.waterTank = super.addFluidTank(FluidRegistry.WATER, 5000, EnumDyeColor.BLUE, "Water Tank",
                 BoundingRectangle(43, 25, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT))
-        this.lavaTank = super.addFluidTank(FluidRegistry.LAVA, 5000, EnumDyeColor.RED, "Lava Tank",
+
+        this.lavaTank = object: FluidTank(5000) {
+            override fun onContentsChanged() {
+                this@TeslaCoreUITestEntity.markDirty()
+            }
+
+            override fun canFillFluidType(fluid: FluidStack?)
+                    = fluid?.fluid == FluidRegistry.LAVA
+        }
+        super.addFluidTank(this.lavaTank, EnumDyeColor.RED, "Lava Tank",
                 BoundingRectangle(43 + 18, 25, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT))
+
+        this.tempTank = object: FluidTank(5000) {
+            override fun onContentsChanged() {
+                this@TeslaCoreUITestEntity.markDirty()
+            }
+        }
+        super.addFluidTank(object: ColoredFluidHandler(this.tempTank, EnumDyeColor.LIME, "Temp Tank",
+                BoundingRectangle(43 + 18 + 18, 25, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT)) {
+            override fun acceptsFluid(fluid: FluidStack) =  fluid.fluid == FluidRegistry.WATER
+        }, null)
+
         super.ensureFluidItems()
 
         this.inputs = object : LockableItemHandler(3) {
@@ -46,6 +65,7 @@ class TeslaCoreUITestEntity : ElectricMachine(-1) {
                 return false
             }
         })
+        super.addInventoryToStorage(this.inputs, "inv_inputs")
 
         this.outputs = object : ItemStackHandler(6) {
             override fun onContentsChanged(slot: Int) {
@@ -57,42 +77,7 @@ class TeslaCoreUITestEntity : ElectricMachine(-1) {
                 return false
             }
         })
-    }
-
-    //#endregion
-    //#region write/read/sync   methods
-
-    override fun writeToNBT(compound: NBTTagCompound): NBTTagCompound {
-        var compound = compound
-        compound = super.writeToNBT(compound)
-
-        if (this.inputs != null) {
-            val nbt = this.inputs!!.serializeNBT()
-            if (nbt != null) {
-                compound.setTag("inv_inputs", nbt)
-            }
-        }
-
-        if (this.outputs != null) {
-            val nbt = this.outputs!!.serializeNBT()
-            if (nbt != null) {
-                compound.setTag("inv_outputs", nbt)
-            }
-        }
-
-        return compound
-    }
-
-    override fun readFromNBT(compound: NBTTagCompound) {
-        super.readFromNBT(compound)
-
-        if (compound.hasKey("inv_inputs", Constants.NBT.TAG_COMPOUND) && this.inputs != null) {
-            this.inputs!!.deserializeNBT(compound.getCompoundTag("inv_inputs"))
-        }
-
-        if (compound.hasKey("inv_outputs", Constants.NBT.TAG_COMPOUND) && this.outputs != null) {
-            this.outputs!!.deserializeNBT(compound.getCompoundTag("inv_outputs"))
-        }
+        super.addInventoryToStorage(this.outputs, "inv_outputs")
     }
 
     //#endregion
