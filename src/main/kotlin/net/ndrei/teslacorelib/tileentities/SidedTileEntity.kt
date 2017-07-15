@@ -1,6 +1,7 @@
 package net.ndrei.teslacorelib.tileentities
 
 import com.google.common.collect.Lists
+import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
@@ -45,6 +46,8 @@ import net.ndrei.teslacorelib.netsync.SimpleNBTMessage
 import net.ndrei.teslacorelib.render.HudInfoLine
 import net.ndrei.teslacorelib.render.HudInfoRenderer
 import net.ndrei.teslacorelib.render.IHudInfoProvider
+import net.ndrei.teslacorelib.utils.withAlpha
+import java.awt.Color
 
 /**
  * Created by CF on 2017-06-27.
@@ -639,8 +642,28 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         return super.getCapability(capability, facing)
     }
 
-    override val hudLines: List<HudInfoLine>
-        get() = listOf()
+    override fun getHudLines(face: EnumFacing?): List<HudInfoLine> {
+        return listOf(*(if ((face != null) && Minecraft.getMinecraft().player.isSneaking) {
+            arrayOf(HudInfoLine(Color.LIGHT_GRAY, Color.LIGHT_GRAY.withAlpha(.24f), "Side: ${this.getSideDirection(face).toUpperCase()} (${face.toString().capitalize()})"))
+        } else arrayOf<HudInfoLine>()), *this.hudLines.toTypedArray())
+    }
+
+    protected fun getSideDirection(face: EnumFacing)
+            = when (this.facing) {
+        face -> "front"
+        face.opposite -> "back"
+        face.rotateY() -> "right"
+        face.rotateYCCW() -> "left"
+        else -> "[error]"
+    }
+
+    protected open val hudLines: List<HudInfoLine>
+        get() = if (this.isPaused())
+            listOf(
+                    HudInfoLine(Color.RED, Color.RED.withAlpha(.24f), "PAUSED").setTextAlignment(HudInfoLine.TextAlignment.CENTER)
+            )
+        else
+            listOf()
 
     override fun onWrenchUse(wrench: TeslaWrench,
                              player: EntityPlayer, world: World, pos: BlockPos, hand: EnumHand,
@@ -678,7 +701,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
     //endregion
 
-    //#region gui / containers  nethods
+    //#region gui / containers  methods
 
     override fun getContainer(id: Int, player: EntityPlayer): BasicTeslaContainer<*> {
         return BasicTeslaContainer(this, player)
@@ -769,6 +792,9 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
             val nbt = this.setupSpecialNBTMessage("PAUSE_MACHINE")
             nbt.setBoolean("pause", this.isPaused())
             this.sendToServer(nbt)
+        }
+        else {
+            this.notifyNeighbours()
         }
     }
 
