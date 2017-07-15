@@ -36,8 +36,8 @@ minecraft {
     mappings = "${mcp_version}"
     runDir = "run"
 
-    replace "@@VERSION@@", project.mod_version
-    replaceIn "TeslaCoreLib.java"
+//    replace "@@VERSION@@", project.mod_version
+//    replaceIn "TeslaCoreLib.kt"
 }
 
 configurations {

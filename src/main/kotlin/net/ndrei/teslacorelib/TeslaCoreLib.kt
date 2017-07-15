@@ -18,8 +18,8 @@ import org.apache.logging.log4j.Logger
 /**
  * Created by CF on 2017-06-28.
  */
-@Mod(modid = TeslaCoreLib.MODID, version = TeslaCoreLib.VERSION, name = "Tesla Core Lib",
-        dependencies = "after:tesla,forgelin," + RFPowerProxy.MODID, useMetadata = true,
+@Mod(modid = TeslaCoreLib.MODID, /*version = TeslaCoreLib.VERSION, */name = "Tesla Core Lib",
+        dependencies = "required-after:tesla;required-after:forgelin;after:forge;after:${RFPowerProxy.MODID}", useMetadata = true,
         modLanguage = "kotlin", modLanguageAdapter = "net.shadowfacts.forgelin.KotlinAdapter")
 class TeslaCoreLib {
     @Mod.EventHandler
@@ -44,7 +44,7 @@ class TeslaCoreLib {
 
     companion object {
         const val MODID = "teslacorelib"
-        const val VERSION = "@@VERSION@@"
+//        const val VERSION = "@@VERSION@@"
 
         @Mod.Instance
         lateinit var instance: TeslaCoreLib

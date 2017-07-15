@@ -146,7 +146,7 @@ annotation class AfterAllModsRegistry
 //    it.process(asm)
 //}, AfterAllModsRegistry::class)
 
-@Mod(modid = TeslaCoreRegistries.MODID, version = TeslaCoreLib.VERSION, name = "Tesla Core Registries",
+@Mod(modid = TeslaCoreRegistries.MODID, /*version = TeslaCoreLib.VERSION, */name = "Tesla Core Registries",
         dependencies = "after:*", useMetadata = true,
         modLanguage = "kotlin", modLanguageAdapter = "net.shadowfacts.forgelin.KotlinAdapter")
 class TeslaCoreRegistries {
