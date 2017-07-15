@@ -16,7 +16,8 @@ import net.minecraftforge.registries.IForgeRegistry
 /**
  * Created by CF on 2017-07-07.
  */
-abstract class RegisteredBlock(modId: String, tab: CreativeTabs?, registryName: String, material: Material): Block(material) {
+abstract class RegisteredBlock(modId: String, tab: CreativeTabs?, registryName: String, material: Material)
+    : Block(material), ISelfRegisteringBlock {
     init {
         this.setRegistryName(modId, registryName)
         this.unlocalizedName = modId + "." + registryName
@@ -25,7 +26,7 @@ abstract class RegisteredBlock(modId: String, tab: CreativeTabs?, registryName: 
         }
     }
 
-    open fun register(blockRegistry: IForgeRegistry<Block>, itemRegistry: IForgeRegistry<Item>) {
+    override fun register(blockRegistry: IForgeRegistry<Block>, itemRegistry: IForgeRegistry<Item>) {
         blockRegistry.register(this)
         val item = ItemBlock(this)
         item.registryName = this.registryName
