@@ -16,7 +16,7 @@ import net.ndrei.teslacorelib.gui.IGuiContainerPiecesProvider
  * Created by CF on 2017-06-28.
  */
 class SidedFluidHandler(private val sidedConfig: ISidedItemHandlerConfig)
-    : FluidStorage(), ICapabilityProvider, IGuiContainerPiecesProvider {
+    : FluidStorage(), ICapabilityProvider, IGuiContainerPiecesProvider, Iterable<IFluidTank> {
 
     private fun getTanksForSide(facing: EnumFacing?): List<IFluidTank> {
         val list = Lists.newArrayList<IFluidTank>()
@@ -71,4 +71,6 @@ class SidedFluidHandler(private val sidedConfig: ISidedItemHandlerConfig)
 
         return list
     }
+
+    override fun iterator() = this.tanks.iterator()
 }

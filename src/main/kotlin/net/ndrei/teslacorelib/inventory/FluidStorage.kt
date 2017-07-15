@@ -10,12 +10,12 @@ import net.minecraftforge.common.util.INBTSerializable
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.IFluidTank
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler
 import net.minecraftforge.fluids.capability.FluidTankProperties
 import net.minecraftforge.fluids.capability.IFluidHandler
 import net.minecraftforge.fluids.capability.IFluidTankProperties
 import net.ndrei.teslacorelib.TeslaCoreLib
-import net.ndrei.teslacorelib.compatibility.ItemStackUtil
+import net.ndrei.teslacorelib.utils.canFillFrom
+import net.ndrei.teslacorelib.utils.fillFrom
 
 /**
  * Created by CF on 2017-06-28.
@@ -197,37 +197,37 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
         }
     }
 
-    fun tankCount(): Int {
-        return if (this.tanks == null) 0 else this.tanks.size
-    }
+    fun tankCount() = this.tanks.size
 
-    fun acceptsFluidFrom(bucket: ItemStack): Boolean {
-        if (!ItemStackUtil.isEmpty(bucket) && bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
-            val handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)
-            val fluid = handler?.drain(1000, false)
-            if (fluid != null && fluid.amount > 0) {
-                return 1000 == this.fill(fluid, false)
-            }
-        }
-        return false
-    }
+    fun acceptsFluidFrom(bucket: ItemStack) = this.tanks.canFillFrom(bucket)
+//            : Boolean {
+//        if (!bucket.isEmpty && bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
+//            val handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)
+//            val fluid = handler?.drain(1000, false)
+//            if (fluid != null && fluid.amount > 0) {
+//                return 1000 == this.fill(fluid, false)
+//            }
+//        }
+//        return false
+//    }
 
-    fun fillFluidFrom(bucket: ItemStack): ItemStack {
-        if (!ItemStackUtil.isEmpty(bucket) && bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
-            val clone = bucket.copy()
-            val handler = clone.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)
-            val fluid = handler?.drain(Fluid.BUCKET_VOLUME, false)
-            if (fluid != null && fluid.amount == Fluid.BUCKET_VOLUME) {
-                val filled = this.fill(fluid, false)
-                if (filled == Fluid.BUCKET_VOLUME) {
-                    this.fill(fluid, true)
-                    handler.drain(filled, true)
-                    return handler.container
-                }
-            }
-        }
-        return bucket
-    }
+    fun fillFluidFrom(bucket: ItemStack): ItemStack = this.tanks.fillFrom(bucket)
+//            : ItemStack {
+//        if (!ItemStackUtil.isEmpty(bucket) && bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
+//            val clone = bucket.copy()
+//            val handler = clone.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)
+//            val fluid = handler?.drain(Fluid.BUCKET_VOLUME, false)
+//            if (fluid != null && fluid.amount == Fluid.BUCKET_VOLUME) {
+//                val filled = this.fill(fluid, false)
+//                if (filled == Fluid.BUCKET_VOLUME) {
+//                    this.fill(fluid, true)
+//                    handler.drain(filled, true)
+//                    return handler.container
+//                }
+//            }
+//        }
+//        return bucket
+//    }
 
     companion object {
         private fun isSameTank(a: IFluidTank?, b: IFluidTank?): Boolean {

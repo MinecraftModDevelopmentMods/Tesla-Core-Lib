@@ -46,6 +46,7 @@ import net.ndrei.teslacorelib.netsync.SimpleNBTMessage
 import net.ndrei.teslacorelib.render.HudInfoLine
 import net.ndrei.teslacorelib.render.HudInfoRenderer
 import net.ndrei.teslacorelib.render.IHudInfoProvider
+import net.ndrei.teslacorelib.utils.processInputInventory
 import net.ndrei.teslacorelib.utils.withAlpha
 import java.awt.Color
 
@@ -112,7 +113,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     }
 
     protected fun addInventoryToStorage(handler: ItemStackHandler, storageKey: String) {
-        this.inventoryStorage!!.add(SidedTileEntity.InventoryStorageInfo(handler, storageKey))
+        this.inventoryStorage.add(SidedTileEntity.InventoryStorageInfo(handler, storageKey))
     }
 
     private class InventoryStorageInfo internal constructor(internal val inventory: ItemStackHandler, internal val storageKey: String)
@@ -172,7 +173,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                 private fun testSlot(slot: Int) {
                     // TODO: refactor this!
                     var stack = this.getStackInSlot(slot).copy()
-                    var item: Item? = if (ItemStackUtil.isEmpty(stack)) null else stack.item
+                    var item: Item? = if (stack.isEmpty) null else stack.item
                     if (item !is BaseAddon) {
                         item = null
                     } else {
@@ -228,31 +229,27 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
     protected fun <T : BaseAddon> getAddon(addonClass: Class<T>?): T? {
         if (this.addonItems != null && addonClass != null) {
-            for (index in 0..this.addonItems!!.slots - 1) {
-                val stack = this.addonItems!!.getStackInSlot(index)
-                if (!ItemStackUtil.isEmpty(stack)) {
-                    val item = stack.item
-                    if (addonClass.isAssignableFrom(item.javaClass)) {
-                        return item as T
-                    }
-                }
-            }
+            val addon = (0 until this.addonItems!!.slots)
+                    .map { this.addonItems!!.getStackInSlot(it) }
+                    .filterNot { it.isEmpty }
+                    .map { it.item }
+                    .filter { addonClass.isAssignableFrom(it.javaClass) }
+                    .firstOrNull() ?: return null
+            @Suppress("UNCHECKED_CAST")
+            return addon as T
         }
         return null
     }
 
     protected fun <T : BaseAddon> getAddonStack(addonClass: Class<T>?): ItemStack {
         if (this.addonItems != null && addonClass != null) {
-            for (index in 0..this.addonItems!!.slots - 1) {
-                val stack = this.addonItems!!.getStackInSlot(index)
-                if (!ItemStackUtil.isEmpty(stack)) {
-                    if (addonClass.isAssignableFrom(stack.item.javaClass)) {
-                        return stack
-                    }
-                }
-            }
+            val addon = (0 until this.addonItems!!.slots)
+                    .map { this.addonItems!!.getStackInSlot(it) }
+                    .filter { !it.isEmpty && addonClass.isAssignableFrom(it.item.javaClass) }
+                    .firstOrNull()
+            return addon ?: ItemStack.EMPTY
         }
-        return ItemStackUtil.emptyStack
+        return ItemStack.EMPTY
     }
 
     protected fun <T : BaseAddon> hasAddon(addonClass: Class<T>): Boolean {
@@ -261,25 +258,21 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
     val addons: List<BaseAddon>
         get() {
-            val list = Lists.newArrayList<BaseAddon>()
+            val list = mutableListOf<BaseAddon>()
 
             if (this.addonItems != null) {
-                for (index in 0..this.addonItems!!.slots - 1) {
-                    val stack = this.addonItems!!.getStackInSlot(index)
-                    if (!ItemStackUtil.isEmpty(stack)) {
-                        val item = stack.item
-                        if (item is BaseAddon) {
-                            list.add(item)
-                        }
-                    }
-                }
+                list += (0 until this.addonItems!!.slots)
+                        .map { this.addonItems!!.getStackInSlot(it) }
+                        .filterNot { it.isEmpty }
+                        .map { it.item }
+                        .filterIsInstance<BaseAddon>()
             }
 
             return list
         }
 
     protected fun isValidAddonItem(stack: ItemStack): Boolean {
-        if (!ItemStackUtil.isEmpty(stack)) {
+        if (!stack.isEmpty) {
             val item = stack.item
             if (item is BaseAddon) {
                 if (item.canBeAddedTo(this)) {
@@ -294,8 +287,8 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         if (this.addonItems != null && !this.getWorld().isRemote) {
             for (index in 0..this.addonItems!!.slots - 1) {
                 val stack = this.addonItems!!.getStackInSlot(index)
-                if (!ItemStackUtil.isEmpty(stack) && stack.item === addon) {
-                    this.addonItems!!.setStackInSlot(index, ItemStackUtil.emptyStack)
+                if (!stack.isEmpty && (stack.item === addon)) {
+                    this.addonItems!!.setStackInSlot(index, ItemStack.EMPTY)
                     if (drop) {
                         this.spawnItemFromFrontSide(stack)
                     }
@@ -304,7 +297,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
             }
         }
 
-        return ItemStackUtil.emptyStack
+        return ItemStack.EMPTY
     }
 
     //endregion
@@ -326,35 +319,28 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         return colored.innerTank
     }
 
-    protected fun addFluidTank(tank: IFluidTank?, box: BoundingRectangle?) {
-        var box = box
-        if (tank == null) {
-            return
-        }
-        this.fluidHandler!!.addTank(tank)
+    protected fun addFluidTank(tank: IFluidTank, box: BoundingRectangle?) {
+        this.fluidHandler.addTank(tank)
 
         if (tank is ColoredFluidHandler) {
-            val colored = tank as ColoredFluidHandler?
-            if (box == null) {
-                box = colored!!.boundingBox
-            }
-            if (box != null && colored!!.color != null) {
-                this.sideConfig.addColoredInfo(colored.name, colored.color, box)
+            val tankBox = box ?: tank.boundingBox
+            if (!tankBox.isEmpty) {
+                this.sideConfig.addColoredInfo(tank.name, tank.color, tankBox)
             }
         }
     }
 
     protected fun addFluidTank(tank: IFluidTank, color: EnumDyeColor?, name: String?, boundingBox: BoundingRectangle?) {
-        if (color != null && name != null && name.length > 0 && boundingBox != null) {
-            this.fluidHandler!!.addTank(ColoredFluidHandler(tank, color, name, boundingBox))
+        if (color != null && name != null && name.isNotEmpty() && boundingBox != null) {
+            this.fluidHandler.addTank(ColoredFluidHandler(tank, color, name, boundingBox))
             this.sideConfig.addColoredInfo(name, color, boundingBox)
         } else {
-            this.fluidHandler!!.addTank(tank)
+            this.fluidHandler.addTank(tank)
         }
     }
 
     protected fun removeFluidTank(color: EnumDyeColor, tank: IFluidTank) {
-        this.fluidHandler!!.removeTank(tank)
+        this.fluidHandler.removeTank(tank)
         this.sideConfig.removeColoredInfo(color)
         this.markDirty()
     }
@@ -828,18 +814,10 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     }
 
     protected open fun processFluidItems(fluidItems: ItemStackHandler) {
-        val stack = fluidItems.getStackInSlot(0)
-        if (!ItemStackUtil.isEmpty(stack) && this.fluidHandler!!.acceptsFluidFrom(stack)) {
-            val result = this.fluidHandler!!.fillFluidFrom(stack)
-            if (!ItemStack.areItemStacksEqual(stack, result)) {
-                fluidItems.setStackInSlot(0, result)
-                this.discardUsedFluidItem()
-            }
-        } else if (!ItemStackUtil.isEmpty(stack)) {
-            this.discardUsedFluidItem()
-        }
+        this.fluidHandler.processInputInventory(fluidItems)
     }
 
+    @Deprecated("Replaced by a kotlin extension to IItemHandlerModifiable.", ReplaceWith("IItemHandlerModifiable.discardUsedItem()"))
     protected fun discardUsedFluidItem() {
         if (this.fluidItems != null) {
             val source = this.fluidItems!!.getStackInSlot(0)
@@ -855,9 +833,9 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     }
 
     protected fun processBlockBroken() {
-        for (i in 0..this.itemHandler.slots - 1) {
+        for (i in 0 until this.itemHandler.slots) {
             val stack = this.itemHandler.getStackInSlot(i)
-            if (!ItemStackUtil.isEmpty(stack)) {
+            if (!stack.isEmpty) {
                 InventoryHelper.spawnItemStack(this.getWorld(), pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(), stack)
             }
         }
