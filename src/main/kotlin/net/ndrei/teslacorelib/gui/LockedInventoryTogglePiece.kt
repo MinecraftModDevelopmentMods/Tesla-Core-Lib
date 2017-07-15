@@ -14,7 +14,7 @@ class LockedInventoryTogglePiece(left: Int, top: Int, val entity: SidedTileEntit
 
     override fun drawBackgroundLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, partialTicks: Float, mouseX: Int, mouseY: Int) {
         container.bindDefaultTexture()
-        container.drawTexturedRect( this.left, this.top,
+        container.drawTexturedRect(this.left, this.top,
                 110, 210, 14, 14)
 
         if (super.isInside(container, mouseX, mouseY)) {
@@ -30,6 +30,13 @@ class LockedInventoryTogglePiece(left: Int, top: Int, val entity: SidedTileEntit
                 199 + (state % 2) * 18, 227, 14, 14)
         GlStateManager.disableBlend()
     }
+
+    override fun getStateToolTip(state: Int)
+            = listOf(when (state) {
+        0 -> "Unlock Inventory"
+        1 -> "Lock Inventory"
+        else -> "???"
+    }, *super.getStateToolTip(state).toTypedArray())
 
     override fun clicked() {
         this.entity.toggleInventoryLock(this.color)

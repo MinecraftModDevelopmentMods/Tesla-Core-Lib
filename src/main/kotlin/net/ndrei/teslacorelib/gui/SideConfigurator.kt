@@ -64,58 +64,108 @@ class SideConfigurator(left: Int, top: Int, width: Int, height: Int, private val
     override fun drawForegroundTopLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, mouseX: Int, mouseY: Int) {
         super.drawForegroundTopLayer(container, guiX, guiY, mouseX, mouseY)
 
+        val facing = this.getSide(container, mouseX, mouseY)
+        if (facing != null) {
+            container.drawTooltip(listOf(when (facing) {
+                EnumFacing.NORTH -> "back"
+                EnumFacing.SOUTH -> "front"
+                EnumFacing.EAST -> "right"
+                EnumFacing.WEST -> "left"
+                else -> facing.toString()
+            }.capitalize()),
+                    (mouseX - guiX) - (mouseX - guiX - this.left) % 18 + 9,
+                    (mouseY - guiY) - (mouseY - guiY - this.top) % 18 + 9)
+        }
+
         this.lockPiece?.drawForegroundTopLayer(container, guiX, guiY, mouseX, mouseY)
     }
 
     override fun mouseClicked(container: BasicTeslaGuiContainer<*>, mouseX: Int, mouseY: Int, mouseButton: Int) {
         if (this.selectedInventory >= 0 && this.isInside(container, mouseX, mouseY)) {
-            var localY = mouseY - container.guiTop - this.top
-            val row = localY / 18
-            if (row in 0..2) {
-                var localX = mouseX - container.guiLeft - this.left
-                val column = localX / 18
-                if (column in 1..3) {
-                    localX -= column * 18
-                    localY -= row * 18
-                    if (localX in 2..15 && localY in 2..15) {
-                        var facing: EnumFacing? = null
-                        if (row == 0) {
-                            if (column == 2) {
-                                facing = EnumFacing.UP
-                            }
-                        } else if (row == 1) {
-                            if (column == 1) {
-                                facing = EnumFacing.WEST
-                            } else if (column == 2) {
-                                facing = EnumFacing.SOUTH
-                            } else if (column == 3) {
-                                facing = EnumFacing.EAST
-                            }
-                        } else if (row == 2) {
-                            if (column == 2) {
-                                facing = EnumFacing.DOWN
-                            } else if (column == 3) {
-                                facing = EnumFacing.NORTH
-                            }
+//            var localY = mouseY - container.guiTop - this.top
+//            val row = localY / 18
+//            if (row in 0..2) {
+//                var localX = mouseX - container.guiLeft - this.left
+//                val column = localX / 18
+//                if (column in 1..3) {
+//                    localX -= column * 18
+//                    localY -= row * 18
+//                    if (localX in 2..15 && localY in 2..15) {
+//                        var facing: EnumFacing? = null
+//                        if (row == 0) {
+//                            if (column == 2) {
+//                                facing = EnumFacing.UP
+//                            }
+//                        } else if (row == 1) {
+//                            if (column == 1) {
+//                                facing = EnumFacing.WEST
+//                            } else if (column == 2) {
+//                                facing = EnumFacing.SOUTH
+//                            } else if (column == 3) {
+//                                facing = EnumFacing.EAST
+//                            }
+//                        } else if (row == 2) {
+//                            if (column == 2) {
+//                                facing = EnumFacing.DOWN
+//                            } else if (column == 3) {
+//                                facing = EnumFacing.NORTH
+//                            }
+//                        }
+
+            val facing = this.getSide(container, mouseX, mouseY)
+            if (facing != null) {
+                val color = this.sidedConfig.coloredInfo[this.selectedInventory].color
+                this.sidedConfig.toggleSide(color, facing)
+
+                val nbt = this.entity.setupSpecialNBTMessage("TOGGLE_SIDE")
+                nbt.setInteger("color", color.metadata)
+                nbt.setInteger("side", facing.index)
+                TeslaCoreLib.network.sendToServer(SimpleNBTMessage(this.entity, nbt))
+            }
+//                    }
+//                }
+        }
+
+        if ((this.lockPiece != null) && Companion.isInside(container, this.lockPiece!!, mouseX, mouseY)) {
+            this.lockPiece?.mouseClicked(container, mouseX, mouseY, mouseButton)
+        }
+    }
+
+    private fun getSide(container: BasicTeslaGuiContainer<*>, mouseX: Int, mouseY: Int): EnumFacing? {
+        var localY = mouseY - container.guiTop - this.top
+        val row = localY / 18
+        var facing: EnumFacing? = null
+        if (row in 0..2) {
+            var localX = mouseX - container.guiLeft - this.left
+            val column = localX / 18
+            if (column in 1..3) {
+                localX -= column * 18
+                localY -= row * 18
+                if (localX in 2..15 && localY in 2..15) {
+                    if (row == 0) {
+                        if (column == 2) {
+                            facing = EnumFacing.UP
                         }
-
-                        if (facing != null) {
-                            val color = this.sidedConfig.coloredInfo[this.selectedInventory].color
-                            this.sidedConfig.toggleSide(color, facing)
-
-                            val nbt = this.entity.setupSpecialNBTMessage("TOGGLE_SIDE")
-                            nbt.setInteger("color", color.metadata)
-                            nbt.setInteger("side", facing.index)
-                            TeslaCoreLib.network.sendToServer(SimpleNBTMessage(this.entity, nbt))
+                    } else if (row == 1) {
+                        if (column == 1) {
+                            facing = EnumFacing.WEST
+                        } else if (column == 2) {
+                            facing = EnumFacing.SOUTH
+                        } else if (column == 3) {
+                            facing = EnumFacing.EAST
+                        }
+                    } else if (row == 2) {
+                        if (column == 2) {
+                            facing = EnumFacing.DOWN
+                        } else if (column == 3) {
+                            facing = EnumFacing.NORTH
                         }
                     }
+
                 }
             }
-
-            if ((this.lockPiece != null) && Companion.isInside(container, this.lockPiece!!, mouseX, mouseY)) {
-                this.lockPiece?.mouseClicked(container, mouseX, mouseY, mouseButton)
-            }
         }
+        return facing
     }
 
     private fun drawSide(container: BasicTeslaGuiContainer<*>, sides: List<EnumFacing>, side: EnumFacing, column: Int, row: Int, mouseX: Int, mouseY: Int) {
