@@ -33,7 +33,6 @@ import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities
 import net.ndrei.teslacorelib.capabilities.container.IGuiContainerProvider
 import net.ndrei.teslacorelib.capabilities.inventory.SidedItemHandlerConfig
 import net.ndrei.teslacorelib.capabilities.wrench.ITeslaWrenchHandler
-import net.ndrei.teslacorelib.compatibility.ItemStackUtil
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer
 import net.ndrei.teslacorelib.containers.FilteredSlot
 import net.ndrei.teslacorelib.containers.IContainerSlotsProvider
@@ -847,7 +846,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     }
 
     fun spawnItem(stack: ItemStack, spawnPos: BlockPos): EntityItem? {
-        if (ItemStackUtil.isEmpty(stack) || this.getWorld().isRemote) {
+        if (!TeslaCoreLib.config.allowMachinesToSpawnItems() || stack.isEmpty || this.getWorld().isRemote) {
             return null
         }
 

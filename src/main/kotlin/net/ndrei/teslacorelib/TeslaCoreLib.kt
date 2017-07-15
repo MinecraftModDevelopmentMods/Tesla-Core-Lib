@@ -9,6 +9,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.ndrei.teslacorelib.compatibility.RFPowerProxy
+import net.ndrei.teslacorelib.config.TeslaCoreLibConfig
 import net.ndrei.teslacorelib.items.TeslaWrench
 import net.ndrei.teslacorelib.netsync.ITeslaCorePackets
 import net.ndrei.teslacorelib.netsync.TeslaCorePackets
@@ -24,7 +25,10 @@ class TeslaCoreLib {
     @Mod.EventHandler
     fun preInit(event: FMLPreInitializationEvent) {
         TeslaCoreLib.logger = event.modLog
+        TeslaCoreLib.config = TeslaCoreLibConfig(event.suggestedConfigurationFile)
+
         RFPowerProxy.isRFAvailable = Loader.isModLoaded(RFPowerProxy.MODID)
+
         TeslaCoreLib.proxy.preInit(event)
     }
 
@@ -49,6 +53,8 @@ class TeslaCoreLib {
         lateinit var proxy: CommonProxy
 
         lateinit var logger: Logger
+
+        lateinit var config: TeslaCoreLibConfig
 
         val network: ITeslaCorePackets = TeslaCorePackets(MODID)
 
