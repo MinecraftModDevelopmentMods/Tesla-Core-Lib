@@ -17,11 +17,14 @@ object MJSystem : IEnergySystem {
     override val ModId get() = MJSystem.MODID
 
     override fun hasCapability(capability: Capability<*>)
-            = this.isAvailable() && (capability == MjAPI.CAP_RECEIVER)
+            = this.isAvailable() && ((capability == MjAPI.CAP_RECEIVER) || (capability == MjAPI.CAP_CONNECTOR))
 
     override fun <T> wrapCapability(capability: Capability<T>, energy: IGenericEnergyStorage): T? {
         if (this.isAvailable() && (capability == MjAPI.CAP_RECEIVER)) {
             return MjAPI.CAP_RECEIVER.cast(Wrapper(energy))
+        }
+        else if (this.isAvailable() && (capability == MjAPI.CAP_CONNECTOR)) {
+            return MjAPI.CAP_CONNECTOR.cast(IMjConnector { true })
         }
         return null
     }
