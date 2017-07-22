@@ -50,7 +50,7 @@ class TeslaCoreUITestEntity : ElectricMachine(-1) {
         }
         super.addFluidTank(object: ColoredFluidHandler(this.tempTank, EnumDyeColor.LIME, "Temp Tank",
                 BoundingRectangle(43 + 18 + 18, 25, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT)) {
-            override fun acceptsFluid(fluid: FluidStack) =  fluid.fluid == FluidRegistry.WATER
+            // override fun acceptsFluid(fluid: FluidStack) =  fluid.fluid == FluidRegistry.WATER
         }, null)
 
         super.ensureFluidItems()

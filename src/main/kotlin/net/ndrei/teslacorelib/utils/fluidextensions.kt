@@ -16,7 +16,7 @@ fun Iterable<IFluidTank>.canFillFrom(bucket: ItemStack)
 fun Iterable<IFluidTank>.fillFrom(bucket: ItemStack): ItemStack
     = this.fold(bucket.copy()) { b, t -> t.fillFrom(b) }
 
-fun Iterable<IFluidTank>.processInputInventory(inventory: IItemHandlerModifiable) {
+fun Iterable<IFluidTank>.processInputInventory(inventory: IItemHandlerModifiable): Boolean {
     val stack = inventory.getStackInSlot(0)
     if (!stack.isEmpty && this.canFillFrom(stack)) {
         val result = this.fillFrom(stack)
@@ -25,11 +25,13 @@ fun Iterable<IFluidTank>.processInputInventory(inventory: IItemHandlerModifiable
             if (!this.canFillFrom(result)) {
                 inventory.discardUsedItem()
             }
+            return true
         }
     }
     else if (!stack.isEmpty) {
         inventory.discardUsedItem()
     }
+    return false
 }
 
 fun IItemHandlerModifiable.discardUsedItem()

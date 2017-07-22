@@ -95,7 +95,7 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
                 continue
             }
 
-            val drained = tank.drain(maxDrain, doDrain) ?: continue
+            val drained = tank.drain(maxDrain - (if (fluid == null) 0 else fluid.amount), doDrain) ?: continue
 
             if (fluid == null) {
                 fluid = drained.copy()
@@ -105,6 +105,10 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
                 }
             } else {
                 fluid.amount += drained.amount
+            }
+
+            if ((fluid != null) && (fluid.amount >= maxDrain)) {
+                break
             }
         }
 

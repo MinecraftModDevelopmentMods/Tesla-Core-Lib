@@ -18,7 +18,6 @@ import net.minecraft.util.EnumHand
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import net.minecraftforge.common.util.Constants
-import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.registry.GameRegistry
@@ -81,32 +80,40 @@ abstract class OrientedBlock<T : SidedTileEntity>
 
     override fun onBlockActivated(world: World?, pos: BlockPos?, state: IBlockState?, player: EntityPlayer?, hand: EnumHand?,
                                   side: EnumFacing?, hitX: Float, hitY: Float, hitZ: Float): Boolean {
-        val te = world!!.getTileEntity(pos!!)
-        if (te != null && te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null) && !world.isRemote) {
-            val tank = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null)
-            val bucket = player!!.getHeldItem(hand)
-            if (!ItemStackUtil.isEmpty(bucket) && tank != null && bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
-                val handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)
-                val fluid = handler?.drain(Fluid.BUCKET_VOLUME, false)
-                if (fluid != null && fluid.amount == Fluid.BUCKET_VOLUME) {
-                    val filled = tank.fill(fluid, false)
-                    if (filled == Fluid.BUCKET_VOLUME) {
-                        tank.fill(fluid, true)
-                        if (!player.capabilities.isCreativeMode) {
-                            handler.drain(filled, true)
-                            player.setHeldItem(hand, handler.container)
-                        }
-                    }
+        if ((world != null) && !world.isRemote && (pos != null) && (player != null) && (hand != null) && (side != null)) {
+            val te = world.getTileEntity(pos) as? SidedTileEntity
+            val bucket = player.getHeldItem(hand)
+            if (!bucket.isEmpty && bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
+                if ((te != null) && te.handleBucket(player, hand, side)) {
                     return true
                 }
             }
         }
+//        if (te != null && te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null) && !world.isRemote) {
+//            val tank = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null)
+//            val bucket = player!!.getHeldItem(hand)
+//            if (!ItemStackUtil.isEmpty(bucket) && tank != null && bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
+//                val handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)
+//                val fluid = handler?.drain(Fluid.BUCKET_VOLUME, false)
+//                if (fluid != null && fluid.amount == Fluid.BUCKET_VOLUME) {
+//                    val filled = tank.fill(fluid, false)
+//                    if (filled == Fluid.BUCKET_VOLUME) {
+//                        tank.fill(fluid, true)
+//                        if (!player.capabilities.isCreativeMode) {
+//                            handler.drain(filled, true)
+//                            player.setHeldItem(hand, handler.container)
+//                        }
+//                    }
+//                    return true
+//                }
+//            }
+//        }
 
         if (super.onBlockActivated(world, pos, state, player, hand, side, hitX, hitY, hitZ)) {
             return true
         }
 
-        if (!world.isRemote) {
+        if ((world != null) && (pos != null) && !world.isRemote) {
             player!!.openGui(TeslaCoreLib.instance, 42, world, pos.x, pos.y, pos.z)
         }
         return true
