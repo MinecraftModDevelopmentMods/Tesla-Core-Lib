@@ -10,6 +10,9 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.ndrei.teslacorelib.compatibility.RFPowerProxy
 import net.ndrei.teslacorelib.config.TeslaCoreLibConfig
+import net.ndrei.teslacorelib.energy.systems.MJSystem
+import net.ndrei.teslacorelib.energy.systems.MekanismSystem
+import net.ndrei.teslacorelib.energy.systems.TeslaSystem
 import net.ndrei.teslacorelib.items.TeslaWrench
 import net.ndrei.teslacorelib.netsync.ITeslaCorePackets
 import net.ndrei.teslacorelib.netsync.TeslaCorePackets
@@ -19,7 +22,7 @@ import org.apache.logging.log4j.Logger
  * Created by CF on 2017-06-28.
  */
 @Mod(modid = TeslaCoreLib.MODID, /*version = TeslaCoreLib.VERSION, */name = "Tesla Core Lib",
-        dependencies = "required-after:tesla;required-after:forgelin;after:forge;after:${RFPowerProxy.MODID}", useMetadata = true,
+        dependencies = "required-after:forgelin;after:forge;after:${TeslaSystem.MODID};after:${RFPowerProxy.MODID};after:${MJSystem.MODID};after:${MekanismSystem.MODID}", useMetadata = true,
         modLanguage = "kotlin", modLanguageAdapter = "net.shadowfacts.forgelin.KotlinAdapter")
 class TeslaCoreLib {
     @Mod.EventHandler

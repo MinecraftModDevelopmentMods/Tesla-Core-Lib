@@ -1,14 +1,13 @@
 package net.ndrei.teslacorelib.tileentities
 
-import net.darkhax.tesla.capability.TeslaCapabilities
 import net.minecraft.inventory.Slot
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.items.ItemStackHandler
-import net.ndrei.teslacorelib.compatibility.ItemStackUtil
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer
 import net.ndrei.teslacorelib.containers.FilteredSlot
+import net.ndrei.teslacorelib.energy.EnergySystemFactory
 import net.ndrei.teslacorelib.gui.*
 import net.ndrei.teslacorelib.inventory.BoundingRectangle
 import net.ndrei.teslacorelib.inventory.ColoredItemHandler
@@ -27,7 +26,7 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
 
     protected var outOfPower = false
 
-    private var energyItems: ItemStackHandler? = null
+    private lateinit var energyItems: ItemStackHandler
 
     private var workEnergy: EnergyStorage? = null
 
@@ -41,14 +40,11 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
                 this@ElectricMachine.markDirty()
             }
         }
-        super.addInventory(object : ColoredItemHandler(this.energyItems!!, EnumDyeColor.CYAN, "Energy Items", -10, BoundingRectangle(25, 25, 18, 54)) {
-            override fun canInsertItem(slot: Int, stack: ItemStack): Boolean {
-                return this@ElectricMachine.canInsertEnergyItem(slot, stack)
-            }
+        super.addInventory(object : ColoredItemHandler(this.energyItems, EnumDyeColor.CYAN, "Energy Items", -10, BoundingRectangle(25, 25, 18, 54)) {
+            override fun canInsertItem(slot: Int, stack: ItemStack)
+                    = (slot == 0) && (EnergySystemFactory.wrapItemStack(stack)?.tryTake() ?: false)
 
-            override fun canExtractItem(slot: Int): Boolean {
-                return slot != 0
-            }
+            override fun canExtractItem(slot: Int) = (slot > 0)
 
             override fun getSlots(container: BasicTeslaContainer<*>): MutableList<Slot> {
                 val slots = mutableListOf<Slot>()
@@ -68,22 +64,7 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
                 return pieces
             }
         })
-        super.addInventoryToStorage(this.energyItems!!, "inv_energy_items")
-    }
-
-    private fun canInsertEnergyItem(slot: Int, stack: ItemStack): Boolean {
-        if (slot != 0) {
-            return false
-        }
-
-        val tesla = if (stack.hasCapability(TeslaCapabilities.CAPABILITY_PRODUCER, null)) stack.getCapability(TeslaCapabilities.CAPABILITY_PRODUCER, null) else null
-        if (tesla != null) {
-            val holder = if (stack.hasCapability(TeslaCapabilities.CAPABILITY_HOLDER, null)) stack.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null) else null
-            if (holder == null || holder.storedPower > 0) {
-                return true
-            }
-        }
-        return false
+        super.addInventoryToStorage(this.energyItems, "inv_energy_items")
     }
 
     //#endregion
@@ -181,10 +162,10 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
         get() = if (this.workEnergy != null) this.workEnergy!!.capacity else 0
 
     override val workEnergyStored: Long
-        get() = (if (this.workEnergy != null) this.workEnergy!!.energyStored else 0).toLong()
+        get() = (if (this.workEnergy != null) this.workEnergy!!.stored else 0).toLong()
 
     override val workEnergyTick: Long
-        get() = if (this.workEnergy != null) this.workEnergy!!.getInputRate() else 0
+        get() = if (this.workEnergy != null) this.workEnergy!!.getEnergyInputRate() else 0
 
     private val finalEnergyForWork: Int
         get() {
@@ -207,13 +188,13 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
 
     fun updateWorkEnergyRate() {
         if (this.workEnergy != null) {
-            this.workEnergy!!.setInputRate(Math.round(this.energyForWorkRate * this.energyForWorkRateMultiplier).toLong())
+            this.workEnergy!!.setEnergyInputRate(Math.round(this.energyForWorkRate * this.energyForWorkRateMultiplier).toLong())
         }
     }
 
     fun updateWorkEnergyCapacity() {
         if (this.workEnergy != null) {
-            this.workEnergy!!.capacity = this.finalEnergyForWork.toLong()
+            this.workEnergy!!.setCapacity(this.finalEnergyForWork.toLong())
         }
     }
 
@@ -224,8 +205,8 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
 
         if (!this.workEnergy!!.isFull) {
             val toTransfer = Math.min(
-                    this.workEnergy!!.capacity - this.workEnergy!!.storedPower,
-                    this.workEnergy!!.getInputRate())
+                    this.workEnergy!!.capacity - this.workEnergy!!.stored,
+                    this.workEnergy!!.getEnergyInputRate())
             val transferred = this.energyStorage.takePower(toTransfer)
             this.workEnergy!!.givePower(transferred)
         }
@@ -248,29 +229,28 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
     override fun processImmediateInventories() {
         super.processImmediateInventories()
 
-        if (this.energyItems != null) {
-            val stack = this.energyItems!!.getStackInSlot(0)
-            if (!ItemStackUtil.isEmpty(stack)) {
-                val producer = stack.getCapability(TeslaCapabilities.CAPABILITY_PRODUCER, null)
-                if (producer != null) {
-                    val power = producer.takePower(this.energyStorage.getInputRate(), true)
-                    if (power == 0L) {
-                        this.discardUsedEnergyItem()
-                    } else {
-                        val accepted = this.energyStorage.givePower(power, false)
-                        producer.takePower(accepted, false)
-                    }
-                } else {
-                    this.discardUsedEnergyItem()
+        val stack = this.energyItems.getStackInSlot(0)
+        val wrapper = EnergySystemFactory.wrapItemStack(stack)
+        if (wrapper != null) {
+            val power = wrapper.takePower(this.energyStorage.getEnergyInputRate(), true)
+            if (power == 0L) {
+                this.discardUsedEnergyItem()
+            } else {
+                val accepted = this.energyStorage.givePower(power, false)
+                if (accepted > 0) {
+                    wrapper.takePower(accepted, false)
                 }
             }
+        }
+        else {
+            this.discardUsedEnergyItem()
         }
     }
 
     private fun discardUsedEnergyItem() {
-        val stack = this.energyItems!!.getStackInSlot(0)
-        val remaining = this.energyItems!!.insertItem(1, stack, false)
-        this.energyItems!!.setStackInSlot(0, remaining)
+        val stack = this.energyItems.getStackInSlot(0)
+        val remaining = this.energyItems.insertItem(1, stack, false)
+        this.energyItems.setStackInSlot(0, remaining)
     }
 
     //endregion

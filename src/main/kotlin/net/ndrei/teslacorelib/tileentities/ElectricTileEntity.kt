@@ -28,7 +28,7 @@ abstract class ElectricTileEntity protected constructor(typeId: Int) : SidedTile
 
     override fun initializeInventories() {
         this.energyStorage = object : EnergyStorage(this.maxEnergy, this.energyInputRate, this.energyOutputRate) {
-            override fun onChanged() {
+            override fun onChanged(old: Long, current: Long) {
                 this@ElectricTileEntity.markDirty()
                 this@ElectricTileEntity.forceSync()
             }

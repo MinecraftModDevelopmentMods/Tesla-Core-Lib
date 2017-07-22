@@ -15,7 +15,7 @@ class TeslaEnergyLevelPiece(left: Int, top: Int, private val energyStorage: Ener
         container.drawTexturedRect(this.left, this.top, 1, 189, this.width, this.height)
 
         if (this.energyStorage != null) {
-            val power = this.energyStorage.energyStored * (this.height - 6) / this.energyStorage.maxEnergyStored
+            val power = (this.energyStorage.stored * (this.height - 6) / this.energyStorage.capacity).toInt()
 
             container.drawTexturedRect(this.left + 2, this.top + 2, 20, 191, this.width - 4, this.height - 4)
             container.drawTexturedRect(this.left + 3, this.top + 3 + this.height - 6 - power, 35, 192 + this.height - 6 - power, this.width - 6, power + 2)
@@ -26,8 +26,8 @@ class TeslaEnergyLevelPiece(left: Int, top: Int, private val energyStorage: Ener
         if (super.isInside(container, mouseX, mouseY) && this.energyStorage != null) {
             val lines = Lists.newArrayList<String>()
             lines.add(String.format("%sStored Energy", ChatFormatting.DARK_PURPLE))
-            lines.add(String.format("%s%,d T %sof", ChatFormatting.AQUA, this.energyStorage.energyStored, ChatFormatting.DARK_GRAY))
-            lines.add(String.format("%s%,d T", ChatFormatting.RESET, this.energyStorage.maxEnergyStored))
+            lines.add(String.format("%s%,d T %sof", ChatFormatting.AQUA, this.energyStorage.stored, ChatFormatting.DARK_GRAY))
+            lines.add(String.format("%s%,d T", ChatFormatting.RESET, this.energyStorage.capacity))
 
             val tick = this.energyStorage.lastTickEnergy
             val average = this.energyStorage.averageEnergyPerTick

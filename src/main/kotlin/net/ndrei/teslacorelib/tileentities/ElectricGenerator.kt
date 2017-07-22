@@ -1,7 +1,6 @@
 package net.ndrei.teslacorelib.tileentities
 
 import cofh.redstoneflux.api.IEnergyProvider
-import net.darkhax.tesla.capability.TeslaCapabilities
 import net.minecraft.inventory.Slot
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
@@ -13,6 +12,8 @@ import net.ndrei.teslacorelib.compatibility.ItemStackUtil
 import net.ndrei.teslacorelib.compatibility.RFPowerProxy
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer
 import net.ndrei.teslacorelib.containers.FilteredSlot
+import net.ndrei.teslacorelib.energy.EnergySystemFactory
+import net.ndrei.teslacorelib.energy.IGenericEnergyStorage
 import net.ndrei.teslacorelib.gui.BasicRenderedGuiPiece
 import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer
 import net.ndrei.teslacorelib.gui.IGuiContainerPiece
@@ -41,23 +42,13 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
             }
         }
         super.addInventory(object : ColoredItemHandler(this.chargePadItems!!, EnumDyeColor.BROWN, "Charge Pad", -10, BoundingRectangle(34, 34, 18, 36)) {
-            override fun canInsertItem(slot: Int, stack: ItemStack): Boolean {
-                return !ItemStackUtil.isEmpty(stack) && stack.hasCapability(TeslaCapabilities.CAPABILITY_CONSUMER, null)
-            }
+            override fun canInsertItem(slot: Int, stack: ItemStack)
+                    = EnergySystemFactory.wrapItemStack(stack)?.canGive ?: false
 
             override fun canExtractItem(slot: Int): Boolean {
-                val stack = this.getStackInSlot(slot)
-                if (!ItemStackUtil.isEmpty(stack)) {
-                    val holder = stack.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, null)
-                    if (holder != null) {
-                        return holder.capacity == holder.storedPower
-                    } else {
-                        val consumer = stack.getCapability(TeslaCapabilities.CAPABILITY_CONSUMER, null)
-                        if (consumer != null) {
-                            val consumed = consumer.givePower(1, true)
-                            return consumed == 0L
-                        }
-                    }
+                val wrapper = EnergySystemFactory.wrapItemStack(this.getStackInSlot(slot))
+                if (wrapper != null) {
+                    return (wrapper.givePower(1L, true) > 0L)
                 }
                 return true
             }
@@ -97,6 +88,15 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
     protected open val energyFillRate: Long
         get() = 160
 
+    val generatedPowerCapacity: Long
+        get() = if (this.generatedPower == null) 0 else this.generatedPower!!.capacity
+
+    val generatedPowerStored: Long
+        get() = if (this.generatedPower == null) 0 else this.generatedPower!!.stored
+
+    val generatedPowerReleaseRate: Long
+        get() = if (this.generatedPower == null) 0 else this.generatedPower!!.getEnergyOutputRate()
+
     //endregion
 
     //#region work              methods
@@ -109,7 +109,7 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
 
     public override fun protectedUpdate() {
         if (this.generatedPower != null && !this.generatedPower!!.isEmpty) {
-            val power = this.generatedPower!!.takePower(this.generatedPower!!.getOutputRate(), !this.isGeneratedPowerLostIfFull)
+            val power = this.generatedPower!!.takePower(this.generatedPower!!.getEnergyOutputRate(), !this.isGeneratedPowerLostIfFull)
             val consumed = this.energyStorage.givePower(power)
             if (consumed > 0 && this.isGeneratedPowerLostIfFull) {
                 this.generatedPower!!.takePower(consumed)
@@ -136,10 +136,10 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
 
         // TODO: research if this should be done only on server side or not
         if (!this.energyStorage.isEmpty) {
+            val consumers = mutableListOf<IGenericEnergyStorage>()
+
             val powerSides = this.sideConfig.getSidesForColor(this.energyStorage.color!!)
             if (powerSides.isNotEmpty()) {
-                val consumers = mutableListOf<(power: Long) -> Long>()
-
                 val pos = this.getPos()
                 val facing = this.facing
                 for (side in powerSides) {
@@ -148,37 +148,30 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
                         oriented = oriented.opposite
                     }
 
-                    val entity = this.getWorld().getTileEntity(pos.offset(oriented))
-                    if (entity != null && entity.hasCapability(TeslaCapabilities.CAPABILITY_CONSUMER, oriented.opposite)) {
-                        val consumer = entity.getCapability(TeslaCapabilities.CAPABILITY_CONSUMER, oriented.opposite)
-                        if (consumer != null) {
-                            consumers.add({ consumer.givePower(it, false) })
+                    val entity = this.getWorld().getTileEntity(pos.offset(oriented)) ?: continue
+                    val wrapper = EnergySystemFactory.wrapTileEntity(entity, oriented.opposite) ?: continue
+                    consumers.add(wrapper)
+                }
+            }
+
+            if (consumers.size > 0) {
+                var total = this.energyStorage.getEnergyOutputRate()
+                total = this.energyStorage.takePower(total, true)
+                var totalConsumed: Long = 0
+                var consumerCount = consumers.size
+                for (consumer in consumers) {
+                    val perConsumer = total / consumerCount
+                    consumerCount--
+                    if (perConsumer > 0) {
+                        val consumed = consumer.givePower(perConsumer, false)
+                        if (consumed > 0) {
+                            totalConsumed += consumed
                         }
-                    }
-                    else if ((entity != null) && RFPowerProxy.isRFAvailable && RFPowerProxy.isRFAcceptor(entity, oriented.opposite)) {
-                        consumers.add({ RFPowerProxy.givePowerTo(entity, oriented.opposite, it) })
                     }
                 }
 
-                if (consumers.size > 0) {
-                    var total = this.energyStorage.getOutputRate()
-                    total = this.energyStorage.takePower(total, true)
-                    var totalConsumed: Long = 0
-                    var consumerCount = consumers.size
-                    for (consumer in consumers) {
-                        val perConsumer = total / consumerCount
-                        consumerCount--
-                        if (perConsumer > 0) {
-                            val consumed = consumer(perConsumer)
-                            if (consumed > 0) {
-                                totalConsumed += consumed
-                            }
-                        }
-                    }
-
-                    if (totalConsumed > 0) {
-                        this.energyStorage.takePower(totalConsumed)
-                    }
+                if (totalConsumed > 0) {
+                    this.energyStorage.takePower(totalConsumed)
                 }
             }
         }
@@ -195,14 +188,14 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
                 continue
             }
 
-            val available = this.energyStorage.takePower(this.energyStorage.getOutputRate(), true)
+            val available = this.energyStorage.takePower(this.energyStorage.getEnergyOutputRate(), true)
             if (available == 0L) {
                 break
             }
 
-            val consumer = stack.getCapability(TeslaCapabilities.CAPABILITY_CONSUMER, null)
-            if (consumer != null) {
-                val consumed = consumer.givePower(available, false)
+            val wrapper = EnergySystemFactory.wrapItemStack(stack)
+            if (wrapper != null) {
+                val consumed = wrapper.givePower(available, false)
                 if (consumed > 0) {
                     this.energyStorage.takePower(consumed, false)
                 }
@@ -237,47 +230,35 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
 
     //#endregion
 
-    val generatedPowerCapacity: Long
-        get() = if (this.generatedPower == null) 0 else this.generatedPower!!.capacity
-
-    val generatedPowerStored: Long
-        get() = if (this.generatedPower == null) 0 else this.generatedPower!!.storedPower
-
-    val generatedPowerReleaseRate: Long
-        get() = if (this.generatedPower == null) 0 else this.generatedPower!!.getOutputRate()
-
     //#region RF Power Support
 
     @Optional.Method(modid = RFPowerProxy.MODID)
     override fun getMaxEnergyStored(from: EnumFacing?): Int {
-        if (this.hasCapability(TeslaCapabilities.CAPABILITY_HOLDER, from)) {
-            val cap = this.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, from)
-            return cap?.capacity?.toInt() ?: 0
+        if (this.energyStorage.isSideAllowed(this.orientFacing(from))) {
+            return this.energyStorage.capacity.toInt()
         }
         return 0
     }
 
     @Optional.Method(modid = RFPowerProxy.MODID)
     override fun getEnergyStored(from: EnumFacing?): Int {
-        if (this.hasCapability(TeslaCapabilities.CAPABILITY_HOLDER, from)) {
-            val cap = this.getCapability(TeslaCapabilities.CAPABILITY_HOLDER, from)
-            return cap?.storedPower?.toInt() ?: 0
+        if (this.energyStorage.isSideAllowed(this.orientFacing(from))) {
+            return this.energyStorage.stored.toInt()
         }
         return 0
     }
 
     @Optional.Method(modid = RFPowerProxy.MODID)
     override fun extractEnergy(from: EnumFacing?, maxExtract: Int, simulate: Boolean): Int {
-        if (this.hasCapability(TeslaCapabilities.CAPABILITY_PRODUCER, from)) {
-            val cap = this.getCapability(TeslaCapabilities.CAPABILITY_PRODUCER, from)
-            return cap?.takePower(maxExtract.toLong(), simulate)?.toInt() ?: 0
+        if (this.energyStorage.isSideAllowed(this.orientFacing(from))) {
+            return this.energyStorage.takePower(maxExtract.toLong(), simulate).toInt()
         }
         return 0
     }
 
     @Optional.Method(modid = RFPowerProxy.MODID)
     override fun canConnectEnergy(from: EnumFacing?)
-            = (this.hasCapability(TeslaCapabilities.CAPABILITY_HOLDER, from))
+            = this.energyStorage.isSideAllowed(this.orientFacing(from))
 
     //#endregion
 }

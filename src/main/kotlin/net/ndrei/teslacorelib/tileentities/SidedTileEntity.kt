@@ -22,6 +22,7 @@ import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.util.Constants
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.IFluidTank
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import net.minecraftforge.items.CapabilityItemHandler
@@ -419,6 +420,36 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
     protected open fun shouldAddFluidItemsInventory(): Boolean = this.fluidHandler.tankCount() != 0
 
+    protected open fun processFluidItems(fluidItems: ItemStackHandler) {
+        this.fluidHandler.processInputInventory(fluidItems)
+    }
+
+    @Deprecated("Replaced by a kotlin extension to IItemHandlerModifiable.", ReplaceWith("IItemHandlerModifiable.discardUsedItem()"))
+    protected fun discardUsedFluidItem() {
+        if (this.fluidItems != null) {
+            val source = this.fluidItems!!.getStackInSlot(0)
+            val result = this.fluidItems!!.insertItem(1, source, false)
+            this.fluidItems!!.setStackInSlot(0, result)
+        }
+    }
+
+    fun handleBucket(player: EntityPlayer, hand: EnumHand, side: EnumFacing): Boolean {
+        val bucket = player.getHeldItem(hand)
+        if (!bucket.isEmpty && bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
+            val handler = ItemStackHandler(2)
+            handler.setStackInSlot(0, bucket.copy())
+            handler.setStackInSlot(1, ItemStack.EMPTY)
+            if (this.fluidHandler.processInputInventory(handler)) {
+                if (!player.capabilities.isCreativeMode) {
+                    val result = handler.getStackInSlot(if (handler.getStackInSlot(0).isEmpty) 1 else 0)
+                    player.setHeldItem(hand, result)
+                }
+                return true
+            }
+        }
+        return false
+    }
+
     //endregion
 
     //region storage & sync    methods
@@ -809,19 +840,6 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     protected open fun processImmediateInventories() {
         if (this.fluidItems != null) {
             this.processFluidItems(this.fluidItems!!)
-        }
-    }
-
-    protected open fun processFluidItems(fluidItems: ItemStackHandler) {
-        this.fluidHandler.processInputInventory(fluidItems)
-    }
-
-    @Deprecated("Replaced by a kotlin extension to IItemHandlerModifiable.", ReplaceWith("IItemHandlerModifiable.discardUsedItem()"))
-    protected fun discardUsedFluidItem() {
-        if (this.fluidItems != null) {
-            val source = this.fluidItems!!.getStackInSlot(0)
-            val result = this.fluidItems!!.insertItem(1, source, false)
-            this.fluidItems!!.setStackInSlot(0, result)
         }
     }
 

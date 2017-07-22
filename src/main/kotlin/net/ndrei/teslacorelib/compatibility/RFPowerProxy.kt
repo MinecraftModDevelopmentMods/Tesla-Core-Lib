@@ -17,11 +17,21 @@ object RFPowerProxy {
             = (te is IEnergyReceiver) && te.canConnectEnergy(facing)
 
     @Optional.Method(modid = RFPowerProxy.MODID)
-    fun givePowerTo(te: TileEntity, facing: EnumFacing, power: Long): Long {
+    fun givePowerTo(te: TileEntity, facing: EnumFacing, power: Long, simulate: Boolean = false): Long {
         val receiver = (te as? IEnergyReceiver) ?: return 0
         return if (receiver.canConnectEnergy(facing))
-            receiver.receiveEnergy(facing, power.toInt(), false).toLong()
+            receiver.receiveEnergy(facing, power.toInt(), simulate).toLong()
         else
             0
+    }
+
+    fun getEnergyStored(te: TileEntity, facing: EnumFacing): Int {
+        val receiver = (te as? IEnergyReceiver) ?: return 0
+        return receiver.getEnergyStored(facing)
+    }
+
+    fun getMaxEnergyStored(te: TileEntity, facing: EnumFacing): Int {
+        val receiver = (te as? IEnergyReceiver) ?: return 0
+        return receiver.getMaxEnergyStored(facing)
     }
 }
