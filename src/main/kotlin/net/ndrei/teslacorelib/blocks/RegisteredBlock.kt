@@ -28,9 +28,13 @@ abstract class RegisteredBlock(modId: String, tab: CreativeTabs?, registryName: 
 
     override fun register(blockRegistry: IForgeRegistry<Block>, itemRegistry: IForgeRegistry<Item>) {
         blockRegistry.register(this)
+        this.registerItemBlock(itemRegistry)
+    }
+
+    protected open fun registerItemBlock(registry: IForgeRegistry<Item>) {
         val item = ItemBlock(this)
         item.registryName = this.registryName
-        itemRegistry.register(item)
+        registry.register(item)
     }
 
     @Deprecated("One should really use JSON resources for recipes.", ReplaceWith("A JSON File!"), DeprecationLevel.WARNING)
@@ -49,6 +53,11 @@ abstract class RegisteredBlock(modId: String, tab: CreativeTabs?, registryName: 
 
     @SideOnly(Side.CLIENT)
     open fun registerRenderer() {
+        this.registerItemBlockRenderer()
+    }
+
+    @SideOnly(Side.CLIENT)
+    protected open fun registerItemBlockRenderer() {
         ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0,
                 ModelResourceLocation(this.registryName!!, "inventory")
         )
