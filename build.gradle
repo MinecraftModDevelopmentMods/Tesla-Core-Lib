@@ -52,14 +52,17 @@ repositories {
     maven { url 'http://maven.ndrei.net' }
     maven { url 'http://maven.shadowfacts.net' }
     maven { url 'http://maven.covers1624.net' }
+    maven { url 'https://www.mod-buildcraft.com/maven' }
     mavenLocal()
 }
 
 dependencies {
-    compile "net.darkhax.tesla:Tesla-1.12:$tesla_version:deobf"
     deployerJars 'org.apache.maven.wagon:wagon-ftp:2.2'
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile "net.shadowfacts:Forgelin:$forgelin_version"
+
+    compileOnly "net.darkhax.tesla:Tesla-1.12:$tesla_version:deobf"
+    compileOnly "com.mod-buildcraft:buildcraft-api:$bc_version"
     compile "cofh:RedstoneFlux:1.12-$redstoneflux_version:universal"
 }
 
