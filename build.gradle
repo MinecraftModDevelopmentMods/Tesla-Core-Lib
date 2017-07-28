@@ -17,7 +17,7 @@ apply plugin: "maven-publish"
 apply plugin: "maven"
 
 archivesBaseName = project.mod_name.replace(' ', '-').toLowerCase()
-group = "net.ndrei.${project.mod_id}"
+group = "net.ndrei.${archivesBaseName}"
 
 version = "${project.minecraft_version}-${project.mod_version}"
 if (project.hasProperty('mod_suffix')) {
