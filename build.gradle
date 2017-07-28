@@ -17,20 +17,19 @@ apply plugin: "maven-publish"
 apply plugin: "maven"
 
 archivesBaseName = project.mod_name.replace(' ', '-').toLowerCase()
-group = "net.ndrei.${archivesBaseName}"
+group = "net.ndrei"
 
 version = "${project.minecraft_version}-${project.mod_version}"
 if (project.hasProperty('mod_suffix')) {
     version += "-${project.mod_suffix}"
 }
 
-compileJava {
-    sourceCompatibility = targetCompatibility = "1.8"
-}
+compileJava { sourceCompatibility = targetCompatibility = "1.8" }
+compileKotlin { kotlinOptions { jvmTarget = "1.8" } }
 
 minecraft {
-    version = "${minecraft_version}-${forge_version}"
-    mappings = "${mcp_version}"
+    version = "${project.minecraft_version}-${project.forge_version}"
+    mappings = "${project.mcp_version}"
     runDir = "run"
 
     replace '@MOD-ID@', project.mod_id
@@ -71,22 +70,22 @@ configurations {
 repositories {
     mavenCentral()
     jcenter()
-    maven { url 'http://maven.epoxide.xyz' }
-    maven { url 'http://maven.ndrei.net' }
-    maven { url 'http://maven.shadowfacts.net' }
-    maven { url 'http://maven.covers1624.net' }
-    maven { url 'https://www.mod-buildcraft.com/maven' }
+    maven { name='forgelin'; url='http://maven.shadowfacts.net' }
+
+    maven { name='tesla'; url='http://maven.epoxide.xyz' }
+    maven { name='redstone flux'; url='http://maven.covers1624.net' }
+    maven { name='build craft'; url='https://www.mod-buildcraft.com/maven' }
     mavenLocal()
 }
 
 dependencies {
     deployerJars 'org.apache.maven.wagon:wagon-ftp:2.2'
-    compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
-    compile "net.shadowfacts:Forgelin:$forgelin_version"
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jre8:${project.kotlin_version}"
+    compile "net.shadowfacts:Forgelin:${project.forgelin_version}"
 
-    compileOnly "net.darkhax.tesla:Tesla-1.12:$tesla_version:deobf"
-    compileOnly "com.mod-buildcraft:buildcraft-api:$bc_version"
-    compile "cofh:RedstoneFlux:1.12-$redstoneflux_version:universal"
+    compileOnly "net.darkhax.tesla:Tesla-${project.minecraft_version}:${project.tesla_version}:deobf"
+    compileOnly "com.mod-buildcraft:buildcraft-api:${project.bc_version}"
+    compile "cofh:RedstoneFlux:${project.minecraft_version}-${project.redstoneflux_version}:universal"
 }
 
 processResources {
