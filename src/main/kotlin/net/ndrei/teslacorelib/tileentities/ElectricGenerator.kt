@@ -1,15 +1,12 @@
 package net.ndrei.teslacorelib.tileentities
 
-import cofh.redstoneflux.api.IEnergyProvider
 import net.minecraft.inventory.Slot
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
-import net.minecraftforge.fml.common.Optional
 import net.minecraftforge.items.ItemStackHandler
 import net.ndrei.teslacorelib.compatibility.ItemStackUtil
-import net.ndrei.teslacorelib.compatibility.RFPowerProxy
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer
 import net.ndrei.teslacorelib.containers.FilteredSlot
 import net.ndrei.teslacorelib.energy.EnergySystemFactory
@@ -24,8 +21,7 @@ import net.ndrei.teslacorelib.inventory.EnergyStorage
 /**
  * Created by CF on 2017-06-27.
  */
-@Optional.Interface(iface = "cofh.redstoneflux.api.IEnergyProvider", modid = RFPowerProxy.MODID, striprefs = true)
-abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTileEntity(typeId), IEnergyProvider {
+abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTileEntity(typeId) {
     private var generatedPower: EnergyStorage? = null
     private var chargePadItems: ItemStackHandler? = null
 
@@ -227,38 +223,6 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
             this.generatedPower!!.deserializeNBT(compound.getCompoundTag("generated_energy"))
         }
     }
-
-    //#endregion
-
-    //#region RF Power Support
-
-    @Optional.Method(modid = RFPowerProxy.MODID)
-    override fun getMaxEnergyStored(from: EnumFacing?): Int {
-        if (this.energyStorage.isSideAllowed(this.orientFacing(from))) {
-            return this.energyStorage.capacity.toInt()
-        }
-        return 0
-    }
-
-    @Optional.Method(modid = RFPowerProxy.MODID)
-    override fun getEnergyStored(from: EnumFacing?): Int {
-        if (this.energyStorage.isSideAllowed(this.orientFacing(from))) {
-            return this.energyStorage.stored.toInt()
-        }
-        return 0
-    }
-
-    @Optional.Method(modid = RFPowerProxy.MODID)
-    override fun extractEnergy(from: EnumFacing?, maxExtract: Int, simulate: Boolean): Int {
-        if (this.energyStorage.isSideAllowed(this.orientFacing(from))) {
-            return this.energyStorage.takePower(maxExtract.toLong(), simulate).toInt()
-        }
-        return 0
-    }
-
-    @Optional.Method(modid = RFPowerProxy.MODID)
-    override fun canConnectEnergy(from: EnumFacing?)
-            = this.energyStorage.isSideAllowed(this.orientFacing(from))
 
     //#endregion
 }

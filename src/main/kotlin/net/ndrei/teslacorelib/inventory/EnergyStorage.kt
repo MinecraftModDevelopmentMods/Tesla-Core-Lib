@@ -14,7 +14,7 @@ import net.ndrei.teslacorelib.energy.GenericEnergyStorage
  * Created by CF on 2017-06-28.
  */
 open class EnergyStorage(maxStoredEnergy: Long, inputRate: Long, outputRate: Long)
-    : GenericEnergyStorage(maxStoredEnergy, inputRate, outputRate), /* ITeslaConsumer, ITeslaHolder, ITeslaProducer, IStrictEnergyAcceptor, IEnergyStorage,*/ INBTSerializable<NBTTagCompound>, ICapabilityProvider, IEnergyStatistics {
+    : GenericEnergyStorage(maxStoredEnergy, inputRate, outputRate), INBTSerializable<NBTTagCompound>, ICapabilityProvider, IEnergyStatistics {
 
     var color: EnumDyeColor? = null
         private set
@@ -27,111 +27,6 @@ open class EnergyStorage(maxStoredEnergy: Long, inputRate: Long, outputRate: Lon
     override final var lastTickEnergy: Long = 0
         private set
     private val statTicks = mutableListOf<Long>()
-
-    //region forge energy
-
-//    override fun receiveEnergy(maxReceive: Int, simulate: Boolean): Int {
-//        return this.givePower(maxReceive.toLong(), simulate).toInt()
-//    }
-//
-//    override fun extractEnergy(maxExtract: Int, simulate: Boolean): Int {
-//        return this.takePower(maxExtract.toLong(), simulate).toInt()
-//    }
-//
-//    override fun getEnergyStored(): Int {
-//        return Math.min(Integer.MAX_VALUE.toLong(), this.storedPower).toInt()
-//    }
-//
-//    override fun getMaxEnergyStored(): Int {
-//        return Math.min(Integer.MAX_VALUE.toLong(), this.getCapacity()).toInt()
-//    }
-//
-//    override fun canExtract(): Boolean {
-//        return this.getOutputRate() > 0
-//    }
-//
-//    override fun canReceive(): Boolean {
-//        return this.getInputRate() > 0
-//    }
-
-    //endregion
-    //region IStrictEnergyAcceptor
-
-//    @Optional.Method(modid = "Mekanism")
-//    override fun getEnergy(): Double {
-//        return this.energyStored.toDouble()
-//    }
-//
-//    @Optional.Method(modid = "Mekanism")
-//    override fun setEnergy(energy: Double) {
-//        // TODO: ??
-//    }
-//
-//    @Optional.Method(modid = "Mekanism")
-//    override fun getMaxEnergy(): Double {
-//        return this.maxEnergyStored.toDouble()
-//    }
-//
-//    @Optional.Method(modid = "Mekanism")
-//    override fun transferEnergyToAcceptor(side: EnumFacing, amount: Double): Double {
-//        var tesla = Math.round(amount.toFloat() * .4f)
-//        tesla = this.receiveEnergy(tesla, false)
-//        return tesla / .4
-//    }
-//
-//    @Optional.Method(modid = "Mekanism")
-//    override fun canReceiveEnergy(side: EnumFacing): Boolean {
-//        return this.canReceive()
-//    }
-
-    //endregion
-    //#region tesla energy
-
-//    override fun getStoredPower(): Long {
-//        return this.stored
-//    }
-//
-//    override fun givePower(tesla: Long, simulated: Boolean): Long {
-//        return this.givePower(tesla, simulated, false)
-//    }
-//
-//    private fun givePower(tesla: Long, simulated: Boolean, forced: Boolean): Long {
-//        val acceptedTesla = if (forced)
-//            Math.min(this.getCapacity() - this.stored, tesla)
-//        else
-//            Math.min(this.getCapacity() - this.stored, Math.min(this.getInputRate(), tesla))
-//
-//        if (!simulated) {
-//            this.stored += acceptedTesla
-//            this.onChanged()
-//        }
-//
-//        return acceptedTesla
-//    }
-//
-//    override fun takePower(tesla: Long, simulated: Boolean): Long {
-//        return this.takePower(tesla, simulated, false)
-//    }
-//
-//    private fun takePower(tesla: Long, simulated: Boolean, forced: Boolean): Long {
-//        val removedPower = if (forced)
-//            Math.min(this.stored, tesla)
-//        else
-//            Math.min(this.stored, Math.min(this.getOutputRate(), tesla))
-//
-//        if (!simulated) {
-//            this.stored -= removedPower
-//            this.onChanged()
-//        }
-//
-//        return removedPower
-//    }
-//
-//    override fun getCapacity(): Long {
-//        return this.capacity
-//    }
-
-    //#endregion
 
     //region util method
 
