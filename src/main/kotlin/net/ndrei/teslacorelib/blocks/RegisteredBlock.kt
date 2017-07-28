@@ -26,12 +26,11 @@ abstract class RegisteredBlock(modId: String, tab: CreativeTabs?, registryName: 
         }
     }
 
-    override fun register(blockRegistry: IForgeRegistry<Block>, itemRegistry: IForgeRegistry<Item>) {
+    override fun registerBlock(blockRegistry: IForgeRegistry<Block>) {
         blockRegistry.register(this)
-        this.registerItemBlock(itemRegistry)
     }
 
-    protected open fun registerItemBlock(registry: IForgeRegistry<Item>) {
+    override fun registerItem(registry: IForgeRegistry<Item>) {
         val item = ItemBlock(this)
         item.registryName = this.registryName
         registry.register(item)

@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
@@ -48,9 +47,8 @@ abstract class OrientedBlock<T : SidedTileEntity>
                 .withProperty(FACING, EnumFacing.NORTH)
     }
 
-    override fun register(blockRegistry: IForgeRegistry<Block>, itemRegistry: IForgeRegistry<Item>) {
-        super.register(blockRegistry, itemRegistry)
-
+    override fun registerBlock(blockRegistry: IForgeRegistry<Block>) {
+        super.registerBlock(blockRegistry)
         GameRegistry.registerTileEntity(this.teClass, this.registryName!!.toString() + "_tile")
     }
 

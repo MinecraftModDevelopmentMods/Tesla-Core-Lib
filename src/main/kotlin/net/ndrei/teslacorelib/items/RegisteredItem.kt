@@ -13,7 +13,8 @@ import net.minecraftforge.registries.IForgeRegistry
 /**
  * Created by CF on 2017-06-22.
  */
-abstract class RegisteredItem(modId: String, tab: CreativeTabs?, registryName: String) : Item() {
+abstract class RegisteredItem(modId: String, tab: CreativeTabs?, registryName: String)
+    : Item(), ISelfRegisteringItem {
     init {
         this.setRegistryName(modId, registryName)
         this.unlocalizedName = modId + "." + registryName
@@ -22,7 +23,7 @@ abstract class RegisteredItem(modId: String, tab: CreativeTabs?, registryName: S
         }
     }
 
-    open fun register(registry: IForgeRegistry<Item>) {
+    override fun registerItem(registry: IForgeRegistry<Item>) {
         registry.register(this)
     }
 
