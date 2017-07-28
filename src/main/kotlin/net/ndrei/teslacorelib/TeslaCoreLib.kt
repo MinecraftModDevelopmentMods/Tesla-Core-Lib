@@ -21,9 +21,10 @@ import org.apache.logging.log4j.Logger
 /**
  * Created by CF on 2017-06-28.
  */
-@Mod(modid = TeslaCoreLib.MODID, /*version = TeslaCoreLib.VERSION, */name = "Tesla Core Lib",
-        dependencies = "required-after:forgelin;after:forge;after:${TeslaSystem.MODID};after:${RFPowerProxy.MODID};after:${MJSystem.MODID};after:${MekanismSystem.MODID}", useMetadata = true,
-        modLanguage = "kotlin", modLanguageAdapter = "net.shadowfacts.forgelin.KotlinAdapter")
+@Mod(modid = MOD_ID, version = MOD_VERSION, name = MOD_NAME,
+        acceptedMinecraftVersions = MOD_MC_VERSION,
+        dependencies = "${MOD_DEPENDENCIES}after:${TeslaSystem.MODID};after:${RFPowerProxy.MODID};after:${MJSystem.MODID};after:${MekanismSystem.MODID}",
+        useMetadata = true, modLanguage = "kotlin", modLanguageAdapter = "net.shadowfacts.forgelin.KotlinAdapter")
 class TeslaCoreLib {
     @Mod.EventHandler
     fun preInit(event: FMLPreInitializationEvent) {

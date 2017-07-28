@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.1.3'
+    ext.kotlin_version = project.kotlin_version
     repositories {
         mavenCentral()
         maven { url = "http://files.minecraftforge.net/maven" }
@@ -8,7 +8,7 @@ buildscript {
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${project.kotlin_version}"
     }
 }
 apply plugin: "net.minecraftforge.gradle.forge"
@@ -16,15 +16,12 @@ apply plugin: 'kotlin'
 apply plugin: "maven-publish"
 apply plugin: "maven"
 
-archivesBaseName = "tesla-core-lib"
-group = "net.ndrei.$archivesBaseName" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = project.mod_name.replace(' ', '-').toLowerCase()
+group = "net.ndrei.${project.mod_id}"
 
 version = "${project.minecraft_version}-${project.mod_version}"
 if (project.hasProperty('mod_suffix')) {
     version += "-${project.mod_suffix}"
-    if ((project.mod_suffix == 'snapshot') && !project.hasProperty('mavenLocalPath')) {
-        version += "_" + getDate()
-    }
 }
 
 compileJava {
@@ -36,9 +33,35 @@ minecraft {
     mappings = "${mcp_version}"
     runDir = "run"
 
-//    replace "@@VERSION@@", project.mod_version
-//    replaceIn "TeslaCoreLib.kt"
+    replace '@MOD-ID@', project.mod_id
+    replace '@MOD-NAME@', project.mod_name
+    replace '@MOD-VERSION@', project.mod_version
+    replace '@MOD-MC-VERSION@', project.minecraft_version
+    replace '@FORGELIN-VERSION@', project.forgelin_version
+    replace '@FORGE-VERSION@', project.forge_version
+
+    replaceIn 'constants.kt'
 }
+
+// Mad hacks to make source replacements work for Kotlin
+// "stolen" from: https://github.com/PaleoCrafter/VanillaImmersion/blob/ee82ecafb76659cf7d7822a722c8f63f43f41d01/build.gradle#L119-L136
+import net.minecraftforge.gradle.user.TaskSourceCopy
+for (set in sourceSets) {
+    def taskName = "source${set.name.capitalize()}Kotlin"
+    def dir = new File(project.getBuildDir(), "sources/${set.name}/kotlin")
+    task(taskName, type: TaskSourceCopy) {
+        source = set.getKotlin()
+        output = dir
+    }
+    def compileTask = tasks[set.getCompileTaskName("kotlin")]
+    compileTask.source = dir
+    compileTask.dependsOn taskName
+    def dirPath = dir.toPath()
+    compileKotlin.include {
+        return it.file.toPath().startsWith(dirPath)
+    }
+}
+// end of "stolen" part :)
 
 configurations {
     compile.extendsFrom exportedCompile
@@ -69,13 +92,15 @@ dependencies {
 processResources {
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
+    inputs.property "modid", project.mod_id
+    inputs.property "modname", project.mod_name
 
     from(sourceSets.main.resources.srcDirs) {
         include '**/*.info'
         include '**/*.properties'
 
         // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
+        expand 'version':project.version, 'mcversion':project.minecraft.version, 'modid': project.mod_id, 'modname': project.mod_name
     }
 
     from(sourceSets.main.resources.srcDirs) {
@@ -98,8 +123,7 @@ artifacts {
     archives sourceJar, deobfJar
 }
 
-if (project.hasProperty('mavenFTPServer') && project.hasProperty('mavenFTPUser') && project.hasProperty('mavenFTPPassword')
-        && !project.hasProperty('mavenLocalPath')) {
+if (project.hasProperty('mavenFTPServer') && project.hasProperty('mavenFTPUser') && project.hasProperty('mavenFTPPassword')) {
     uploadArchives {
         repositories.mavenDeployer {
             dependsOn build, deobfJar, sourcesJar
@@ -111,31 +135,4 @@ if (project.hasProperty('mavenFTPServer') && project.hasProperty('mavenFTPUser')
         }
     }
     uploadArchives.dependsOn build, sourcesJar, deobfJar
-}
-
-if (project.hasProperty('mavenLocalPath')) {
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                from components.java
-
-                artifact sourcesJar
-                artifact deobfJar
-            }
-        }
-
-        repositories {
-            maven {
-                // change to point to your repo, e.g. http://my.org/repo
-                url project.mavenLocalPath
-            }
-        }
-    }
-}
-
-
-def getDate() {
-    def date = new Date()
-    def formattedDate = date.format('yyyyMMdd') // HHmmss')
-    return formattedDate
 }

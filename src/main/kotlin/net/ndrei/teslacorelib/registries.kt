@@ -146,10 +146,12 @@ annotation class AfterAllModsRegistry
 //    it.process(asm)
 //}, AfterAllModsRegistry::class)
 
-@Mod(modid = TeslaCoreRegistries.MODID, /*version = TeslaCoreLib.VERSION, */name = "Tesla Core Registries",
-        dependencies = "after:*", useMetadata = true,
+@Mod(modid = "${MOD_ID}_registries", version = MOD_VERSION, name = "$MOD_NAME Registries",
+        acceptedMinecraftVersions = MOD_MC_VERSION,
+        dependencies = "${MOD_DEPENDENCIES}after:*;",
+        useMetadata = true,
         modLanguage = "kotlin", modLanguageAdapter = "net.shadowfacts.forgelin.KotlinAdapter")
-class TeslaCoreRegistries {
+object TeslaCoreRegistries {
     private lateinit var asm: ASMDataTable
 
     init {
@@ -241,8 +243,8 @@ class TeslaCoreRegistries {
             it.registerRenderers(asm)
         }, AfterAllModsRegistry::class) {}.process(this.asm, null)
     }
-
-    companion object {
-        const val MODID = "teslacoreregistries"
-    }
+//
+//    companion object {
+//        const val MODID = "teslacoreregistries"
+//    }
 }

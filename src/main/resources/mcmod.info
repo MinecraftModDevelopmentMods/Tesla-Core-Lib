@@ -1,7 +1,7 @@
 [{
-  "modid": "teslacorelib",
-  "name": "Tesla Core Lib",
-  "description": "just another electric machines lib",
+  "modid": "${modid}",
+  "name": "${modname}",
+  "description": "Just the most awesome lib mod out there!",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
@@ -10,12 +10,12 @@
   "credits": "The Forge, FML guys and my wife.",
   "logoFile": "",
   "screenshots": [],
-  "requiredMods": [ "tesla", "forgelin" ],
-  "dependencies": [ "tesla", "forgelin" ]
+  "requiredMods": [ "forgelin" ],
+  "dependencies": [ "forgelin" ]
 }, {
-  "modid": "teslacoreregistries",
-  "name": "Tesla Core Registries",
-  "description": "used to register stuff after all mods did... ignore it.",
+  "modid": "${modid}_registries",
+  "name": "${modname} Registries",
+  "description": "Used to register stuff after all mods did... ignore it.",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
