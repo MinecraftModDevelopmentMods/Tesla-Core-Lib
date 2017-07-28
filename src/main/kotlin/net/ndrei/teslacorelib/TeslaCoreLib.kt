@@ -25,55 +25,47 @@ import org.apache.logging.log4j.Logger
         acceptedMinecraftVersions = MOD_MC_VERSION,
         dependencies = "${MOD_DEPENDENCIES}after:${TeslaSystem.MODID};after:${RFPowerProxy.MODID};after:${MJSystem.MODID};after:${MekanismSystem.MODID}",
         useMetadata = true, modLanguage = "kotlin", modLanguageAdapter = "net.shadowfacts.forgelin.KotlinAdapter")
-class TeslaCoreLib {
+object TeslaCoreLib {
+    @SidedProxy(clientSide = "net.ndrei.teslacorelib.ClientProxy", serverSide = "net.ndrei.teslacorelib.ServerProxy")
+    lateinit var proxy: CommonProxy
+    lateinit var logger: Logger
+    lateinit var config: TeslaCoreLibConfig
+
+    // just as a 'proxy' for old code
+    const val MODID = MOD_ID
+
+    val network: ITeslaCorePackets = TeslaCorePackets(MOD_ID)
+
+    val creativeTab: CreativeTabs = object : CreativeTabs("tesla_core_lib") {
+        override fun getIconItemStack(): ItemStack {
+            return ItemStack(TeslaWrench)
+        }
+
+        override fun getTabIconItem(): ItemStack {
+            return this.iconItemStack
+        }
+    }
+
+    val isClientSide
+        get() = net.minecraftforge.fml.common.FMLCommonHandler.instance().effectiveSide?.isClient ?: false
+
     @Mod.EventHandler
     fun preInit(event: FMLPreInitializationEvent) {
-        TeslaCoreLib.logger = event.modLog
-        TeslaCoreLib.config = TeslaCoreLibConfig(event.suggestedConfigurationFile)
+        this.logger = event.modLog
+        this.config = TeslaCoreLibConfig(event.suggestedConfigurationFile)
 
         RFPowerProxy.isRFAvailable = Loader.isModLoaded(RFPowerProxy.MODID)
 
-        TeslaCoreLib.proxy.preInit(event)
+        this.proxy.preInit(event)
     }
 
     @Mod.EventHandler
     fun init(event: FMLInitializationEvent) {
-        TeslaCoreLib.proxy.init(event)
+        this.proxy.init(event)
     }
 
     @Mod.EventHandler
     fun postInit(event: FMLPostInitializationEvent) {
-        TeslaCoreLib.proxy.postInit(event)
-    }
-
-    companion object {
-        const val MODID = "teslacorelib"
-//        const val VERSION = "@@VERSION@@"
-
-        @Mod.Instance
-        lateinit var instance: TeslaCoreLib
-
-        @SidedProxy(clientSide = "net.ndrei.teslacorelib.ClientProxy", serverSide = "net.ndrei.teslacorelib.ServerProxy")
-        lateinit var proxy: CommonProxy
-
-        lateinit var logger: Logger
-
-        lateinit var config: TeslaCoreLibConfig
-
-        val network: ITeslaCorePackets = TeslaCorePackets(MODID)
-
-        val creativeTab: CreativeTabs = object : CreativeTabs("tesla_core_lib") {
-            override fun getIconItemStack(): ItemStack {
-                return ItemStack(TeslaWrench)
-            }
-
-            override fun getTabIconItem(): ItemStack {
-                return this.iconItemStack
-            }
-        }
-
-        val isClientSide
-            get() = net.minecraftforge.fml.common.FMLCommonHandler.instance().effectiveSide?.isClient ?: false
-
+        this.proxy.postInit(event)
     }
 }

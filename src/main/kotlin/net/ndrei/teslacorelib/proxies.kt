@@ -85,7 +85,7 @@ abstract class CommonProxy(side: Side): BaseProxy(side) {
         super.preInit(ev)
 
         TeslaCoreCapabilities.register()
-        NetworkRegistry.INSTANCE.registerGuiHandler(TeslaCoreLib.instance, TeslaCoreGuiProxy())
+        NetworkRegistry.INSTANCE.registerGuiHandler(TeslaCoreLib, TeslaCoreGuiProxy())
     }
 }
 

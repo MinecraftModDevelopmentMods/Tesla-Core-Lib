@@ -114,7 +114,7 @@ abstract class OrientedBlock<T : SidedTileEntity>
         }
 
         if ((world != null) && (pos != null) && !world.isRemote) {
-            player!!.openGui(TeslaCoreLib.instance, 42, world, pos.x, pos.y, pos.z)
+            player!!.openGui(TeslaCoreLib, 42, world, pos.x, pos.y, pos.z)
         }
         return true
     }
