@@ -6,7 +6,6 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.EnumHand
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
-import net.ndrei.teslacorelib.TeslaCoreLib
 import net.ndrei.teslacorelib.annotations.AutoRegisterItem
 import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities
 import net.ndrei.teslacorelib.capabilities.wrench.ITeslaWrenchHandler
@@ -15,7 +14,7 @@ import net.ndrei.teslacorelib.capabilities.wrench.ITeslaWrenchHandler
  * Created by CF on 2017-06-27.
  */
 @AutoRegisterItem
-object TeslaWrench : RegisteredItem(TeslaCoreLib.MODID, TeslaCoreLib.creativeTab, "wrench") {
+object TeslaWrench : CoreItem("wrench") {
     init {
         super.setMaxStackSize(1)
     }

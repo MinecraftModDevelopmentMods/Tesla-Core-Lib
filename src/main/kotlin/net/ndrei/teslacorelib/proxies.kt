@@ -6,6 +6,7 @@ import net.minecraft.item.crafting.IRecipe
 import net.minecraftforge.client.event.ModelRegistryEvent
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.RegistryEvent
+import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.discovery.ASMDataTable
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
@@ -23,9 +24,23 @@ import net.ndrei.teslacorelib.gui.TeslaCoreGuiProxy
  */
 abstract class BaseProxy(val side: Side) {
     protected lateinit var asm: ASMDataTable
+    protected var loadLevel = ProxyLoadLevel.INITIAL
+        private set
 
     private val container
         get() = net.minecraftforge.fml.common.Loader.instance().activeModContainer()
+
+    fun testLoadLevel(level: ProxyLoadLevel, caller: String) {
+        if (this.loadLevel.ordinal < level.ordinal) {
+            TeslaCoreLib.logger.error("********************************************************************************")
+            TeslaCoreLib.logger.error("* You should not access '$caller' before ${level.info}.".padEnd(79, ' ') + "*")
+            TeslaCoreLib.logger.error("*     culprit mod: ${Loader.instance().activeModContainer()?.name ?: "n/a"}.".padEnd(79, ' ') + "*")
+            TeslaCoreLib.logger.error("********************************************************************************")
+            val ex = SecurityException("Error accessing $caller before ${level.info}")
+            TeslaCoreLib.logger.error("${ex.message}:", ex)
+            throw ex
+        }
+    }
 
     private fun processRegistryHandlers(handler: (handler: IRegistryHandler) -> Unit) {
         object: BaseAnnotationHandler<IRegistryHandler>({ it, _, _ ->
@@ -37,6 +52,7 @@ abstract class BaseProxy(val side: Side) {
     open fun preInit(ev: FMLPreInitializationEvent) {
         this.asm = ev.asmData
         MinecraftForge.EVENT_BUS.register(this)
+        this.loadLevel = ProxyLoadLevel.PRE_INIT
 
         processPreInitAnnotations(ev.asmData, this.container)
         this.processRegistryHandlers { it.preInit(this.asm) }
@@ -44,30 +60,40 @@ abstract class BaseProxy(val side: Side) {
 
     @SuppressWarnings("unused")
     open fun init(ev: FMLInitializationEvent) {
+        this.loadLevel = ProxyLoadLevel.INIT
+
         processInitAnnotations(this.asm, this.container)
         this.processRegistryHandlers { it.init(this.asm) }
     }
 
     @SuppressWarnings("unused")
     open fun postInit(ev: FMLPostInitializationEvent) {
+        this.loadLevel = ProxyLoadLevel.POST_INIT
+
         processPostInitAnnotations(this.asm, this.container)
         this.processRegistryHandlers { it.postInit(this.asm) }
     }
 
     @SubscribeEvent
     fun registerBlocks(ev: RegistryEvent.Register<Block>) {
+        this.loadLevel = ProxyLoadLevel.BLOCKS
+
         AutoRegisterBlockHandler.process(this.asm, this.container)
         this.processRegistryHandlers { it.registerBlocks(this.asm, ev.registry) }
     }
 
     @SubscribeEvent
     fun registerItems(ev: RegistryEvent.Register<Item>) {
+        this.loadLevel = ProxyLoadLevel.ITEMS
+
         AutoRegisterItemHandler.process(this.asm, this.container)
         this.processRegistryHandlers { it.registerItems(this.asm, ev.registry) }
     }
 
     @SubscribeEvent
     fun registerRecipes(ev: RegistryEvent.Register<IRecipe>) {
+        this.loadLevel = ProxyLoadLevel.RECIPES
+
         AutoRegisterRecipesHandler.process(this.asm, this.container)
         this.processRegistryHandlers { it.registerRecipes(this.asm, ev.registry) }
     }
@@ -96,3 +122,13 @@ class ClientProxy: CommonProxy(Side.CLIENT)
 @Suppress("unused")
 @SideOnly(Side.SERVER)
 class ServerProxy: CommonProxy(Side.SERVER)
+
+enum class ProxyLoadLevel(val info: String) {
+    INITIAL("[n/a]"),
+    PRE_INIT("mod pre initialization"),
+    BLOCKS("blocks registry event"),
+    ITEMS("items registry event"),
+    RECIPES("recipes registry event"),
+    INIT("mod initialization"),
+    POST_INIT("mod post initialization");
+}

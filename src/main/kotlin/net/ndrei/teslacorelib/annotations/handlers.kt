@@ -12,6 +12,7 @@ import net.minecraftforge.registries.IForgeRegistry
 import net.ndrei.teslacorelib.TeslaCoreLib
 import net.ndrei.teslacorelib.blocks.RegisteredBlock
 import net.ndrei.teslacorelib.items.RegisteredItem
+import net.ndrei.teslacorelib.render.ISelfRegisteringRenderer
 
 /**
  * Created by CF on 2017-06-22.
@@ -46,17 +47,8 @@ object AutoRegisterRecipesHandler: BaseAnnotationHandler<Any>({ it, _, _ ->
 @SideOnly(Side.CLIENT)
 object AutoRegisterRendererHandler: BaseAnnotationHandler<Any>({ it, _, _ ->
     when (it) {
-        is RegisteredBlock -> it.registerRenderer()
-        is RegisteredItem -> it.registerRenderer()
-        else -> {
-            try {
-                val method = it.javaClass.getMethod("registerRenderer")
-                method.invoke(it)
-            }
-            catch (t: Throwable) {
-                TeslaCoreLib.logger.error("Annotated class '${it.javaClass.canonicalName}' does not provide a renderer.")
-            }
-        }
+        is ISelfRegisteringRenderer -> it.registerRenderer()
+        else -> TeslaCoreLib.logger.warn("Annotated class '${it.javaClass.canonicalName}' does not provide a renderer.")
     }
 }, AutoRegisterItem::class, AutoRegisterBlock::class/*, AutoRegisterFluid::class*/)
 

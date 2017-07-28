@@ -7,7 +7,8 @@ import java.util.*
 /**
  * Created by CF on 2017-06-27.
  */
-open class BaseTieredAddon(modId: String, tab: CreativeTabs, registryName: String) : BaseAddon(modId, tab, registryName) {
+open class BaseTieredAddon(modId: String, tab: CreativeTabs, registryName: String)
+    : BaseAddon(modId, tab, registryName) {
     protected fun hasSameFunction(other: BaseTieredAddon?): Boolean {
         return other != null && (this.javaClass.isAssignableFrom(other.javaClass) || this.addonFunction == other.addonFunction)
     }

@@ -142,10 +142,6 @@ object SheetRegistry : MaterialItemRegistry({ "plate${it.capitalize()}" })
 @Target(AnnotationTarget.CLASS)
 annotation class AfterAllModsRegistry
 
-//object AfterAllModsRegistryHandler: BaseAnnotationHandler<IRegistryHandler>({ it, asm ->
-//    it.process(asm)
-//}, AfterAllModsRegistry::class)
-
 @Mod(modid = "${MOD_ID}_registries", version = MOD_VERSION, name = "$MOD_NAME Registries",
         acceptedMinecraftVersions = MOD_MC_VERSION,
         dependencies = "${MOD_DEPENDENCIES}after:*;",
@@ -162,23 +158,9 @@ object TeslaCoreRegistries {
     fun preInit(event: FMLPreInitializationEvent) {
         this.asm = event.asmData
 
-//        val itemRegistry = GameRegistry.findRegistry(Item::class.java)
-//        val blockRegistry = GameRegistry.findRegistry(Block::class.java)
-
         object : BaseAnnotationHandler<IRegistryHandler>({ it, asm, _ ->
             it.preInit(asm)
         }, AfterAllModsRegistry::class) {}.process(this.asm, null)
-
-//        MaterialRegistries.getRegistries()
-//                .forEach {
-//                    when (it) {
-//                        is MaterialItemRegistry -> it.registerMissing(itemRegistry)
-//                        is MaterialBlockRegistry -> it.registerMissing(blockRegistry)
-//                        else -> {
-//                            TeslaCoreLib.logger.warn("Don't know how to register missing entries from '$it'.")
-//                        }
-//                    }
-//                }
     }
 
     @Mod.EventHandler
@@ -243,8 +225,4 @@ object TeslaCoreRegistries {
             it.registerRenderers(asm)
         }, AfterAllModsRegistry::class) {}.process(this.asm, null)
     }
-//
-//    companion object {
-//        const val MODID = "teslacoreregistries"
-//    }
 }

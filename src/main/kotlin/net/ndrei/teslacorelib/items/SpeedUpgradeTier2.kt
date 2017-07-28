@@ -1,5 +1,7 @@
 package net.ndrei.teslacorelib.items
 
+import net.ndrei.teslacorelib.ProxyLoadLevel
+import net.ndrei.teslacorelib.TeslaCoreLib
 import net.ndrei.teslacorelib.annotations.AutoRegisterItem
 
 /**
@@ -7,18 +9,7 @@ import net.ndrei.teslacorelib.annotations.AutoRegisterItem
  */
 @AutoRegisterItem
 object SpeedUpgradeTier2 : SpeedUpgrade(2) {
-//    override val recipes: List<IRecipe>
-//        get() = listOf(
-//                ShapedOreRecipe(null, ItemStack(this, 1),
-//                        "rgr", "rbr", "rgr",
-//                        'b', BaseAddonItem,
-//                        'r', "dustRedstone",
-//                        'g', "gearDiamond"
-//                ),
-//
-//                ShapedOreRecipe(null, ItemStack(this, 1),
-//                        " d ", "dbd", " d ",
-//                        'b', SpeedUpgradeTier1,
-//                        'd', "gemDiamond"
-//                ))
+    init {
+        TeslaCoreLib.proxy.testLoadLevel(ProxyLoadLevel.ITEMS, this.javaClass.simpleName)
+    }
 }

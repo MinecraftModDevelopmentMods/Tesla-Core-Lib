@@ -7,7 +7,8 @@ import net.ndrei.teslacorelib.tileentities.SidedTileEntity
 /**
  * Created by CF on 2017-06-27.
  */
-abstract class BaseAddon protected constructor(modId: String, tab: CreativeTabs, registryName: String) : RegisteredItem(modId, tab, registryName) {
+abstract class BaseAddon protected constructor(modId: String, tab: CreativeTabs, registryName: String)
+    : RegisteredItem(modId, tab, registryName) {
     open fun canBeAddedTo(machine: SidedTileEntity) = false
 
     open fun onAdded(addon: ItemStack, machine: SidedTileEntity) { }

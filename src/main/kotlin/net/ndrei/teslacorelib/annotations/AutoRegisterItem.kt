@@ -16,6 +16,6 @@ object AutoRegisterItemHandler : BaseAnnotationHandler<Any>({ it, _, _ ->
     when (it) {
         is ISelfRegisteringItem -> it.registerItem(registry)
         is Item -> registry.register(it)
-        else -> TeslaCoreLib.logger.warn("Annotated class can't be registered as an item: '${it.javaClass.name}'.")
+        else -> TeslaCoreLib.logger.warn("Annotated class can't be registered as an item: '${it.javaClass.canonicalName}'.")
     }
 }, AutoRegisterItem::class, AutoRegisterBlock::class)

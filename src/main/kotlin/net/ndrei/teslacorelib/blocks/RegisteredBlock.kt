@@ -12,12 +12,13 @@ import net.minecraftforge.client.model.ModelLoader
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import net.minecraftforge.registries.IForgeRegistry
+import net.ndrei.teslacorelib.render.ISelfRegisteringRenderer
 
 /**
  * Created by CF on 2017-07-07.
  */
 abstract class RegisteredBlock(modId: String, tab: CreativeTabs?, registryName: String, material: Material)
-    : Block(material), ISelfRegisteringBlock {
+    : Block(material), ISelfRegisteringBlock, ISelfRegisteringRenderer {
     init {
         this.setRegistryName(modId, registryName)
         this.unlocalizedName = modId + "." + registryName
@@ -26,8 +27,8 @@ abstract class RegisteredBlock(modId: String, tab: CreativeTabs?, registryName: 
         }
     }
 
-    override fun registerBlock(blockRegistry: IForgeRegistry<Block>) {
-        blockRegistry.register(this)
+    override fun registerBlock(registry: IForgeRegistry<Block>) {
+        registry.register(this)
     }
 
     override fun registerItem(registry: IForgeRegistry<Item>) {
@@ -51,7 +52,7 @@ abstract class RegisteredBlock(modId: String, tab: CreativeTabs?, registryName: 
         }
 
     @SideOnly(Side.CLIENT)
-    open fun registerRenderer() {
+    override fun registerRenderer() {
         this.registerItemBlockRenderer()
     }
 

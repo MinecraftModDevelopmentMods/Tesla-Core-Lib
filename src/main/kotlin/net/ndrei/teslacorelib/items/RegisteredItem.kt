@@ -9,12 +9,13 @@ import net.minecraftforge.client.model.ModelLoader
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import net.minecraftforge.registries.IForgeRegistry
+import net.ndrei.teslacorelib.render.ISelfRegisteringRenderer
 
 /**
  * Created by CF on 2017-06-22.
  */
 abstract class RegisteredItem(modId: String, tab: CreativeTabs?, registryName: String)
-    : Item(), ISelfRegisteringItem {
+    : Item(), ISelfRegisteringItem, ISelfRegisteringRenderer {
     init {
         this.setRegistryName(modId, registryName)
         this.unlocalizedName = modId + "." + registryName
@@ -43,5 +44,5 @@ abstract class RegisteredItem(modId: String, tab: CreativeTabs?, registryName: S
         }
 
     @SideOnly(Side.CLIENT)
-    open fun registerRenderer() = ModelLoader.setCustomModelResourceLocation(this, 0, ModelResourceLocation(this.registryName!!, "inventory"))
+    override fun registerRenderer() = ModelLoader.setCustomModelResourceLocation(this, 0, ModelResourceLocation(this.registryName!!, "inventory"))
 }
