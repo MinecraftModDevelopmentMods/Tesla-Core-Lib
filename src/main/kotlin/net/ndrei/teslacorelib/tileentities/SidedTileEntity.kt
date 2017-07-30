@@ -785,7 +785,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     }
 
     @SideOnly(Side.CLIENT)
-    open fun getRenderers(): MutableList<TileEntitySpecialRenderer<in TileEntity>> {
+    open fun getRenderers(): MutableList<TileEntitySpecialRenderer<TileEntity>> {
         return mutableListOf(HudInfoRenderer)
     }
 
