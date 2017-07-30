@@ -11,11 +11,12 @@ import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer
 import net.ndrei.teslacorelib.gui.FluidTankPiece
 import net.ndrei.teslacorelib.gui.IGuiContainerPiece
 import net.ndrei.teslacorelib.gui.IGuiContainerPiecesProvider
+import net.ndrei.teslacorelib.tileentities.SidedTileEntity
 
 /**
  * Created by CF on 2017-06-28.
  */
-class SidedFluidHandler(private val sidedConfig: ISidedItemHandlerConfig)
+class SidedFluidHandler(private val sidedConfig: ISidedItemHandlerConfig, private val tile: SidedTileEntity)
     : FluidStorage(), ICapabilityProvider, IGuiContainerPiecesProvider, Iterable<IFluidTank> {
 
     private fun getTanksForSide(facing: EnumFacing?): List<IFluidTank> {
@@ -63,8 +64,8 @@ class SidedFluidHandler(private val sidedConfig: ISidedItemHandlerConfig)
         for (tank in this.tanks) {
             if (tank is ColoredFluidHandler) {
                 val box = tank.boundingBox
-                if (box != null) {
-                    list.add(FluidTankPiece(tank, box.left, box.top))
+                if (!box.isEmpty) {
+                    list.add(FluidTankPiece(this.tile, tank.color, tank, box.left, box.top))
                 }
             }
         }

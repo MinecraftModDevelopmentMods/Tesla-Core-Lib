@@ -5,12 +5,14 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.inventory.InventoryHelper
 import net.minecraft.inventory.Slot
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.network.play.server.SPacketSetSlot
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumFacing
@@ -46,6 +48,7 @@ import net.ndrei.teslacorelib.netsync.SimpleNBTMessage
 import net.ndrei.teslacorelib.render.HudInfoLine
 import net.ndrei.teslacorelib.render.HudInfoRenderer
 import net.ndrei.teslacorelib.render.IHudInfoProvider
+import net.ndrei.teslacorelib.utils.fillFrom
 import net.ndrei.teslacorelib.utils.processInputInventory
 import net.ndrei.teslacorelib.utils.withAlpha
 import java.awt.Color
@@ -54,7 +57,7 @@ import java.awt.Color
  * Created by CF on 2017-06-27.
  */
 abstract class SidedTileEntity protected constructor(protected val entityTypeId: Int)
-    : TileEntity(), ITickable, IHudInfoProvider, ISimpleNBTMessageHandler, IGuiContainerProvider, ITeslaWrenchHandler {
+    : TileEntity(), ITickable, IHudInfoProvider, ISimpleNBTMessageHandler, IGuiContainerProvider, ITeslaWrenchHandler, IRedstoneControlledMachine {
     private var syncTick = SYNC_ON_TICK
 
     protected val sideConfig: SidedItemHandlerConfig
@@ -69,6 +72,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     private var wasPickedUpInItemStack = false
 
     private var paused = false
+    private var redstoneSetting = IRedstoneControlledMachine.RedstoneControl.AlwaysActive
 
     init {
         this.sideConfig = object : SidedItemHandlerConfig() {
@@ -77,7 +81,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
             }
         }
         this.itemHandler = SidedItemHandler(this.sideConfig)
-        this.fluidHandler = SidedFluidHandler(this.sideConfig)
+        this.fluidHandler = SidedFluidHandler(this.sideConfig, this)
         this.inventoryStorage = mutableListOf()
 
         this.initializeInventories()
@@ -470,7 +474,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         }
 
         if (compound.hasKey("fluids")) {
-            this.fluidHandler!!.deserializeNBT(compound.getCompoundTag("fluids"))
+            this.fluidHandler.deserializeNBT(compound.getCompoundTag("fluids"))
         }
         if (compound.hasKey("fluidItems") && this.fluidItems != null) {
             this.fluidItems!!.deserializeNBT(compound.getCompoundTag("fluidItems"))
@@ -483,43 +487,48 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
             this.sideConfig.deserializeNBT(list)
         }
 
-        if (!this.inventoryStorage!!.isEmpty()) {
-            for (storage in this.inventoryStorage!!) {
+        if (!this.inventoryStorage.isEmpty()) {
+            for (storage in this.inventoryStorage) {
                 if (compound.hasKey(storage.storageKey, Constants.NBT.TAG_COMPOUND)) {
                     storage.inventory.deserializeNBT(compound.getCompoundTag(storage.storageKey))
                 }
             }
         }
 
+        if (compound.hasKey("redstone", Constants.NBT.TAG_STRING)) {
+            this.redstoneSetting = IRedstoneControlledMachine.RedstoneControl.valueOf(compound.getString("redstone"))
+        }
+
         this.paused = if (compound.hasKey("paused")) compound.getBoolean("paused") else false
     }
 
     override fun writeToNBT(compound: NBTTagCompound): NBTTagCompound {
-        var compound = compound
-        compound = super.writeToNBT(compound)
+        val nbt = super.writeToNBT(compound)
 
-        compound.setTag("fluids", this.fluidHandler!!.serializeNBT())
+        nbt.setTag("fluids", this.fluidHandler.serializeNBT())
         if (this.fluidItems != null) {
-            compound.setTag("fluidItems", this.fluidItems!!.serializeNBT())
+            nbt.setTag("fluidItems", this.fluidItems!!.serializeNBT())
         }
         if (this.addonItems != null) {
-            compound.setTag("addonItems", this.addonItems!!.serializeNBT())
+            nbt.setTag("addonItems", this.addonItems!!.serializeNBT())
         }
 
-        compound.setInteger("tick_sync", this.syncTick)
+        nbt.setInteger("tick_sync", this.syncTick)
 
-        compound.setTag("side_config", this.sideConfig.serializeNBT())
+        nbt.setTag("side_config", this.sideConfig.serializeNBT())
 
-        if (this.inventoryStorage != null && !this.inventoryStorage!!.isEmpty()) {
-            for (storage in this.inventoryStorage!!) {
-                compound.setTag(storage.storageKey, storage.inventory.serializeNBT())
+        if (!this.inventoryStorage.isEmpty()) {
+            for (storage in this.inventoryStorage) {
+                nbt.setTag(storage.storageKey, storage.inventory.serializeNBT())
             }
         }
 
         if (this.canBePaused())
-            compound.setBoolean("paused", this.paused)
+            nbt.setBoolean("paused", this.paused)
 
-        return compound
+        nbt.setString("redstone", this.redstoneSetting.name)
+
+        return nbt
     }
 
     private fun writeToNBT(): NBTTagCompound {
@@ -536,20 +545,32 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         return compound
     }
 
-    override fun handleMessage(message: SimpleNBTMessage): SimpleNBTMessage? {
-        val compound = message?.compound
+    override fun handleServerMessage(message: SimpleNBTMessage): SimpleNBTMessage? {
+        val compound = message.compound
         if (compound != null) {
             val tetId = compound.getInteger("__tetId")
             if (tetId == this.entityTypeId) {
                 if (compound.hasKey("__messageType", Constants.NBT.TAG_STRING)) {
                     val messageType = compound.getString("__messageType")
-                    if (this.getWorld().isRemote) {
-                        return this.processServerMessage(messageType, compound)
-                    } else {
-                        return this.processClientMessage(messageType, compound)
-                    }
-                } else if (this.getWorld().isRemote) {
+                    return this.processServerMessage(messageType, compound)
+                } else /*if (this.getWorld().isRemote)*/ {
                     this.processServerMessage(compound)
+                }
+            } else {
+                TeslaCoreLib.logger.info("Unknown message for __tetId: " + tetId + " : " + compound.toString())
+            }
+        }
+        return null
+    }
+
+    override fun handleClientMessage(player: EntityPlayerMP?, message: SimpleNBTMessage): SimpleNBTMessage? {
+        val compound = message.compound
+        if (compound != null) {
+            val tetId = compound.getInteger("__tetId")
+            if (tetId == this.entityTypeId) {
+                if (compound.hasKey("__messageType", Constants.NBT.TAG_STRING)) {
+                    val messageType = compound.getString("__messageType")
+                    return this.processClientMessage(messageType, player, compound)
                 }
             } else {
                 TeslaCoreLib.logger.info("Unknown message for __tetId: " + tetId + " : " + compound.toString())
@@ -564,6 +585,56 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
     protected open fun processServerMessage(messageType: String, compound: NBTTagCompound): SimpleNBTMessage? {
         return null
+    }
+
+    protected open fun processClientMessage(messageType: String?, player: EntityPlayerMP?, compound: NBTTagCompound): SimpleNBTMessage? {
+        when(messageType) {
+            "FILL_TANK" -> {
+                if (player != null) {
+                    val color = if (compound.hasKey("color", Constants.NBT.TAG_INT))
+                        EnumDyeColor.byMetadata(compound.getInteger("color"))
+                    else return null
+                    val stack = player.inventory.itemStack
+                    if (!stack.isEmpty) {
+                        val tank = this.fluidHandler
+                                .getTanks()
+                                .filterIsInstance<ColoredFluidHandler>()
+                                .firstOrNull { it.color == color }
+                        if (tank != null) {
+                            player.inventory.itemStack = tank.fillFrom(stack)
+                            player.connection.sendPacket(SPacketSetSlot(-1, 0, player.inventory.itemStack))
+                        }
+                    }
+                }
+                else {
+                    TeslaCoreLib.logger.error("Cannot fill a tank without a player!")
+                }
+                return null
+            }
+            "DRAIN_TANK" -> {
+                if (player != null) {
+                    val color = if (compound.hasKey("color", Constants.NBT.TAG_INT))
+                        EnumDyeColor.byMetadata(compound.getInteger("color"))
+                    else return null
+                    val stack = player.inventory.itemStack
+                    if (!stack.isEmpty) {
+                        val tank = this.fluidHandler
+                                .getTanks()
+                                .filterIsInstance<ColoredFluidHandler>()
+                                .firstOrNull { it.color == color }
+                        if (tank != null) {
+                            player.inventory.itemStack = stack.fillFrom(tank)
+                            player.connection.sendPacket(SPacketSetSlot(-1, 0, player.inventory.itemStack))
+                        }
+                    }
+                }
+                else {
+                    TeslaCoreLib.logger.error("Cannot fill a tank without a player!")
+                }
+                return null
+            }
+        }
+        return this.processClientMessage(messageType, compound)
     }
 
     protected open fun processClientMessage(messageType: String?, compound: NBTTagCompound): SimpleNBTMessage? {
@@ -583,11 +654,14 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                 this.togglePause()
             }
         }
+        else if (messageType == "REDSTONE_CONTROL") {
+            this.redstoneSetting = IRedstoneControlledMachine.RedstoneControl.valueOf(compound.getString("setting"))
+        }
 
         return null
     }
 
-    protected fun sendToServer(compound: NBTTagCompound) {
+    fun sendToServer(compound: NBTTagCompound) {
         TeslaCoreLib.network.sendToServer(SimpleNBTMessage(this, compound))
     }
 
@@ -768,9 +842,13 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
             }
         }
 
-        val fluidPieces = this.fluidHandler!!.getGuiContainerPieces(container)
+        val fluidPieces = this.fluidHandler.getGuiContainerPieces(container)
         if (fluidPieces.size > 0) {
             pieces.addAll(fluidPieces)
+        }
+
+        if (this.allowRedstoneControl) {
+            pieces.add(RedstoneTogglePiece(this))
         }
 
         return pieces
@@ -790,6 +868,25 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         }
 
         return slots
+    }
+
+    //#endregion
+
+    //#region redstone control  members
+
+    override val allowRedstoneControl: Boolean
+        get() = true
+    override final val redstoneControl: IRedstoneControlledMachine.RedstoneControl
+        get() = this.redstoneSetting
+
+    override final fun toggleRedstoneControl() {
+        val new = this.redstoneSetting.getNext()
+        if (TeslaCoreLib.isClientSide) {
+            val message = this.setupSpecialNBTMessage("REDSTONE_CONTROL")
+            message.setString("setting", new.name)
+            this.sendToServer(message)
+        }
+        this.redstoneSetting = new
     }
 
     //#endregion
@@ -814,8 +911,8 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         }
     }
 
-    override fun update() {
-        if (!this.canBePaused() || !this.paused) {
+    override final fun update() {
+        if (!this.isPaused() && (!this.allowRedstoneControl || this.redstoneSetting.canRun { this.world.getRedstonePower(this.pos, this.facing) })) {
             this.innerUpdate()
             this.processImmediateInventories()
         }

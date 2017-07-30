@@ -62,8 +62,7 @@ object FluidUtils {
                         }
                     }
                 }
-            }
-            else {
+            } else {
                 // MAYBE RETARDED ITEMS THAT DON'T KNOW HOW TO IMPLEMENT AN "OPTIONAL" INTERFACE GOT IN HERE
                 val drained = handler.drain(Fluid.BUCKET_VOLUME, false) ?: return bucket
                 if (drained.amount > 0) {
@@ -81,6 +80,48 @@ object FluidUtils {
                 }
             }
         }
+        return bucket
+    }
+
+    fun canDrainInto(tank: IFluidTank, bucket: ItemStack): Boolean {
+        if (!bucket.isEmpty && (bucket.count == 1)) {
+            /*if (bucket.item == Items.BUCKET) {
+                return (tank.fluidAmount >= Fluid.BUCKET_VOLUME) && FluidRegistry.getBucketFluids().contains(tank.fluid?.fluid)
+            } else*/ if (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
+                val handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null) ?: return false
+                val filled = handler.fill(tank.fluid ?: return false, false)
+                if (filled > 0) {
+                    val drained = tank.drain(filled, false)
+                    return (drained != null) && (drained.amount == filled)
+                }
+            }
+        }
+        return false
+    }
+
+    fun drainInto(tank: IFluidTank, bucket: ItemStack): ItemStack {
+        if (bucket.isEmpty || (bucket.count > 1)) {
+            return bucket
+        }
+
+        /*if (bucket.item == Items.BUCKET) {
+            if (FluidRegistry.getBucketFluids().contains(tank.fluid?.fluid) && (tank.fluidAmount >= Fluid.BUCKET_VOLUME)) {
+            }
+        }
+        else */if (bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
+            val handler = bucket.copy().getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null) ?: return bucket
+            val fluid = (tank.fluid ?: return bucket).let { FluidStack(it.fluid, Math.min(it.amount, Fluid.BUCKET_VOLUME)) }
+            val filled = handler.fill(fluid, false)
+            if (filled > 0) {
+                val drained = tank.drain(filled, false)
+                if (filled == (drained?.amount ?: 0)) {
+                    handler.fill(fluid, true)
+                    tank.drain(filled, true)
+                    return handler.container
+                }
+            }
+        }
+
         return bucket
     }
 }

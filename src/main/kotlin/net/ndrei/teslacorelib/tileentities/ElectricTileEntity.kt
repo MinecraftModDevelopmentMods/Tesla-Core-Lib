@@ -4,23 +4,16 @@ import net.minecraft.item.EnumDyeColor
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.capabilities.Capability
-import net.minecraftforge.common.util.Constants
-import net.ndrei.teslacorelib.TeslaCoreLib
 import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer
 import net.ndrei.teslacorelib.gui.IGuiContainerPiece
-import net.ndrei.teslacorelib.gui.RedstoneTogglePiece
 import net.ndrei.teslacorelib.gui.TeslaEnergyLevelPiece
 import net.ndrei.teslacorelib.inventory.BoundingRectangle
 import net.ndrei.teslacorelib.inventory.EnergyStorage
-import net.ndrei.teslacorelib.inventory.IRedstoneControlledMachine
-import net.ndrei.teslacorelib.netsync.SimpleNBTMessage
 
 /**
  * Created by CF on 2017-06-27.
  */
-abstract class ElectricTileEntity protected constructor(typeId: Int) : SidedTileEntity(typeId), IRedstoneControlledMachine {
-    private var redstoneSetting = IRedstoneControlledMachine.RedstoneControl.AlwaysActive
-
+abstract class ElectricTileEntity protected constructor(typeId: Int) : SidedTileEntity(typeId) {
     protected lateinit var energyStorage: EnergyStorage
         private set
 
@@ -62,33 +55,17 @@ abstract class ElectricTileEntity protected constructor(typeId: Int) : SidedTile
         super.readFromNBT(compound)
 
         if (compound.hasKey("energy")) {
-            this.energyStorage!!.deserializeNBT(compound.getCompoundTag("energy"))
-        }
-
-        if (compound.hasKey("redstone", Constants.NBT.TAG_STRING)) {
-            this.redstoneSetting = IRedstoneControlledMachine.RedstoneControl.valueOf(compound.getString("redstone"))
+            this.energyStorage.deserializeNBT(compound.getCompoundTag("energy"))
         }
     }
 
     override fun writeToNBT(compound: NBTTagCompound): NBTTagCompound {
-        var compound = compound
-        compound = super.writeToNBT(compound)
+        val nbt = super.writeToNBT(compound)
 
-        compound.setTag("energy", this.energyStorage!!.serializeNBT())
+        nbt.setTag("energy", this.energyStorage.serializeNBT())
 
-        compound.setString("redstone", this.redstoneSetting.name)
-
-        return compound
+        return nbt
     }
-
-    override fun processClientMessage(messageType: String?, compound: NBTTagCompound): SimpleNBTMessage? =
-            when (messageType) {
-                "REDSTONE_CONTROL" -> {
-                    this.redstoneSetting = IRedstoneControlledMachine.RedstoneControl.valueOf(compound.getString("setting"))
-                    null
-                }
-                else -> super.processClientMessage(messageType, compound)
-            }
 
     //endregion
 
@@ -129,39 +106,13 @@ abstract class ElectricTileEntity protected constructor(typeId: Int) : SidedTile
             pieces.add(TeslaEnergyLevelPiece(energyBox.left, energyBox.top, this.energyStorage))
         }
 
-        if (this.allowRedstoneControl) {
-            pieces.add(RedstoneTogglePiece(this))
-        }
-
         return pieces
     }
 
     //#endregion
 
-    //#region redstone control  members
-
-    override val allowRedstoneControl: Boolean
-        get() = true
-    override final val redstoneControl: IRedstoneControlledMachine.RedstoneControl
-        get() = this.redstoneSetting
-
-    override final fun toggleRedstoneControl() {
-        val new = this.redstoneSetting.getNext()
-        if (TeslaCoreLib.isClientSide) {
-            val message = this.setupSpecialNBTMessage("REDSTONE_CONTROL")
-            message.setString("setting", new.name)
-            super.sendToServer(message)
-        }
-        this.redstoneSetting = new
-    }
-
-    //#endregion
-
-    public override fun innerUpdate() {
-        if (this.allowRedstoneControl && this.redstoneSetting.canRun { this.world.getRedstonePower(this.pos, this.facing) }) {
-            this.protectedUpdate()
-        }
-
+    public override final fun innerUpdate() {
+        this.protectedUpdate()
         this.energyStorage.processStatistics()
     }
 
