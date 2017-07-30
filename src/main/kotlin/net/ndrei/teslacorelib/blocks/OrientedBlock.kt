@@ -87,25 +87,6 @@ abstract class OrientedBlock<T : SidedTileEntity>
                 }
             }
         }
-//        if (te != null && te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null) && !world.isRemote) {
-//            val tank = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null)
-//            val bucket = player!!.getHeldItem(hand)
-//            if (!ItemStackUtil.isEmpty(bucket) && tank != null && bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
-//                val handler = bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)
-//                val fluid = handler?.drain(Fluid.BUCKET_VOLUME, false)
-//                if (fluid != null && fluid.amount == Fluid.BUCKET_VOLUME) {
-//                    val filled = tank.fill(fluid, false)
-//                    if (filled == Fluid.BUCKET_VOLUME) {
-//                        tank.fill(fluid, true)
-//                        if (!player.capabilities.isCreativeMode) {
-//                            handler.drain(filled, true)
-//                            player.setHeldItem(hand, handler.container)
-//                        }
-//                    }
-//                    return true
-//                }
-//            }
-//        }
 
         if (super.onBlockActivated(world, pos, state, player, hand, side, hitX, hitY, hitZ)) {
             return true
