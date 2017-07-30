@@ -38,8 +38,8 @@ abstract class BaseProxy(val side: Side) {
             TeslaCoreLib.logger.error("*     culprit mod: ${Loader.instance().activeModContainer()?.name ?: "n/a"}.".padEnd(79, ' ') + "*")
             TeslaCoreLib.logger.error("********************************************************************************")
             val ex = SecurityException("Error accessing $caller before ${level.info}")
-            TeslaCoreLib.logger.error("${ex.message}:", ex)
-            throw ex
+            TeslaCoreLib.logger.warn("${ex.message}:", ex)
+            // throw ex
         }
     }
 
