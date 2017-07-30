@@ -15,7 +15,7 @@ class SimpleNBTHandler : IMessageHandler<SimpleNBTMessage, SimpleNBTMessage> {
             if ((message != null) && (message.pos != null) && (Minecraft.getMinecraft().world != null)) {
                 val entity = Minecraft.getMinecraft().world.getTileEntity(message.pos)
                 if (entity != null && entity is ISimpleNBTMessageHandler) {
-                    return (entity as ISimpleNBTMessageHandler).handleMessage(message)
+                    return (entity as ISimpleNBTMessageHandler).handleServerMessage(message)
                 }
             }
         } else {
@@ -25,7 +25,7 @@ class SimpleNBTHandler : IMessageHandler<SimpleNBTMessage, SimpleNBTMessage> {
                 if (world != null) {
                     val entity = world.getTileEntity(message.pos!!)
                     if ((entity != null) && (entity is ISimpleNBTMessageHandler)) {
-                        return (entity as ISimpleNBTMessageHandler).handleMessage(message)
+                        return (entity as ISimpleNBTMessageHandler).handleClientMessage(ctx.serverHandler.player, message)
                     }
                 }
             }
