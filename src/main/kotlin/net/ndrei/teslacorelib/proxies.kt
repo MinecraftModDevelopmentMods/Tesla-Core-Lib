@@ -18,6 +18,7 @@ import net.minecraftforge.fml.relauncher.SideOnly
 import net.ndrei.teslacorelib.annotations.*
 import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities
 import net.ndrei.teslacorelib.gui.TeslaCoreGuiProxy
+import net.ndrei.teslacorelib.render.selfrendering.SelfRenderingBlocksRegistry
 
 /**
  * Created by CF on 2017-06-27.
@@ -101,7 +102,8 @@ abstract class BaseProxy(val side: Side) {
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     fun registerModel(ev: ModelRegistryEvent) {
-        AutoRegisterRendererHandler.process(asm, this.container)
+        SelfRenderingBlocksRegistry.initialize(this.asm, this.container)
+        AutoRegisterRendererHandler.process(this.asm, this.container)
         this.processRegistryHandlers { it.registerRenderers(this.asm) }
     }
 }
