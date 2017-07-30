@@ -32,6 +32,18 @@ minecraft {
     mappings = "${project.mcp_version}"
     runDir = "run"
 
+    // "stolen" from: UpcraftLP
+    def username = "${mod_name}"
+    if (project.hasProperty('dev_mail')) {
+        username = "${project.dev_mail}"
+    }
+    clientRunArgs += "--username=${username}"
+//    if (project.hasProperty('dev_password')) {
+//        clientRunArgs += " --password=${project.dev_password}"
+//    }
+//     serverRunArgs += "nogui"
+    // end of "stolen" part :)
+
     replace '@MOD-ID@', project.mod_id
     replace '@MOD-NAME@', project.mod_name
     replace '@MOD-VERSION@', project.mod_version
