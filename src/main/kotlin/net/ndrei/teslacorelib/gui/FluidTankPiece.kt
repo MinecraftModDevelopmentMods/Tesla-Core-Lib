@@ -63,7 +63,7 @@ class FluidTankPiece(private val tile: SidedTileEntity, private val color: EnumD
             val stack = container.mc.player.inventory.itemStack
             if (!stack.isEmpty) {
                 val bucket = stack.getContainedFluid()
-                lines.add("${ChatFormatting.BLUE}hovering with: ${bucket?.localizedName ?: "${ChatFormatting.DARK_GRAY}${I18n.format(stack.item.getUnlocalizedName(stack))}"}")
+                lines.add("${ChatFormatting.BLUE}hovering with: ${bucket?.localizedName ?: "${ChatFormatting.DARK_GRAY}${I18n.format(stack.unlocalizedName.let { if (it.endsWith(".name")) it else "$it.name" })}"}")
                 if (bucket != null) {
                     if (this.tank.canFillFrom(stack)) {
                         lines.add("${ChatFormatting.GREEN}accepting fluid")
