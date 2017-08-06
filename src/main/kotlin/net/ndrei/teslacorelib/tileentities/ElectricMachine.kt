@@ -208,7 +208,9 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
                     this.workEnergy!!.capacity - this.workEnergy!!.stored,
                     this.workEnergy!!.getEnergyInputRate())
             val transferred = this.energyStorage.takePower(toTransfer)
-            this.workEnergy!!.givePower(transferred)
+            if (transferred > 0) {
+                this.workEnergy!!.givePower(transferred)
+            }
         }
 
         this.workTick = Math.min(this.lastWorkTicks + 1, this.workTick + 1)

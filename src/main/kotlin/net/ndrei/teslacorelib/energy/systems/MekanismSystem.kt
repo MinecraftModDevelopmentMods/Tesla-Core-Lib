@@ -34,15 +34,8 @@ object MekanismSystem : IEnergySystem {
         private fun Long.toMekanismUnit() = this.toDouble() * 2.5
         private fun Double.fromMekanismUnit() = (this * 0.4).toLong()
 
-        override fun getEnergy() = this.energy.stored.toMekanismUnit()
-
-        override fun setEnergy(energy: Double) {
-            // TODO: ?? ... mekanism is weird
-        }
-
-        override fun getMaxEnergy() = this.energy.capacity.toMekanismUnit()
-
-        override fun transferEnergyToAcceptor(side: EnumFacing?, amount: Double)
-                = this.energy.givePower(amount.fromMekanismUnit(), false).toMekanismUnit()
+        override fun acceptEnergy(side: EnumFacing?, amount: Double, simulate: Boolean)
+                = this.energy.givePower(if (amount == 1.0) 1 else amount.fromMekanismUnit(), simulate)
+                .let{if ((it == 1L) && (amount == 1.0)) 1.0 else it.toMekanismUnit() }
     }
 }
