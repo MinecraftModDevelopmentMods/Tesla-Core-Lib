@@ -29,4 +29,5 @@ item.teslacorelib.base_addon.name=Base Addon
 item.teslacorelib.machine_case.name=Machine Case
 
 tile.teslacorelib.test_machine.name=Test All-in-One Machine
+tile.teslacorelib.test_machine2.name=Test Fluids Machine
 tile.teslacorelib.creative_generator.name=Creative Generator

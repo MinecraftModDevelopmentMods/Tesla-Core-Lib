@@ -23,6 +23,7 @@ import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.util.Constants
 import net.minecraftforge.fluids.Fluid
+import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.IFluidTank
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
 import net.minecraftforge.fml.relauncher.Side
@@ -334,13 +335,45 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         }
     }
 
-    protected fun addFluidTank(tank: IFluidTank, color: EnumDyeColor?, name: String?, boundingBox: BoundingRectangle?) {
+    protected fun addFluidTank(tank: IFluidTank, color: EnumDyeColor?, name: String?, boundingBox: BoundingRectangle?)
+        = this.addFluidTank(tank, color, name, boundingBox, false)
+
+    protected fun addFluidTank(tank: IFluidTank, color: EnumDyeColor?, name: String?, boundingBox: BoundingRectangle?, outputOnly: Boolean) {
         if (color != null && name != null && name.isNotEmpty() && boundingBox != null) {
-            this.fluidHandler.addTank(ColoredFluidHandler(tank, color, name, boundingBox))
+            if (outputOnly) {
+                this.fluidHandler.addTank(object: ColoredFluidHandler(tank, color, name, boundingBox) {
+                    override fun acceptsFluid(fluid: FluidStack) = false
+                })
+            }
+            else {
+                this.fluidHandler.addTank(ColoredFluidHandler(tank, color, name, boundingBox))
+            }
             this.sideConfig.addColoredInfo(name, color, boundingBox)
         } else {
             this.fluidHandler.addTank(tank)
         }
+    }
+
+    protected fun addSimpleFluidTank(capacity: Int, name: String, color: EnumDyeColor, guiLeft: Int, guiTop: Int, outputOnly: Boolean): IFluidTank
+        = this.addSimpleFluidTank(capacity, name, color, guiLeft, guiTop) { !outputOnly }
+
+    protected fun addSimpleFluidTank(capacity: Int, name: String, color: EnumDyeColor, guiLeft: Int, guiTop: Int, externalFilter: ((FluidStack) -> Boolean)?): IFluidTank {
+        val tank = object: FluidTank(capacity) {
+            override fun onContentsChanged() {
+                this@SidedTileEntity.markDirty()
+            }
+        }
+
+        if (externalFilter != null) {
+            this.addFluidTank(object: ColoredFluidHandler(tank, color, name, BoundingRectangle(guiLeft, guiTop, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT)) {
+                override fun acceptsFluid(fluid: FluidStack) = externalFilter(fluid)
+            }, null)
+        }
+        else {
+            this.addFluidTank(tank, color, name, BoundingRectangle(guiLeft, guiTop, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT), false)
+        }
+
+        return tank
     }
 
     protected fun removeFluidTank(color: EnumDyeColor, tank: IFluidTank) {

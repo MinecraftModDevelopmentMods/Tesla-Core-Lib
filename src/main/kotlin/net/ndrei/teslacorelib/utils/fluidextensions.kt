@@ -54,3 +54,6 @@ fun ItemStack.getContainedFluid(): FluidStack? {
     }
     return null
 }
+
+fun FluidStack?.isEnough(other: FluidStack?, ignoreSize: Boolean = false)
+    = (this != null) && (other != null) && this.isFluidEqual(other) && (ignoreSize || (this.amount <= other.amount))
