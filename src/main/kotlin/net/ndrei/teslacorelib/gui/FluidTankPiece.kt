@@ -8,6 +8,9 @@ import net.minecraft.client.resources.I18n
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.fluids.IFluidTank
+import net.ndrei.teslacorelib.inventory.FluidTankType
+import net.ndrei.teslacorelib.inventory.IFluidTankWrapper
+import net.ndrei.teslacorelib.inventory.ITypedFluidTank
 import net.ndrei.teslacorelib.tileentities.SidedTileEntity
 import net.ndrei.teslacorelib.utils.canFillFrom
 import net.ndrei.teslacorelib.utils.getContainedFluid
@@ -71,7 +74,12 @@ class FluidTankPiece(private val tile: SidedTileEntity, private val color: EnumD
                         lines.add("${ChatFormatting.RED}not accepting fluid")
                     }
                 }
-                if (stack.canFillFrom(this.tank)) {
+                if (stack.canFillFrom(this.tank.let {
+                    if ((it is ITypedFluidTank) && (it is IFluidTankWrapper) && (it.tankType == FluidTankType.INPUT))
+                        it.innerTank
+                    else
+                        it
+                })) {
                     lines.add("${ChatFormatting.GREEN}can fill from tank")
                 } else {
                     lines.add("${ChatFormatting.RED}can't fill from tank")
@@ -90,7 +98,12 @@ class FluidTankPiece(private val tile: SidedTileEntity, private val color: EnumD
             if (!stack.isEmpty) {
                 val bucket = stack.getContainedFluid()
                 val canFill = (bucket != null) && this.tank.canFillFrom(stack)
-                val canDrain = stack.canFillFrom(this.tank)
+                val canDrain = stack.canFillFrom(this.tank.let {
+                    if ((it is ITypedFluidTank) && (it is IFluidTankWrapper) && (it.tankType == FluidTankType.INPUT))
+                        it.innerTank
+                    else
+                        it
+                })
 
                 if (canFill || canDrain) {
                     val action = if ((mouseButton == 0) && canFill) "FILL_TANK"

@@ -354,24 +354,22 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         }
     }
 
-    protected fun addSimpleFluidTank(capacity: Int, name: String, color: EnumDyeColor, guiLeft: Int, guiTop: Int, outputOnly: Boolean): IFluidTank
-        = this.addSimpleFluidTank(capacity, name, color, guiLeft, guiTop) { !outputOnly }
-
-    protected fun addSimpleFluidTank(capacity: Int, name: String, color: EnumDyeColor, guiLeft: Int, guiTop: Int, externalFilter: ((FluidStack) -> Boolean)?): IFluidTank {
+//    protected fun addSimpleFluidTank(capacity: Int, name: String, color: EnumDyeColor, guiLeft: Int, guiTop: Int, tankType: FluidTankType): IFluidTank
+//        = this.addSimpleFluidTank(capacity, name, color, guiLeft, guiTop, tankType, { tankType.canFill }, { tankType.canDrain })
+//
+    protected fun addSimpleFluidTank(capacity: Int, name: String, color: EnumDyeColor, guiLeft: Int, guiTop: Int, tankType: FluidTankType,
+                                     externalFillFilter: ((FluidStack) -> Boolean)? = null,
+                                     externalDrainFilter: ((FluidStack) -> Boolean)? = null): IFluidTank {
         val tank = object: FluidTank(capacity) {
             override fun onContentsChanged() {
                 this@SidedTileEntity.markDirty()
             }
         }
 
-        if (externalFilter != null) {
-            this.addFluidTank(object: ColoredFluidHandler(tank, color, name, BoundingRectangle(guiLeft, guiTop, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT)) {
-                override fun acceptsFluid(fluid: FluidStack) = externalFilter(fluid)
-            }, null)
-        }
-        else {
-            this.addFluidTank(tank, color, name, BoundingRectangle(guiLeft, guiTop, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT), false)
-        }
+        this.addFluidTank(object: ColoredFluidHandler(tank, color, name, BoundingRectangle(guiLeft, guiTop, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT)) {
+            override fun acceptsFluid(fluid: FluidStack) = if (externalFillFilter == null) this.tankType.canFill else externalFillFilter(fluid)
+            override fun canDrain() = this.fluid.let { if (it == null) false else if (externalDrainFilter == null) this.tankType.canDrain else externalDrainFilter(it) }
+        }.also { it.tankType = tankType }, null)
 
         return tank
     }
@@ -655,6 +653,12 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                                 .getTanks()
                                 .filterIsInstance<ColoredFluidHandler>()
                                 .firstOrNull { it.color == color }
+                                .let {
+                                    if ((it is ITypedFluidTank) && (it is IFluidTankWrapper) && (it.tankType == FluidTankType.INPUT))
+                                        it.innerTank
+                                    else
+                                        it
+                                }
                         if (tank != null) {
                             player.inventory.itemStack = stack.fillFrom(tank)
                             player.connection.sendPacket(SPacketSetSlot(-1, 0, player.inventory.itemStack))

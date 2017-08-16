@@ -8,7 +8,9 @@ import net.minecraftforge.fluids.IFluidTank
 /**
  * Created by CF on 2017-06-28.
  */
-open class FilteredFluidTank(private val filter: Fluid?, private val tank: IFluidTank) : IFilteredFluidTank, IFluidTankWrapper {
+open class FilteredFluidTank(private val filter: Fluid?, private val tank: IFluidTank)
+    : IFilteredFluidTank, IFluidTankWrapper, ITypedFluidTank {
+
     constructor(tank: IFluidTank)
             : this(null, tank)
 
@@ -18,6 +20,8 @@ open class FilteredFluidTank(private val filter: Fluid?, private val tank: IFlui
 
     override fun canDrain() = true
     override fun canFill() = true
+
+    override var tankType: FluidTankType = FluidTankType.BOTH
 
     override fun getFluid(): FluidStack? {
         var stack = this.tank.fluid
