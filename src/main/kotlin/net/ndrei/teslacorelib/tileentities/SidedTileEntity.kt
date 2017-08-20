@@ -313,6 +313,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         val tank = object : FluidTank(capacity) {
             override fun onContentsChanged() {
                 this@SidedTileEntity.markDirty()
+                this@SidedTileEntity.forceSync()
             }
         }
         val colored = this.fluidHandler.addTank(filter, tank, color ?: EnumDyeColor.BLACK, name ?: "yup, this is a thing!", boundingBox ?: BoundingRectangle.EMPTY)
@@ -363,6 +364,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         val tank = object: FluidTank(capacity) {
             override fun onContentsChanged() {
                 this@SidedTileEntity.markDirty()
+                this@SidedTileEntity.forceSync()
             }
         }
 
@@ -680,6 +682,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
             val facing = EnumFacing.getFront(compound.getInteger("side"))
             this.sideConfig.toggleSide(color, facing)
             this.markDirty()
+            this@SidedTileEntity.forceSync()
         }
         else if (messageType == "TOGGLE_LOCK") {
             val color = EnumDyeColor.byMetadata(compound.getInteger("color"))
