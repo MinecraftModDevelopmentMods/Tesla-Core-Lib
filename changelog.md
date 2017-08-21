@@ -4,3 +4,4 @@
 # 1.0.8
 - added more helper functions around fluid tanks (SidedTileEntity.addSimpleFluidTank)
 - added 'output only' fluid tanks
+- added ModConfigHandler class that supports loading extra recipes json files for various machines
