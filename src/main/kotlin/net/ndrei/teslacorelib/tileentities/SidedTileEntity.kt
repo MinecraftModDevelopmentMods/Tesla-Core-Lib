@@ -101,6 +101,51 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         this.createAddonsInventory()
     }
 
+    protected fun addSimpleInventory(stacks: Int, storageKey: String, color: EnumDyeColor, displayName: String,
+                                     boundingBox: BoundingRectangle,
+                                     inputFilter: ((stack: ItemStack, slot: Int) -> Boolean)?,
+                                     outputFilter: ((stack: ItemStack, slot: Int) -> Boolean)?,
+                                     lockable: Boolean = false): IItemHandler {
+        val handler = when(lockable) {
+            true -> object : LockableItemHandler(stacks) {
+                override fun onContentsChanged(slot: Int) {
+                    super.onContentsChanged(slot)
+
+                    this@SidedTileEntity.markDirty()
+                    this@SidedTileEntity.forceSync()
+                }
+            }
+            false -> object : ItemStackHandler(stacks) {
+                override fun onContentsChanged(slot: Int) {
+                    super.onContentsChanged(slot)
+
+                    this@SidedTileEntity.markDirty()
+                    this@SidedTileEntity.forceSync()
+                }
+            }
+        }
+
+        this.addInventory(object : ColoredItemHandler(handler, color, displayName, boundingBox) {
+            override fun canInsertItem(slot: Int, stack: ItemStack) =
+                if (slot in 0 until this.slots) {
+                    if (inputFilter != null) inputFilter(this.getStackInSlot(slot), slot)
+                    else true
+                }
+                else false
+
+            override fun canExtractItem(slot: Int) =
+                if (slot in 0 until this.slots) {
+                    if (outputFilter != null) outputFilter(this.getStackInSlot(slot), slot)
+                    else true
+                }
+                else false
+        })
+
+        this.addInventoryToStorage(handler, storageKey)
+
+        return handler
+    }
+
     protected fun addInventory(handler: IItemHandler?) {
         if (handler == null) {
             return
@@ -925,7 +970,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     override final var redstoneControl: IRedstoneControlledMachine.RedstoneControl
         get() = this.redstoneSetting
         set(value) {
-            if (TeslaCoreLib.isClientSide) {
+            if (TeslaCoreLib.isClientSide && (this.world != null) && (this.pos != null)) {
                 val message = this.setupSpecialNBTMessage("REDSTONE_CONTROL")
                 message.setString("setting", value.name)
                 this.sendToServer(message)
