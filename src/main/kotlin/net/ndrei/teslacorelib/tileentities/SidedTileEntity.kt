@@ -128,7 +128,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         this.addInventory(object : ColoredItemHandler(handler, color, displayName, boundingBox) {
             override fun canInsertItem(slot: Int, stack: ItemStack) =
                 if (slot in 0 until this.slots) {
-                    if (inputFilter != null) inputFilter(this.getStackInSlot(slot), slot)
+                    if (inputFilter != null) inputFilter(stack, slot)
                     else true
                 }
                 else false

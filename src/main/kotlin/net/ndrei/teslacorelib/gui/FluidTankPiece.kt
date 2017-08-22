@@ -14,7 +14,6 @@ import net.ndrei.teslacorelib.inventory.ITypedFluidTank
 import net.ndrei.teslacorelib.tileentities.SidedTileEntity
 import net.ndrei.teslacorelib.utils.canFillFrom
 import net.ndrei.teslacorelib.utils.getContainedFluid
-import org.lwjgl.opengl.GL11
 
 /**
  * Created by CF on 2017-06-28.
@@ -40,17 +39,23 @@ class FluidTankPiece(private val tile: SidedTileEntity, private val color: EnumD
                         sprite = container.mc.textureMapBlocks.missingSprite
                     }
                     container.mc.textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
-                    GL11.glColor3ub((color shr 16 and 0xFF).toByte(), (color shr 8 and 0xFF).toByte(), (color and 0xFF).toByte())
+                    GlStateManager.color((color shr 16 and 0xFF).toFloat() / 255f,
+                        (color shr 8 and 0xFF).toFloat() / 255f,
+                        (color and 0xFF).toFloat() / 255f,
+                        ((color ushr 24) and 0xFF).toFloat() / 255f)
                     GlStateManager.enableBlend()
+                    GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA)
                     container.drawTexturedModalRect(
                             guiX + this.left + 3,
-                            guiY + this.top + 3 + this.height - 6 - amount,
+                            guiY + this.top + 3 + (if (fluid.isGaseous) 0 else this.height - 6 - amount),
                             sprite!!,
                             this.width - 6, amount)
                     GlStateManager.disableBlend()
                 }
             }
         }
+        GlStateManager.disableBlend()
+        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
         container.bindDefaultTexture()
         container.drawTexturedRect(this.left + 2, this.top + 2, 63, 191, this.width - 4, this.height - 4)
     }

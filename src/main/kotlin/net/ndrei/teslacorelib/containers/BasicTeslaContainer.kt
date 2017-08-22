@@ -39,6 +39,12 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
         return !this.entity.isInvalid && playerIn.getDistanceSq(this.entity.pos.add(0.5, 0.5, 0.5)) <= 64.0
     }
 
+    protected open val inventoryOffsetX get() = 8
+    protected open val inventoryOffsetY get() = 102
+    protected open val inventoryQuickBarOffsetY get() = 160
+    protected open val inventoryExtraSlotsOffsetX get() = 174
+    protected open val inventoryExtraSlotsOffsetY get() = 84
+
     protected fun addPlayerQuickBar(player: EntityPlayer?): Int {
         if ((player == null) || !this.showPlayerQuickBar) {
             return 0
@@ -46,12 +52,12 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
         val playerInventory = player.inventory
 
         for (x in 0..8) {
-            this.addSlotToContainer(Slot(playerInventory, x, 8 + x * 18, 160))
+            this.addSlotToContainer(Slot(playerInventory, x, this.inventoryOffsetX + x * 18, this.inventoryQuickBarOffsetY))
         }
         return 9
     }
 
-    protected open val showPlayerQuickBar = true
+    protected open val showPlayerQuickBar get() = true
 
     protected fun addPlayerInventory(player: EntityPlayer?): Int {
         if ((player == null) || !this.showPlayerInventory) {
@@ -61,13 +67,13 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
 
         for (y in 0..2) {
             for (x in 0..8) {
-                this.addSlotToContainer(Slot(playerInventory, x + (y + 1) * 9, 8 + x * 18, 102 + y * 18))
+                this.addSlotToContainer(Slot(playerInventory, x + (y + 1) * 9, this.inventoryOffsetX + x * 18, this.inventoryOffsetY + y * 18))
             }
         }
         return 9 * 3
     }
 
-    protected open val showPlayerInventory = true
+    protected open val showPlayerInventory get() = true
 
     protected fun addPlayerExtraSlots(player: EntityPlayer?): Int {
         if ((player == null) || !this.showPlayerExtraSlots) {
@@ -76,7 +82,7 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
         val playerInventory = player.inventory
         for (k in 0..3) {
             val entityequipmentslot = VALID_EQUIPMENT_SLOTS[k]
-            this.addSlotToContainer(object : Slot(playerInventory, 36 + (3 - k), 174, 84 + k * 18) {
+            this.addSlotToContainer(object : Slot(playerInventory, 36 + (3 - k), this.inventoryExtraSlotsOffsetX, this.inventoryExtraSlotsOffsetY + k * 18) {
                 /**
                  * Returns the maximum stack size for a given slot (usually the same as getInventoryStackLimit(), but 1
                  * in the case of armor slots)
@@ -119,7 +125,7 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
         return 5
     }
 
-    protected open val showPlayerExtraSlots = true
+    protected open val showPlayerExtraSlots get() = true
 
     //endregion
 

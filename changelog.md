@@ -6,3 +6,4 @@
 - added 'output only' fluid tanks
 - added ModConfigHandler class that supports loading extra recipes json files for various machines
 - allow for better customization of BasicTeslaContainer, BasicTeslaGUIContainer and SidedTileEntity
+- added SidedTileEntity.addSimpleInventory all-in-one inventory creation method

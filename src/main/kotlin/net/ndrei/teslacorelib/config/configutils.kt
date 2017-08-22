@@ -12,12 +12,13 @@ import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.oredict.OreDictionary
 import net.ndrei.teslacorelib.utils.copyWithSize
 
-fun JsonObject.readFluidStack(memberName: String): FluidStack? {
-    val json = JsonUtils.getJsonObject(this, memberName) ?: return null
+fun JsonObject.readFluidStack(memberName: String) =
+    JsonUtils.getJsonObject(this, memberName)?.readFluidStack()
 
-    val fluid = JsonUtils.getString(json, "name", "")
+fun JsonObject.readFluidStack(): FluidStack? {
+    val fluid = JsonUtils.getString(this, "name", "")
             .let { FluidRegistry.getFluid(it) } ?: return null
-    val amount = JsonUtils.getInt(json, "quantity", 0)
+    val amount = JsonUtils.getInt(this, "quantity", 0)
 
     return if (amount <= 0) null else FluidStack(fluid, amount)
 }
