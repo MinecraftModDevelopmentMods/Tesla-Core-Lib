@@ -845,7 +845,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         val pieces = Lists.newArrayList<IGuiContainerPiece>()
 
         // side drawer
-        if (this.canBePaused()) {
+        if (this.canBePaused() && this.showPauseDrawerPiece) {
             pieces.add(object: SideDrawerPiece(0) {
                 override val currentState: Int
                     get() = if (this@SidedTileEntity.isPaused()) 1 else 0
@@ -868,9 +868,11 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                 7, 7, 162, 12))
 
         pieces.add(PlayerInventoryBackground(7, 101, 162, 54))
-        val configurator = SideConfigurator(7, 101, 162, 54, this.sideConfig, this)
-        pieces.add(configurator)
-        pieces.add(SideConfigSelector(7, 81, 162, 18, this.sideConfig, configurator))
+        if (this.showSideConfiguratorPiece) {
+            val configurator = SideConfigurator(7, 101, 162, 54, this.sideConfig, this)
+            pieces.add(configurator)
+            pieces.add(SideConfigSelector(7, 81, 162, 18, this.sideConfig, configurator))
+        }
 
         for (i in 0..this.itemHandler.inventories - 1) {
             val handler = this.itemHandler.getInventory(i)
@@ -887,21 +889,25 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
             pieces.addAll(fluidPieces)
         }
 
-        if (this.allowRedstoneControl) {
+        if (this.allowRedstoneControl && this.showRedstoneControlPiece) {
             pieces.add(RedstoneTogglePiece(this))
         }
 
         return pieces
     }
 
+    protected open val showPauseDrawerPiece = true
+    protected open val showSideConfiguratorPiece = true
+    protected open val showRedstoneControlPiece = true
+
     override fun getSlots(container: BasicTeslaContainer<*>): MutableList<Slot> {
         val slots = Lists.newArrayList<Slot>()
 
-        for (i in 0..this.itemHandler!!.inventories - 1) {
+        for (i in 0..this.itemHandler.inventories - 1) {
             val handler = this.itemHandler.getInventory(i)
             if (handler is IContainerSlotsProvider) {
                 val childSlots = (handler as IContainerSlotsProvider).getSlots(container)
-                if (childSlots != null && childSlots.size > 0) {
+                if (childSlots.size > 0) {
                     slots.addAll(childSlots)
                 }
             }

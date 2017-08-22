@@ -5,3 +5,4 @@
 - added more helper functions around fluid tanks (SidedTileEntity.addSimpleFluidTank)
 - added 'output only' fluid tanks
 - added ModConfigHandler class that supports loading extra recipes json files for various machines
+- allow for better customization of BasicTeslaContainer, BasicTeslaGUIContainer and SidedTileEntity

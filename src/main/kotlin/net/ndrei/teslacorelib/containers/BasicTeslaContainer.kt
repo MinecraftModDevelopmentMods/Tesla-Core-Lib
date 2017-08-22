@@ -40,7 +40,7 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
     }
 
     protected fun addPlayerQuickBar(player: EntityPlayer?): Int {
-        if (player == null) {
+        if ((player == null) || !this.showPlayerQuickBar) {
             return 0
         }
         val playerInventory = player.inventory
@@ -51,8 +51,10 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
         return 9
     }
 
+    protected open val showPlayerQuickBar = true
+
     protected fun addPlayerInventory(player: EntityPlayer?): Int {
-        if (player == null) {
+        if ((player == null) || !this.showPlayerInventory) {
             return 0
         }
         val playerInventory = player.inventory
@@ -65,8 +67,10 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
         return 9 * 3
     }
 
+    protected open val showPlayerInventory = true
+
     protected fun addPlayerExtraSlots(player: EntityPlayer?): Int {
-        if (player == null) {
+        if ((player == null) || !this.showPlayerExtraSlots) {
             return 0
         }
         val playerInventory = player.inventory
@@ -114,6 +118,8 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
 
         return 5
     }
+
+    protected open val showPlayerExtraSlots = true
 
     //endregion
 

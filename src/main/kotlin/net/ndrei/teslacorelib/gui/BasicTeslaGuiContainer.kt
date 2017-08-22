@@ -21,10 +21,17 @@ open class BasicTeslaGuiContainer<out T : SidedTileEntity>(val guiId: Int, conta
     private lateinit var pieces: List<IGuiContainerPiece>
 
     init {
-        super.xSize = 198
-        super.ySize = 184
+        @Suppress("LeakingThis")
+        super.xSize = this.containerWidth // 198
+
+        @Suppress("LeakingThis")
+        super.ySize = this.containerHeight // 184
+
         this.refreshParts()
     }
+
+    protected open val containerWidth get() = 198
+    protected open val containerHeight get() = 184
 
     val teslaContainer: BasicTeslaContainer<*>?
         get() {
@@ -45,13 +52,17 @@ open class BasicTeslaGuiContainer<out T : SidedTileEntity>(val guiId: Int, conta
     }
 
     override fun drawGuiContainerBackgroundLayer(partialTicks: Float, mouseX: Int, mouseY: Int) {
-        this.bindDefaultTexture()
-        this.drawTexturedModalRect(super.guiLeft, super.guiTop, 0, 0, super.getXSize(), super.getYSize())
+        this.drawGuiContainerBackground()
 
         this.pieces.filter { it.isVisible }.let {
             it.forEach { it.drawBackgroundLayer(this, super.guiLeft, super.guiTop, partialTicks, mouseX, mouseY) }
             it.forEach { it.drawMiddleLayer(this, super.guiLeft, super.guiTop, partialTicks, mouseX, mouseY) }
         }
+    }
+
+    open fun drawGuiContainerBackground() {
+        this.bindDefaultTexture()
+        this.drawTexturedModalRect(super.guiLeft, super.guiTop, 0, 0, super.getXSize(), super.getYSize())
     }
 
     override fun drawGuiContainerForegroundLayer(mouseX: Int, mouseY: Int) {
