@@ -922,17 +922,25 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
     override val allowRedstoneControl: Boolean
         get() = true
-    override final val redstoneControl: IRedstoneControlledMachine.RedstoneControl
+    override final var redstoneControl: IRedstoneControlledMachine.RedstoneControl
         get() = this.redstoneSetting
+        set(value) {
+            if (TeslaCoreLib.isClientSide) {
+                val message = this.setupSpecialNBTMessage("REDSTONE_CONTROL")
+                message.setString("setting", value.name)
+                this.sendToServer(message)
+            }
+            this.redstoneSetting = value
+        }
 
     override final fun toggleRedstoneControl() {
-        val new = this.redstoneSetting.getNext()
-        if (TeslaCoreLib.isClientSide) {
-            val message = this.setupSpecialNBTMessage("REDSTONE_CONTROL")
-            message.setString("setting", new.name)
-            this.sendToServer(message)
-        }
-        this.redstoneSetting = new
+//        val new = this.redstoneSetting.getNext()
+//        if (TeslaCoreLib.isClientSide) {
+//            val message = this.setupSpecialNBTMessage("REDSTONE_CONTROL")
+//            message.setString("setting", new.name)
+//            this.sendToServer(message)
+//        }
+        this.redstoneControl = this.redstoneSetting.getNext()
     }
 
     //#endregion
