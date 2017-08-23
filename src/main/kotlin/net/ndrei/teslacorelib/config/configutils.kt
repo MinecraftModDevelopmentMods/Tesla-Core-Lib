@@ -13,7 +13,7 @@ import net.minecraftforge.oredict.OreDictionary
 import net.ndrei.teslacorelib.utils.copyWithSize
 
 fun JsonObject.readFluidStack(memberName: String) =
-    JsonUtils.getJsonObject(this, memberName)?.readFluidStack()
+    if (this.has(memberName)) JsonUtils.getJsonObject(this, memberName)?.readFluidStack() else null
 
 fun JsonObject.readFluidStack(): FluidStack? {
     val fluid = JsonUtils.getString(this, "name", "")
@@ -23,10 +23,9 @@ fun JsonObject.readFluidStack(): FluidStack? {
     return if (amount <= 0) null else FluidStack(fluid, amount)
 }
 
-fun JsonObject.readItemStacks(memberName: String): List<ItemStack> {
-    val json = JsonUtils.getJsonObject(this, memberName) ?: return listOf()
-    return json.readItemStacks()
-}
+fun JsonObject.readItemStacks(memberName: String): List<ItemStack> =
+    if (this.has(memberName)) JsonUtils.getJsonObject(this, memberName).readItemStacks() else listOf()
+
 
 fun JsonObject.readItemStacks(): List<ItemStack> {
     val item = JsonUtils.getString(this, "name", "")
