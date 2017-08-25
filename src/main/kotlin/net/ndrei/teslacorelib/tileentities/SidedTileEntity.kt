@@ -127,18 +127,18 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
         this.addInventory(object : ColoredItemHandler(handler, color, displayName, boundingBox) {
             override fun canInsertItem(slot: Int, stack: ItemStack) =
-                if (slot in 0 until this.slots) {
+                (if (slot in 0 until this.slots) {
                     if (inputFilter != null) inputFilter(stack, slot)
                     else true
                 }
-                else false
+                else false) && ((this.innerHandler as? IFilteredItemHandler)?.canInsertItem(slot, stack) ?: true)
 
             override fun canExtractItem(slot: Int) =
-                if (slot in 0 until this.slots) {
+                (if (slot in 0 until this.slots) {
                     if (outputFilter != null) outputFilter(this.getStackInSlot(slot), slot)
                     else true
                 }
-                else false
+                else false) && ((this.innerHandler as? IFilteredItemHandler)?.canExtractItem(slot) ?: true)
         })
 
         this.addInventoryToStorage(handler, storageKey)
