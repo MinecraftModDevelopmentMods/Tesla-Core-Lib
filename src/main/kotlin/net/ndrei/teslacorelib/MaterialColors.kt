@@ -12,6 +12,8 @@ enum class MaterialColors(val color: Int) {
     COAL(0x3F3F3F), // 333344),
     DIAMOND(0x5DECF5), // 4DFFFF),
     EMERALD(0x17DD62), // 33FF33);
+    LAPIS(0x345EC3),
+    REDSTONE(0xD50000),
 
     COPPER(0xFF7F15),
     TIN(0xC7ECFF),
@@ -21,7 +23,6 @@ enum class MaterialColors(val color: Int) {
     NICKEL(0xE1E2C9),
     PLATINUM(0x48ECFF),
     IRIDIUM(0xD3D2E1),
-
 
     ; companion object {
         @Suppress("unused")

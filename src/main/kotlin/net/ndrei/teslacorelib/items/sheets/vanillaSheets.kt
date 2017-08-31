@@ -23,3 +23,11 @@ object DiamondSheet : ColoredSheetItem(MATERIAL_DIAMOND, MaterialColors.DIAMOND.
 @AutoRegisterSheet
 @AutoRegisterColoredThingy
 object EmeraldSheet : ColoredSheetItem(MATERIAL_EMERALD, MaterialColors.EMERALD.color)
+
+@AutoRegisterSheet
+@AutoRegisterColoredThingy
+object LapisSheet : ColoredSheetItem(MATERIAL_LAPIS, MaterialColors.LAPIS.color)
+
+@AutoRegisterSheet
+@AutoRegisterColoredThingy
+object RedstoneSheet : ColoredSheetItem(MATERIAL_REDSTONE, MaterialColors.REDSTONE.color)

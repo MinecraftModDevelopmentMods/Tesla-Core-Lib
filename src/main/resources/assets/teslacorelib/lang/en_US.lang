@@ -6,6 +6,8 @@ item.teslacorelib.gear_iron.name=Iron Gear
 item.teslacorelib.gear_gold.name=Gold Gear
 item.teslacorelib.gear_diamond.name=Diamond Gear
 item.teslacorelib.gear_emerald.name=Emerald Gear
+item.teslacorelib.gear_redstone.name=Redstone Gear
+item.teslacorelib.gear_lapis.name=Lapis Gear
 
 item.teslacorelib.powder_coal.name=Coal Powder
 item.teslacorelib.powder_iron.name=Iron Powder
@@ -17,6 +19,8 @@ item.teslacorelib.sheet_iron.name=Iron Sheet
 item.teslacorelib.sheet_gold.name=Gold Sheet
 item.teslacorelib.sheet_diamond.name=Diamond Sheet
 item.teslacorelib.sheet_emerald.name=Emerald Sheet
+item.teslacorelib.sheet_redstone.name=Redstone Sheet
+item.teslacorelib.sheet_lapis.name=Lapis Sheet
 
 item.teslacorelib.energy_tier1.name=Energy Upgrade I
 item.teslacorelib.energy_tier2.name=Energy Upgrade II
