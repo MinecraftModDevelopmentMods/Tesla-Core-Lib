@@ -3,8 +3,6 @@ package net.ndrei.teslacorelib.annotations
 import net.minecraft.item.crafting.IRecipe
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.fml.common.Loader
-import net.minecraftforge.fml.common.ModContainer
-import net.minecraftforge.fml.common.discovery.ASMDataTable
 import net.minecraftforge.fml.common.registry.GameRegistry
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
@@ -51,31 +49,3 @@ object AutoRegisterRendererHandler: BaseAnnotationHandler<Any>({ it, _, _ ->
         else -> TeslaCoreLib.logger.warn("Annotated class '${it.javaClass.canonicalName}' does not provide a renderer.")
     }
 }, AutoRegisterItem::class, AutoRegisterBlock::class/*, AutoRegisterFluid::class*/)
-
-// because just two 'Handler's are never enough
-object AnnotationPreInitHandlerHandlerHandler: BaseAnnotationHandler<BaseAnnotationHandler<*>>({ it, asm, container ->
-    it.process(asm, container)
-}, AnnotationPreInitHandler::class)
-
-// because just two 'Handler's are never enough
-object AnnotationInitHandlerHandlerHandler: BaseAnnotationHandler<BaseAnnotationHandler<*>>({ it, asm, container ->
-    it.process(asm, container)
-}, AnnotationInitHandler::class)
-
-// because just two 'Handler's are never enough
-object AnnotationPostInitHandlerHandlerHandler: BaseAnnotationHandler<BaseAnnotationHandler<*>>({ it, asm, container ->
-    it.process(asm, container)
-}, AnnotationPostInitHandler::class)
-
-fun processPreInitAnnotations(asm: ASMDataTable, container: ModContainer?) {
-    AutoRegisterFluidHandler.process(asm, container)
-    AnnotationPreInitHandlerHandlerHandler.process(asm, container)
-}
-
-fun processInitAnnotations(asm: ASMDataTable, container: ModContainer?) {
-    AnnotationInitHandlerHandlerHandler.process(asm, container)
-}
-
-fun processPostInitAnnotations(asm: ASMDataTable, container: ModContainer?) {
-    AnnotationPostInitHandlerHandlerHandler.process(asm, container)
-}

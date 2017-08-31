@@ -8,10 +8,10 @@ import net.ndrei.teslacorelib.annotations.BaseAnnotationHandler
  * Created by CF on 2017-06-29.
  */
 @Target(AnnotationTarget.CLASS)
-annotation class AutoRegisterPowder
+annotation class AutoRegisterPowder(vararg val configFlags: String)
 
 @AnnotationPreInitHandler
 @Suppress("unused")
-object AutoRegisterGearHandler : BaseAnnotationHandler<ColoredPowderItem>({ it, _, _ ->
+object AutoRegisterPowderHandler : BaseAnnotationHandler<ColoredPowderItem>({ it, _, _ ->
     PowderRegistry.addMaterial(it.materialName, it)
 }, AutoRegisterPowder::class)

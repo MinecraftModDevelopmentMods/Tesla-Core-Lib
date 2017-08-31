@@ -7,7 +7,7 @@ import net.minecraftforge.fluids.FluidRegistry
  * Created by CF on 2017-07-07.
  */
 @Target(AnnotationTarget.CLASS)
-annotation class AutoRegisterFluid
+annotation class AutoRegisterFluid(vararg val configFlags: String)
 
 object AutoRegisterFluidHandler : BaseAnnotationHandler<Fluid>({ it, _, _ ->
     FluidRegistry.registerFluid(it)

@@ -8,7 +8,7 @@ import net.ndrei.teslacorelib.blocks.ISelfRegisteringBlock
  * Created by CF on 2017-06-22.
  */
 @Target(AnnotationTarget.CLASS)
-annotation class AutoRegisterBlock
+annotation class AutoRegisterBlock(vararg val configFlags: String)
 
 object AutoRegisterBlockHandler: BaseAnnotationHandler<Block>({ it, _, _ ->
     val blockRegistry = GameRegistry.findRegistry(Block::class.java)

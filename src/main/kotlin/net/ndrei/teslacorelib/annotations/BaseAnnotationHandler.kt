@@ -3,6 +3,7 @@ package net.ndrei.teslacorelib.annotations
 import net.minecraftforge.fml.common.ModContainer
 import net.minecraftforge.fml.common.discovery.ASMDataTable
 import net.ndrei.teslacorelib.TeslaCoreLib
+import net.ndrei.teslacorelib.config.IModConfigFlagsProvider
 import kotlin.reflect.KClass
 
 /**
@@ -19,6 +20,17 @@ abstract class BaseAnnotationHandler<in T> protected constructor(val handler: (t
 
         all
                 .filter { packages.isEmpty() || packages.any { p -> it.className.startsWith(p) } }
+                .filter {
+                    if ((container != null) && (it.annotationInfo != null) && it.annotationInfo.containsKey("configFlags")) {
+                        val flags = it.annotationInfo["configFlags"] as? ArrayList<*> ?: return@filter true
+                        val config = container.mod as? IModConfigFlagsProvider ?: return@filter flags.isEmpty()
+                        flags.forEach {
+                            val flag = it as? String
+                            if ((flag != null) && !flag.isBlank() && !config.getFlag(flag)) return@filter false
+                        }
+                    }
+                    return@filter true
+                }
                 .sortedBy { it.className }
                 .forEach {
             val c = try {

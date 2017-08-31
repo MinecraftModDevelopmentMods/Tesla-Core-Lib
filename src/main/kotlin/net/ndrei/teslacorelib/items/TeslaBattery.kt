@@ -21,11 +21,12 @@ import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import net.ndrei.teslacorelib.annotations.AutoRegisterItem
 import net.ndrei.teslacorelib.compatibility.RFPowerProxy
+import net.ndrei.teslacorelib.config.TeslaCoreLibConfig
 
 /**
  * Created by CF on 2017-06-27.
  */
-@AutoRegisterItem
+@AutoRegisterItem(TeslaCoreLibConfig.REGISTER_BATTERY)
 @Optional.Interface(iface = "cofh.redstoneflux.api.IEnergyContainerItem", modid = RFPowerProxy.MODID, striprefs = true)
 object TeslaBattery
     : CoreItem("battery"), IEnergyContainerItem {

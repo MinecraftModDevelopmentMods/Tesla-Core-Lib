@@ -15,7 +15,7 @@ import net.ndrei.teslacorelib.compatibility.IItemColorDelegate
  * Created by CF on 2017-06-29.
  */
 @Target(AnnotationTarget.CLASS)
-annotation class AutoRegisterColoredThingy
+annotation class AutoRegisterColoredThingy(vararg val configFlags: String)
 
 @Suppress("unused")
 @AnnotationPostInitHandler

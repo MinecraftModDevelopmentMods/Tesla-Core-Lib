@@ -10,7 +10,7 @@ import net.minecraftforge.registries.IForgeRegistry
  * Created by CF on 2017-07-15.
  */
 @Target(AnnotationTarget.CLASS)
-annotation class RegistryHandler
+annotation class RegistryHandler(vararg val configFlags: String)
 
 interface IRegistryHandler {
     fun preInit(asm : ASMDataTable) {}

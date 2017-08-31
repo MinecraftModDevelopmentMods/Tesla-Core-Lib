@@ -11,6 +11,8 @@ val MATERIAL_GOLD = "gold"
 val MATERIAL_COAL = "coal"
 val MATERIAL_DIAMOND = "diamond"
 val MATERIAL_EMERALD = "emerald"
+val MATERIAL_LAPIS = "lapis"
+val MATERIAL_REDSTONE = "redstone"
 
 const val MOD_ID = "@MOD-ID@"
 const val MOD_NAME = "@MOD-NAME@"

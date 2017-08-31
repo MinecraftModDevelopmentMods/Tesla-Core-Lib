@@ -8,7 +8,7 @@ import net.ndrei.teslacorelib.annotations.BaseAnnotationHandler
  * Created by CF on 2017-06-29.
  */
 @Target(AnnotationTarget.CLASS)
-annotation class AutoRegisterGear
+annotation class AutoRegisterGear(vararg val configFlags: String)
 
 @AnnotationPreInitHandler
 @Suppress("unused")

@@ -24,6 +24,7 @@ import net.ndrei.teslacorelib.annotations.IRegistryHandler
 import net.ndrei.teslacorelib.blocks.OrientedBlock
 import net.ndrei.teslacorelib.compatibility.IBlockColorDelegate
 import net.ndrei.teslacorelib.compatibility.IItemColorDelegate
+import net.ndrei.teslacorelib.config.TeslaCoreLibConfig
 import net.ndrei.teslacorelib.items.RegisteredItem
 import net.ndrei.teslacorelib.items.powders.ColoredPowderItem
 
@@ -54,7 +55,7 @@ object MaterialRegistries {
     fun getRegistries() = this.registries.toList()
 }
 
-abstract class MaterialRegistry<T: IForgeRegistryEntry<T>>(private val oreDictify: (material: String) -> String) {
+abstract class MaterialRegistry<T: IForgeRegistryEntry<T>>(private val configFlag: String, private val oreDictify: (material: String) -> String) {
     private val materials = mutableMapOf<String, MaterialInfo<T>>()
     private val registeredMaterials = mutableListOf<T>()
 
@@ -74,6 +75,11 @@ abstract class MaterialRegistry<T: IForgeRegistryEntry<T>>(private val oreDictif
     fun getMaterials() = this.materials.keys.toSet()
 
     fun registerMissing(registry: IForgeRegistry<T>) {
+        if (this.configFlag.isNotBlank() && !TeslaCoreLib.modConfigFlags.getFlag(this.configFlag)) {
+            // do not register this things!
+            return
+        }
+
         this.materials
                 .values
                 .filter { it.getItems().isEmpty() }
@@ -98,7 +104,7 @@ abstract class MaterialRegistry<T: IForgeRegistryEntry<T>>(private val oreDictif
     }
 }
 
-abstract class MaterialItemRegistry(oreDictify: (material: String) -> String) : MaterialRegistry<Item>(oreDictify) {
+abstract class MaterialItemRegistry(configFlag: String, oreDictify: (material: String) -> String) : MaterialRegistry<Item>(configFlag, oreDictify) {
     fun addMaterial(material: String, item: RegisteredItem)
             = this.addMaterial(material, {registry ->
         registry.register(item)
@@ -110,7 +116,7 @@ abstract class MaterialItemRegistry(oreDictify: (material: String) -> String) : 
     })
 }
 
-abstract class MaterialBlockRegistry(oreDictify: (material: String) -> String) : MaterialRegistry<Block>(oreDictify) {
+abstract class MaterialBlockRegistry(configFlag: String, oreDictify: (material: String) -> String) : MaterialRegistry<Block>(configFlag, oreDictify) {
     fun addMaterial(material: String, block: OrientedBlock<*>)
             = this.addMaterial(material, { registry ->
         registry.register(block)
@@ -122,7 +128,7 @@ abstract class MaterialBlockRegistry(oreDictify: (material: String) -> String) :
     })
 }
 
-object PowderRegistry : MaterialItemRegistry({ "dust${it.capitalize()}" }) {
+object PowderRegistry : MaterialItemRegistry(TeslaCoreLibConfig.REGISTER_POWDERS, { "dust${it.capitalize()}" }) {
     override fun postProcessThing(item: Item) {
         if (item is ColoredPowderItem) {
             var stack = OreDictionary.getOres("ingot${item.materialName.capitalize()}").firstOrNull()
@@ -136,8 +142,8 @@ object PowderRegistry : MaterialItemRegistry({ "dust${it.capitalize()}" }) {
     }
 }
 
-object GearRegistry : MaterialItemRegistry({ "gear${it.capitalize()}" })
-object SheetRegistry : MaterialItemRegistry({ "plate${it.capitalize()}" })
+object GearRegistry : MaterialItemRegistry(TeslaCoreLibConfig.REGISTER_GEARS, { "gear${it.capitalize()}" })
+object SheetRegistry : MaterialItemRegistry(TeslaCoreLibConfig.REGISTER_SHEETS, { "plate${it.capitalize()}" })
 
 @Target(AnnotationTarget.CLASS)
 annotation class AfterAllModsRegistry

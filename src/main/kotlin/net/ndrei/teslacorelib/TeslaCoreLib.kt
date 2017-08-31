@@ -9,6 +9,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.ndrei.teslacorelib.compatibility.RFPowerProxy
+import net.ndrei.teslacorelib.config.IModConfigFlagsProvider
 import net.ndrei.teslacorelib.config.TeslaCoreLibConfig
 import net.ndrei.teslacorelib.energy.systems.MJSystem
 import net.ndrei.teslacorelib.energy.systems.MekanismSystem
@@ -25,11 +26,13 @@ import org.apache.logging.log4j.Logger
         acceptedMinecraftVersions = MOD_MC_VERSION,
         dependencies = "${MOD_DEPENDENCIES}after:${TeslaSystem.MODID};after:${RFPowerProxy.MODID};after:${MJSystem.MODID};after:${MekanismSystem.MODID}",
         useMetadata = true, modLanguage = "kotlin", modLanguageAdapter = "net.shadowfacts.forgelin.KotlinAdapter")
-object TeslaCoreLib {
+object TeslaCoreLib : IModConfigFlagsProvider {
     @SidedProxy(clientSide = "net.ndrei.teslacorelib.ClientProxy", serverSide = "net.ndrei.teslacorelib.ServerProxy")
     lateinit var proxy: CommonProxy
     lateinit var logger: Logger
-    lateinit var config: TeslaCoreLibConfig
+
+    val config = TeslaCoreLibConfig
+    override val modConfigFlags = this.config
 
     // just as a 'proxy' for old code
     const val MODID = MOD_ID
@@ -37,13 +40,7 @@ object TeslaCoreLib {
     val network: ITeslaCorePackets = TeslaCorePackets(MOD_ID)
 
     val creativeTab: CreativeTabs = object : CreativeTabs("tesla_core_lib") {
-        override fun getIconItemStack(): ItemStack {
-            return ItemStack(TeslaWrench)
-        }
-
-        override fun getTabIconItem(): ItemStack {
-            return this.iconItemStack
-        }
+        override fun getTabIconItem() = ItemStack(TeslaWrench)
     }
 
     val isClientSide
@@ -52,7 +49,7 @@ object TeslaCoreLib {
     @Mod.EventHandler
     fun preInit(event: FMLPreInitializationEvent) {
         this.logger = event.modLog
-        this.config = TeslaCoreLibConfig(event.suggestedConfigurationFile)
+        this.config.init(event.suggestedConfigurationFile)
 
         RFPowerProxy.isRFAvailable = Loader.isModLoaded(RFPowerProxy.MODID)
 

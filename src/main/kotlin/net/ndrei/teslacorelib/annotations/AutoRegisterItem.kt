@@ -9,7 +9,7 @@ import net.ndrei.teslacorelib.items.ISelfRegisteringItem
  * Created by CF on 2017-06-22.
  */
 @Target(AnnotationTarget.CLASS)
-annotation class AutoRegisterItem
+annotation class AutoRegisterItem(vararg val configFlags: String)
 
 object AutoRegisterItemHandler : BaseAnnotationHandler<Any>({ it, _, _ ->
     val registry = GameRegistry.findRegistry(Item::class.java)
