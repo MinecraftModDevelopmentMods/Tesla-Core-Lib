@@ -22,9 +22,9 @@ abstract class GenericModConfigFlags: IModConfigFlags {
 
     private fun String?.normalize() = (this ?: "").toLowerCase()
 
-    fun getDefaultFlag(key: String, defaultValue: Boolean = false) = this.defaults.getOrDefault(key.normalize(), defaultValue)
+    protected fun getDefaultFlag(key: String, defaultValue: Boolean = false) = this.defaults.getOrDefault(key.normalize(), defaultValue)
 
-    fun setFlag(key: String, value: Boolean) {
+    protected fun setFlag(key: String, value: Boolean) {
         this.map[key.normalize()] = value
     }
 
@@ -49,7 +49,7 @@ abstract class GenericModConfigFlags: IModConfigFlags {
         list.forEach { this.setFlag("$key#$it".normalize(), true) }
     }
 
-    fun update() {
+    private fun update() {
         try {
             this.config.load()
 
