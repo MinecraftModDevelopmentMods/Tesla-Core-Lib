@@ -1,5 +1,9 @@
 {
   "ingredients": {
-    "fluid_container": "net.ndrei.teslacorelib.crafting.FluidIngredientFactory"
+    "fluid_container": "net.ndrei.teslacorelib.crafting.FluidIngredientFactory",
+    "ore_dict_ex": "net.ndrei.teslacorelib.crafting.OreDictIngredientExFactory"
+  },
+  "conditions": {
+	"ore_dict": "net.ndrei.teslacorelib.crafting.OreDictConditionFactory"
   }
 }

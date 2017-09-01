@@ -1,0 +1,18 @@
+{
+  "type": "forge:ore_shaped",
+  "group": "tesla.gears",
+  "result": { "item": "teslacorelib:gear_redstone" },
+  "pattern": [
+    " w ",
+    "wsw",
+    " w "
+  ],
+  "key": {
+    "w": { "type": "forge:ore_dict", "ore": "dustRedstone" },
+    "s": { "type": "forge:ore_dict", "ore": "gearStone" }
+  },
+  "conditions": [
+    { "type": "teslacorelib:ore_dict", "ore": "gearStone" },
+    { "type": "minecraft:item_exists", "item": "teslacorelib:gear_redstone" }
+  ]
+}

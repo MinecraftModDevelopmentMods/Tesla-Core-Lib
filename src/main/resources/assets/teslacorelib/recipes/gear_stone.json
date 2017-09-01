@@ -1,0 +1,18 @@
+{
+  "type": "forge:ore_shaped",
+  "group": "tesla.gears",
+  "result": { "item": "teslacorelib:gear_stone" },
+  "pattern": [
+    " w ",
+    "wsw",
+    " w "
+  ],
+  "key": {
+    "w": { "type": "teslacorelib:ore_dict_ex", "ore": "stone,cobblestone,stoneGranite,stoneGranitePolished,stoneDiorite,stoneDioritePolished,stoneAndesite,stoneAndesitePolished,endstone,netherrack,sandstone" },
+    "s": { "type": "forge:ore_dict", "ore": "gearWood" }
+  },
+  "conditions": [
+    { "type": "teslacorelib:ore_dict", "ore": "gearWood" },
+    { "type": "minecraft:item_exists", "item": "teslacorelib:gear_stone" }
+  ]
+}

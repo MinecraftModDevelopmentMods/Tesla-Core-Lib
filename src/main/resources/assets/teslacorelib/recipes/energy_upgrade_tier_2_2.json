@@ -10,5 +10,9 @@
   "key": {
     "b": { "item": "teslacorelib:energy_tier1" },
     "d": { "type": "forge:ore_dict", "ore": "gemDiamond" }
-  }
+  },
+  "conditions": [
+    { "type": "minecraft:item_exists", "item": "teslacorelib:energy_tier1" },
+    { "type": "minecraft:item_exists", "item": "teslacorelib:energy_tier2" }
+  ]
 }

@@ -10,5 +10,8 @@
   "key": {
     "x": { "type": "forge:ore_dict", "ore": "paper" },
     "y": { "type": "forge:ore_dict", "ore": "dustRedstone" }
-  }
+  },
+  "conditions": [
+    { "type": "minecraft:item_exists", "item": "teslacorelib:base_addon" }
+  ]
 }

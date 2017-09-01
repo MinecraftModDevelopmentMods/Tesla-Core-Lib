@@ -1,19 +1,57 @@
 package net.ndrei.teslacorelib.config
 
-open class GenericModConfigFlags: IModConfigFlags {
+import java.io.File
+
+abstract class GenericModConfigFlags: IModConfigFlags {
     private val defaults = mutableMapOf<String, Boolean>()
     private val map = mutableMapOf<String, Boolean>()
 
-    override fun setDefaultFlag(key: String, value: Boolean): Boolean {
-        this.defaults[key] = value || this.defaults.getOrDefault(key, false)
-        return this.defaults.getOrDefault(key, false)
+    private lateinit var config: Configuration
+
+    fun init(configurationFile: File) {
+        this.config = Configuration(configurationFile)
+        this.update()
     }
 
-    fun getDefaultFlag(key: String, defaultValue: Boolean = false) = this.defaults.getOrDefault(key, defaultValue)
+    override fun setDefaultFlag(key: String, value: Boolean): Boolean {
+        val k = key.normalize()
+        this.defaults[k] = value || this.defaults.getOrDefault(k, false)
+        return this.defaults.getOrDefault(k, false)
+    }
+
+    private fun String?.normalize() = (this ?: "").toLowerCase()
+
+    fun getDefaultFlag(key: String, defaultValue: Boolean = false) = this.defaults.getOrDefault(key.normalize(), defaultValue)
 
     fun setFlag(key: String, value: Boolean) {
-        this.map[key] = value
+        this.map[key.normalize()] = value
     }
 
-    override fun getFlag(key: String) = this.map.getOrDefault(key, false)
+    override fun getFlag(key: String) = this.map.getOrDefault(key.normalize(), false)
+
+    protected fun readFlag(key: String, description: String, category: String = "flags", defaultValue: Boolean = false) {
+        val k = key.normalize()
+        this.setFlag(k,
+            this.config.getBoolean(key, category, this.getDefaultFlag(k, defaultValue), description + "\n")
+        )
+    }
+
+    protected fun readFlags(key: String, description: String, category: String = "flags", vararg defaultValues: String) {
+        val list = this.config.getStringList(key, category, defaultValues, description + "\n")
+        list.forEach { this.setFlag("$key#$it".normalize(), true) }
+    }
+
+    fun update() {
+        try {
+            this.config.load()
+
+            this.loadConfig(config)
+        } finally {
+            if (this.config.hasChanged()) {
+                this.config.save()
+            }
+        }
+    }
+
+    abstract protected fun loadConfig(config: Configuration)
 }

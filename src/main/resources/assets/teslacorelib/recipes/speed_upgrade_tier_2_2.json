@@ -10,5 +10,9 @@
   "key": {
     "b": { "item": "teslacorelib:speed_tier1" },
     "d": { "type": "forge:ore_dict", "ore": "gemDiamond" }
-  }
+  },
+  "conditions": [
+    { "type": "minecraft:item_exists", "item": "teslacorelib:speed_tier2" },
+    { "type": "minecraft:item_exists", "item": "teslacorelib:speed_tier1" }
+  ]
 }

@@ -11,3 +11,5 @@
 - added configuration options to disable registration of powders, sheets, gears, addons etc 
 - added lapis gear / sheet
 - added redstone gear / sheet
+- new recipe ingredient factory: "teslacorelib:ore_dict_ex" - you can supply a comma separated list of ore dictionary keys in the "ore" field
+- new recipe condition factory: "teslacorelib:ore_dict" - tests if an ore dict key has any items registered to it

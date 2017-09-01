@@ -11,5 +11,8 @@
     "b": { "item": "teslacorelib:base_addon" },
     "r": { "type": "forge:ore_dict", "ore": "dustRedstone" },
     "g": { "type": "forge:ore_dict", "ore": "gearDiamond" }
-  }
+  },
+  "conditions": [
+    { "type": "teslacorelib:ore_dict", "ore": "gearDiamond" }
+  ]
 }

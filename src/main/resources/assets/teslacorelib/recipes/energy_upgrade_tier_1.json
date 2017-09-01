@@ -11,5 +11,10 @@
     "b": { "item": "teslacorelib:base_addon" },
     "r": { "type": "forge:ore_dict", "ore": "dustRedstone" },
     "g": { "type": "forge:ore_dict", "ore": "gearGold" }
-  }
+  },
+  "conditions": [
+    { "type": "teslacorelib:ore_dict", "ore": "gearGold" },
+    { "type": "minecraft:item_exists", "item": "teslacorelib:base_addon" },
+    { "type": "minecraft:item_exists", "item": "teslacorelib:energy_tier1" }
+  ]
 }

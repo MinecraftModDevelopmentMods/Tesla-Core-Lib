@@ -11,5 +11,8 @@
     "x": { "type": "forge:ore_dict", "ore": "ingotIron" },
     "y": { "type": "forge:ore_dict", "ore": "plankWood" },
     "z": { "type": "forge:ore_dict", "ore": "blockRedstone" }
-  }
+  },
+  "conditions": [
+    { "type": "minecraft:item_exists", "item": "teslacorelib:machine_case" }
+  ]
 }

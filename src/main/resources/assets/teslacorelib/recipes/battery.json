@@ -11,5 +11,8 @@
     "I": { "type": "forge:ore_dict", "ore": "ingotIron" },
     "R": { "type": "forge:ore_dict", "ore": "dustRedstone" },
     "X": { "type": "forge:ore_dict", "ore": "blockRedstone" }
-  }
+  },
+  "conditions": [
+    { "type": "minecraft:item_exists", "item": "teslacorelib:battery" }
+  ]
 }

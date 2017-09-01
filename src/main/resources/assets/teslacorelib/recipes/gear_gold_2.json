@@ -1,0 +1,19 @@
+{
+  "type": "forge:ore_shaped",
+  "group": "tesla.gears",
+  "result": { "item": "teslacorelib:gear_gold" },
+  "pattern": [
+    "iwi",
+    "wsw",
+    "iwi"
+  ],
+  "key": {
+    "i": { "type": "forge:ore_dict", "ore": "ingotIron" },
+    "w": { "type": "forge:ore_dict", "ore": "ingotGold" },
+    "s": { "type": "forge:ore_dict", "ore": "gearStone" }
+  },
+  "conditions": [
+    { "type": "teslacorelib:ore_dict", "ore": "gearStone" },
+    { "type": "minecraft:item_exists", "item": "teslacorelib:gear_gold" }
+  ]
+}

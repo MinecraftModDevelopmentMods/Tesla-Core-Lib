@@ -11,5 +11,10 @@
     "b": { "item": "teslacorelib:base_addon" },
     "r": { "type": "forge:ore_dict", "ore": "dustRedstone" },
     "g": { "type": "forge:ore_dict", "ore": "gearDiamond" }
-  }
+  },
+  "conditions": [
+    { "type": "teslacorelib:ore_dict", "ore": "gearDiamond" },
+    { "type": "minecraft:item_exists", "item": "teslacorelib:base_addon" },
+    { "type": "minecraft:item_exists", "item": "teslacorelib:speed_tier2" }
+  ]
 }

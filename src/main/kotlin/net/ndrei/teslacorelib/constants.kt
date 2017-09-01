@@ -3,16 +3,16 @@ package net.ndrei.teslacorelib
 /**
  * Created by CF on 2017-06-29.
  */
-val MATERIAL_WOOD = "wood"
-val MATERIAL_STONE = "stone"
+const val MATERIAL_WOOD = "wood"
+const val MATERIAL_STONE = "stone"
 
-val MATERIAL_IRON = "iron"
-val MATERIAL_GOLD = "gold"
-val MATERIAL_COAL = "coal"
-val MATERIAL_DIAMOND = "diamond"
-val MATERIAL_EMERALD = "emerald"
-val MATERIAL_LAPIS = "lapis"
-val MATERIAL_REDSTONE = "redstone"
+const val MATERIAL_IRON = "iron"
+const val MATERIAL_GOLD = "gold"
+const val MATERIAL_COAL = "coal"
+const val MATERIAL_DIAMOND = "diamond"
+const val MATERIAL_EMERALD = "emerald"
+const val MATERIAL_LAPIS = "lapis"
+const val MATERIAL_REDSTONE = "redstone"
 
 const val MOD_ID = "@MOD-ID@"
 const val MOD_NAME = "@MOD-NAME@"
