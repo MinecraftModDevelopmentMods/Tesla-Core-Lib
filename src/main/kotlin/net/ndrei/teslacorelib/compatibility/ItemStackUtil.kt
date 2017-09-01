@@ -4,6 +4,8 @@ import com.google.common.collect.Lists
 import net.minecraft.item.ItemStack
 import net.minecraftforge.items.IItemHandler
 import net.minecraftforge.items.ItemHandlerHelper
+import net.ndrei.teslacorelib.utils.copyWithSize
+import net.ndrei.teslacorelib.utils.equalsIgnoreSize
 
 /**
  * Created by CF on 2017-06-28.
@@ -37,19 +39,13 @@ object ItemStackUtil {
 
     fun getCombinedInventory(handler: IItemHandler): List<ItemStack> {
         val list = Lists.newArrayList<ItemStack>()
-        for (i in 0..handler.slots - 1) {
+        for (i in 0 until handler.slots) {
             val stack = handler.getStackInSlot(i)
-            if (ItemStackUtil.isEmpty(stack)) {
+            if (stack.isEmpty) {
                 continue
             }
 
-            var match: ItemStack? = null
-            for (existing in list) {
-                if (existing.item === stack.item) {
-                    match = existing
-                    break
-                }
-            }
+            val match: ItemStack? = list.firstOrNull { it.equalsIgnoreSize(stack) }
             if (match == null) {
                 list.add(stack.copy())
             } else {
@@ -60,22 +56,22 @@ object ItemStackUtil {
     }
 
     fun extractFromCombinedInventory(handler: IItemHandler, stack: ItemStack, amount: Int): Int {
-        var amount = amount
-        if (ItemStackUtil.isEmpty(stack)) {
+        if (stack.isEmpty) {
             return 0
         }
 
+        val result = stack.copyWithSize(amount)
         var taken = 0
-        for (i in 0..handler.slots - 1) {
+        for (i in 0 until handler.slots) {
             val temp = handler.getStackInSlot(i)
-            if (temp == null || temp.isEmpty || temp.item !== stack.item) {
+            if (temp.isEmpty || !temp.equalsIgnoreSize(stack)) {
                 continue
             }
 
-            val takenStack = handler.extractItem(i, Math.min(amount, temp.count), false)
+            val takenStack = handler.extractItem(i, Math.min(result.count, temp.count), false)
             taken += takenStack.count
-            amount -= takenStack.count
-            if (amount <= 0) {
+            result.shrink(takenStack.count)
+            if (result.isEmpty) {
                 break
             }
         }
@@ -84,10 +80,10 @@ object ItemStackUtil {
 
     fun insertItemInExistingStacks(dest: IItemHandler?, stack: ItemStack, simulate: Boolean): ItemStack {
         var remaining = stack
-        if (dest == null || remaining.isEmpty)
+        if ((dest == null) || remaining.isEmpty)
             return ItemStack.EMPTY
 
-        for (i in 0..dest.slots - 1) {
+        for (i in 0 until dest.slots) {
             if (dest.getStackInSlot(i).isEmpty) {
                 continue
             }

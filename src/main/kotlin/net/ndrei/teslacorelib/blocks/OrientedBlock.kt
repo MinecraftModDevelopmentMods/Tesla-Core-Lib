@@ -24,7 +24,6 @@ import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import net.minecraftforge.registries.IForgeRegistry
 import net.ndrei.teslacorelib.TeslaCoreLib
-import net.ndrei.teslacorelib.compatibility.ItemStackUtil
 import net.ndrei.teslacorelib.getFacingFromEntity
 import net.ndrei.teslacorelib.render.SidedTileEntityRenderer
 import net.ndrei.teslacorelib.tileentities.ElectricTileEntity
@@ -47,8 +46,8 @@ abstract class OrientedBlock<T : SidedTileEntity>
                 .withProperty(FACING, EnumFacing.NORTH)
     }
 
-    override fun registerBlock(blockRegistry: IForgeRegistry<Block>) {
-        super.registerBlock(blockRegistry)
+    override fun registerBlock(registry: IForgeRegistry<Block>) {
+        super.registerBlock(registry)
         GameRegistry.registerTileEntity(this.teClass, this.registryName!!.toString() + "_tile")
     }
 
@@ -65,14 +64,14 @@ abstract class OrientedBlock<T : SidedTileEntity>
         get() = SidedTileEntityRenderer
 
     override fun createNewTileEntity(worldIn: World, meta: Int): TileEntity? {
-        try {
-            return this.teClass.newInstance()
+        return try {
+            this.teClass.newInstance()
         } catch (e: InstantiationException) {
             TeslaCoreLib.logger.error(e)
-            return null
+            null
         } catch (e: IllegalAccessException) {
             TeslaCoreLib.logger.error(e)
-            return null
+            null
         }
     }
 
@@ -100,7 +99,7 @@ abstract class OrientedBlock<T : SidedTileEntity>
 
     override fun onBlockPlacedBy(world: World?, pos: BlockPos?, state: IBlockState?, placer: EntityLivingBase?, stack: ItemStack?) {
         world!!.setBlockState(pos!!, state!!.withProperty(FACING, getFacingFromEntity(pos, placer!!)), 2)
-        if (!ItemStackUtil.isEmpty(stack) && stack!!.hasTagCompound()) {
+        if ((stack != null) && !stack.isEmpty && stack.hasTagCompound()) {
             val nbt = stack.tagCompound
             if (nbt != null && nbt.hasKey("tileentity", Constants.NBT.TAG_COMPOUND)) {
                 val teNBT = nbt.getCompoundTag("tileentity")
@@ -155,6 +154,6 @@ abstract class OrientedBlock<T : SidedTileEntity>
     }
 
     companion object {
-        val FACING = BlockHorizontal.FACING
+        val FACING = BlockHorizontal.FACING!!
     }
 }

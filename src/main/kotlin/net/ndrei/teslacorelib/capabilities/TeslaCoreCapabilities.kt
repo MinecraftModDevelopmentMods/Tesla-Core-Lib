@@ -39,20 +39,20 @@ object TeslaCoreCapabilities {
 //        override fun readNBT(capability: Capability<IHudInfoProvider>, instance: IHudInfoProvider, side: EnumFacing, nbt: NBTBase) {}
 //    }
 
-    internal class CapabilityWrenchHandler<T : ITeslaWrenchHandler> : Capability.IStorage<ITeslaWrenchHandler> {
-        override fun writeNBT(capability: Capability<ITeslaWrenchHandler>, instance: ITeslaWrenchHandler, side: EnumFacing): NBTBase? {
+    internal class CapabilityWrenchHandler<T : ITeslaWrenchHandler> : Capability.IStorage<T> {
+        override fun writeNBT(capability: Capability<T>, instance: T, side: EnumFacing): NBTBase? {
             return null
         }
 
-        override fun readNBT(capability: Capability<ITeslaWrenchHandler>, instance: ITeslaWrenchHandler, side: EnumFacing, nbt: NBTBase) {}
+        override fun readNBT(capability: Capability<T>, instance: T, side: EnumFacing, nbt: NBTBase) {}
     }
 
-    internal class CapabilityGuiContainer<T : IGuiContainerProvider> : Capability.IStorage<IGuiContainerProvider> {
-        override fun writeNBT(capability: Capability<IGuiContainerProvider>, instance: IGuiContainerProvider, side: EnumFacing): NBTBase? {
+    internal class CapabilityGuiContainer<T : IGuiContainerProvider> : Capability.IStorage<T> {
+        override fun writeNBT(capability: Capability<T>, instance: T, side: EnumFacing): NBTBase? {
             return null
         }
 
-        override fun readNBT(capability: Capability<IGuiContainerProvider>, instance: IGuiContainerProvider, side: EnumFacing, nbt: NBTBase) {}
+        override fun readNBT(capability: Capability<T>, instance: T, side: EnumFacing, nbt: NBTBase) {}
     }
 
 //    internal class DefaultHudInfo : IHudInfoProvider {
@@ -61,7 +61,7 @@ object TeslaCoreCapabilities {
 //    }
 
     internal class DefaultWrenchHandler : ITeslaWrenchHandler {
-        override fun onWrenchUse(wrench: TeslaWrench, player: EntityPlayer, worldIn: World, pos: BlockPos, hand: EnumHand, facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): EnumActionResult {
+        override fun onWrenchUse(wrench: TeslaWrench, player: EntityPlayer, world: World, pos: BlockPos, hand: EnumHand, facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): EnumActionResult {
             return EnumActionResult.PASS
         }
     }

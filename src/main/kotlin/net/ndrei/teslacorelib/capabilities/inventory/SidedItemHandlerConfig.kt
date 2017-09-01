@@ -66,7 +66,7 @@ open class SidedItemHandlerConfig : ISidedItemHandlerConfig, INBTSerializable<NB
 
     override fun getSidesForColor(color: EnumDyeColor)
         = if (this.facesConfig.containsKey(color)) {
-            this.facesConfig[color] ?: listOf<EnumFacing>()
+            this.facesConfig[color] ?: listOf()
         } else {
             listOf<EnumFacing>()
         }
@@ -98,14 +98,13 @@ open class SidedItemHandlerConfig : ISidedItemHandlerConfig, INBTSerializable<NB
 
     override fun deserializeNBT(nbt: NBTTagList) {
         this.facesConfig.clear()
-        for (i in 0..nbt.tagCount() - 1) {
+        for (i in 0 until nbt.tagCount()) {
             val item = nbt.getCompoundTagAt(i)
             val color = EnumDyeColor.byMetadata(item.getInteger("color"))
             val sides = Lists.newArrayList<EnumFacing>()
             val list = item.getTagList("sides", Constants.NBT.TAG_INT)
-            for (j in 0..list.tagCount() - 1) {
-                sides.add(EnumFacing.getFront(list.getIntAt(j)))
-            }
+            (0 until list.tagCount())
+                .mapTo(sides) { EnumFacing.getFront(list.getIntAt(it)) }
             this.facesConfig.put(color, sides)
         }
         this.updated()
@@ -114,7 +113,7 @@ open class SidedItemHandlerConfig : ISidedItemHandlerConfig, INBTSerializable<NB
     protected open fun updated() {}
 
     override fun removeColoredInfo(color: EnumDyeColor) {
-        this.information!!.removeIf { i -> i.color == color }
+        this.information.removeIf { i -> i.color == color }
         this.facesConfig.remove(color)
 
         this.updated()
