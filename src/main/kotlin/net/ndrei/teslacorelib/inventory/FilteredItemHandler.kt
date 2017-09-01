@@ -3,7 +3,6 @@ package net.ndrei.teslacorelib.inventory
 import net.minecraft.item.ItemStack
 import net.minecraftforge.items.IItemHandler
 import net.minecraftforge.items.IItemHandlerModifiable
-import net.ndrei.teslacorelib.compatibility.ItemStackUtil
 
 /**
  * Created by CF on 2017-06-28.
@@ -30,7 +29,7 @@ open class FilteredItemHandler protected constructor(val innerHandler: IItemHand
 
     override fun extractItem(slot: Int, amount: Int, simulate: Boolean): ItemStack {
         if (!this.canExtractItem(slot)) {
-            return ItemStackUtil.emptyStack
+            return ItemStack.EMPTY
         }
         return this.innerHandler.extractItem(slot, amount, simulate)
     }

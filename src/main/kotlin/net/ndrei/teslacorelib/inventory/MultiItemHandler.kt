@@ -3,7 +3,6 @@ package net.ndrei.teslacorelib.inventory
 import net.minecraft.item.ItemStack
 import net.minecraftforge.items.IItemHandler
 import net.minecraftforge.items.IItemHandlerModifiable
-import net.ndrei.teslacorelib.compatibility.ItemStackUtil
 
 /**
  * Created by CF on 2017-06-28.
@@ -16,49 +15,49 @@ open class MultiItemHandler(private val handlers: MutableList<IItemHandler> = mu
     }
 
     override fun canInsertItem(slot: Int, stack: ItemStack): Boolean {
-        var slot = slot
-        if (slot < 0) {
+        var currentSlot = slot
+        if (currentSlot < 0) {
             return false
         }
-        for (i in this.handlers!!.indices) {
-            val handler = this.handlers!![i]
-            if (handler.slots > slot) {
+        for (i in this.handlers.indices) {
+            val handler = this.handlers[i]
+            if (handler.slots > currentSlot) {
                 if (handler is IFilteredItemHandler) {
                     // filter the inputs
-                    return handler.canInsertItem(slot, stack)
+                    return handler.canInsertItem(currentSlot, stack)
                 }
                 return true
             }
-            slot -= handler.slots
+            currentSlot -= handler.slots
         }
         return false
     }
 
     override fun canExtractItem(slot: Int): Boolean {
-        var slot = slot
-        if (slot < 0) {
+        var currentSlot = slot
+        if (currentSlot < 0) {
             return false
         }
-        for (i in this.handlers!!.indices) {
-            val handler = this.handlers!![i]
-            if (handler.slots > slot) {
+        for (i in this.handlers.indices) {
+            val handler = this.handlers[i]
+            if (handler.slots > currentSlot) {
                 if (handler is IFilteredItemHandler) {
                     // filter the inputs
-                    return handler.canExtractItem(slot)
+                    return handler.canExtractItem(currentSlot)
                 }
                 return true
             }
-            slot -= handler.slots
+            currentSlot -= handler.slots
         }
         return false
 
     }
 
     override val inventories: Int
-        get() = this.handlers!!.size
+        get() = this.handlers.size
 
     override fun getInventory(inventory: Int): IItemHandler {
-        return this.handlers!![inventory]
+        return this.handlers[inventory]
     }
 
     override fun getFilteredInventory(inventory: Int): IFilteredItemHandler? {
@@ -85,89 +84,85 @@ open class MultiItemHandler(private val handlers: MutableList<IItemHandler> = mu
         return true
     }
 
-    override fun getSlots(): Int {
-        var slots = 0
-        for (i in this.handlers!!.indices) {
-            val handler = this.handlers!![i]
-            slots += handler.slots
-        }
-        return slots
-    }
+    override fun getSlots() =
+        this.handlers.indices
+            .map { this.handlers[it] }
+            .sumBy { it.slots }
 
     override fun getStackInSlot(slot: Int): ItemStack {
-        var slot = slot
-        if (slot < 0) {
-            return ItemStackUtil.emptyStack
+        var currentSlot = slot
+        if (currentSlot < 0) {
+            return ItemStack.EMPTY
         }
-        for (i in this.handlers!!.indices) {
-            val handler = this.handlers!![i]
-            if (handler.slots > slot) {
-                return handler.getStackInSlot(slot)
+        for (i in this.handlers.indices) {
+            val handler = this.handlers[i]
+            if (handler.slots > currentSlot) {
+                return handler.getStackInSlot(currentSlot)
             }
-            slot -= handler.slots
+            currentSlot -= handler.slots
         }
-        return ItemStackUtil.emptyStack
+        return ItemStack.EMPTY
     }
 
     override fun insertItem(slot: Int, stack: ItemStack, simulate: Boolean): ItemStack {
-        var slot = slot
-        if (slot < 0) {
-            return ItemStackUtil.emptyStack
+        var currentSlot = slot
+        if (currentSlot < 0) {
+            return ItemStack.EMPTY
         }
-        for (i in this.handlers!!.indices) {
-            val handler = this.handlers!![i]
-            if (handler.slots > slot) {
-                return handler.insertItem(slot, stack, simulate)
+        for (i in this.handlers.indices) {
+            val handler = this.handlers[i]
+            if (handler.slots > currentSlot) {
+                return handler.insertItem(currentSlot, stack, simulate)
             }
-            slot -= handler.slots
+            currentSlot -= handler.slots
         }
-        return ItemStackUtil.emptyStack
+        return ItemStack.EMPTY
     }
 
     override fun extractItem(slot: Int, amount: Int, simulate: Boolean): ItemStack {
-        var slot = slot
-        if (slot < 0) {
-            return ItemStackUtil.emptyStack
+        var currentSlot = slot
+        if (currentSlot < 0) {
+            return ItemStack.EMPTY
         }
-        for (i in this.handlers!!.indices) {
-            val handler = this.handlers!![i]
-            if (handler.slots > slot) {
-                return handler.extractItem(slot, amount, simulate)
+        for (i in this.handlers.indices) {
+            val handler = this.handlers[i]
+            if (handler.slots > currentSlot) {
+                return handler.extractItem(currentSlot, amount, simulate)
             }
-            slot -= handler.slots
+            currentSlot -= handler.slots
         }
-        return ItemStackUtil.emptyStack
+        return ItemStack.EMPTY
     }
 
     override fun getSlotLimit(slot: Int): Int {
-        var slot = slot
-        if (slot < 0) {
+        var currentSlot = slot
+        if (currentSlot < 0) {
             return 0
         }
-        for (i in this.handlers!!.indices) {
-            val handler = this.handlers!![i]
-            if (handler.slots > slot) {
-                return handler.getSlotLimit(slot)
+        for (i in this.handlers.indices) {
+            val handler = this.handlers[i]
+            if (handler.slots > currentSlot) {
+                return handler.getSlotLimit(currentSlot)
             }
-            slot -= handler.slots
+            currentSlot -= handler.slots
         }
         return 0
     }
 
     override fun setStackInSlot(slot: Int, stack: ItemStack) {
-        var slot = slot
-        if (slot >= 0) {
-            for (i in this.handlers!!.indices) {
-                val handler = this.handlers!![i]
-                if (handler.slots > slot) {
+        var currentSlot = slot
+        if (currentSlot >= 0) {
+            for (i in this.handlers.indices) {
+                val handler = this.handlers[i]
+                if (handler.slots > currentSlot) {
                     if (handler is IItemHandlerModifiable) {
-                        handler.setStackInSlot(slot, stack)
+                        handler.setStackInSlot(currentSlot, stack)
                     } else {
                         throw RuntimeException("Target inventory is not an IItemHandlerModifiable.")
                     }
                     return
                 }
-                slot -= handler.slots
+                currentSlot -= handler.slots
             }
         }
     }

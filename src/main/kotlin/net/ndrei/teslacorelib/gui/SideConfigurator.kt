@@ -25,7 +25,7 @@ class SideConfigurator(left: Int, top: Int, width: Int, height: Int, private val
         this.setVisibility(this.selectedInventory >= 0)
 
         val colors = this.sidedConfig.coloredInfo
-        if (this.selectedInventory in 0..colors.size - 1) {
+        if (this.selectedInventory in 0 until colors.size) {
             val color = colors[this.selectedInventory].color
             if (this.entity.getInventoryLockState(color) != null) {
                 this.lockPiece = LockedInventoryTogglePiece(
@@ -142,26 +142,20 @@ class SideConfigurator(left: Int, top: Int, width: Int, height: Int, private val
                 localX -= column * 18
                 localY -= row * 18
                 if (localX in 2..15 && localY in 2..15) {
-                    if (row == 0) {
-                        if (column == 2) {
-                            facing = EnumFacing.UP
+                    when (row) {
+                        0 -> when (column) {
+                            2 -> facing = EnumFacing.UP
                         }
-                    } else if (row == 1) {
-                        if (column == 1) {
-                            facing = EnumFacing.WEST
-                        } else if (column == 2) {
-                            facing = EnumFacing.SOUTH
-                        } else if (column == 3) {
-                            facing = EnumFacing.EAST
+                        1 -> when (column) {
+                            1 -> facing = EnumFacing.WEST
+                            2 -> facing = EnumFacing.SOUTH
+                            3 -> facing = EnumFacing.EAST
                         }
-                    } else if (row == 2) {
-                        if (column == 2) {
-                            facing = EnumFacing.DOWN
-                        } else if (column == 3) {
-                            facing = EnumFacing.NORTH
+                        2 -> when (column) {
+                            2 -> facing = EnumFacing.DOWN
+                            3 -> facing = EnumFacing.NORTH
                         }
                     }
-
                 }
             }
         }
@@ -169,15 +163,16 @@ class SideConfigurator(left: Int, top: Int, width: Int, height: Int, private val
     }
 
     private fun drawSide(container: BasicTeslaGuiContainer<*>, sides: List<EnumFacing>, side: EnumFacing, column: Int, row: Int, mouseX: Int, mouseY: Int) {
-        var mouseX = mouseX
-        var mouseY = mouseY
+//        var mouseX = mouseX
+//        var mouseY = mouseY
         val x = this.left + column * 18 + 2
         val y = this.top + row * 18 + 2
 
         container.drawTexturedRect(x, y, 110, 210, 14, 14)
-        mouseX -= container.guiLeft
-        mouseY -= container.guiTop
-        if (mouseX >= x && mouseY >= y && mouseX <= x + 14 && mouseY <= y + 14) {
+//        mouseX -= container.guiLeft
+//        mouseY -= container.guiTop
+        //if (mouseX >= x && mouseX <= x + 14 && mouseY >= y  && mouseY <= y + 14) {
+        if (((mouseX - container.guiLeft) in x..(x + 14)) && ((mouseY - container.guiTop) in y..(y + 14))) {
             container.drawFilledRect(container.guiLeft + x + 1, container.guiTop + y + 1, 12, 12, 0x42FFFFFF)
         }
         container.drawTexturedRect(x, y, if (sides.contains(side)) 182 else 146, 210, 14, 14)

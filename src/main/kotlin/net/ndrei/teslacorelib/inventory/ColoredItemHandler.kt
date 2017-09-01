@@ -26,7 +26,7 @@ open class ColoredItemHandler(handler: IItemHandler, val color: EnumDyeColor, va
         val box = this.boundingBox
         if (!box.isEmpty) {
             val columns = box.width / 18
-            (0..this.innerHandler.slots - 1).mapTo(result) {
+            (0 until this.innerHandler.slots).mapTo(result) {
                 FilteredSlot(this.itemHandlerForContainer, it,
                         box.left + 1 + (it % columns) * 18,
                         box.top  + 1 + (it / columns) * 18

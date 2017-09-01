@@ -9,7 +9,6 @@ import net.minecraft.item.ItemArmor
 import net.minecraft.item.ItemStack
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
-import net.ndrei.teslacorelib.compatibility.ItemStackUtil
 import net.ndrei.teslacorelib.tileentities.SidedTileEntity
 
 /**
@@ -45,6 +44,7 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
     protected open val inventoryExtraSlotsOffsetX get() = 174
     protected open val inventoryExtraSlotsOffsetY get() = 84
 
+    @Suppress("MemberVisibilityCanPrivate")
     protected fun addPlayerQuickBar(player: EntityPlayer?): Int {
         if ((player == null) || !this.showPlayerQuickBar) {
             return 0
@@ -59,6 +59,7 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
 
     protected open val showPlayerQuickBar get() = true
 
+    @Suppress("MemberVisibilityCanPrivate")
     protected fun addPlayerInventory(player: EntityPlayer?): Int {
         if ((player == null) || !this.showPlayerInventory) {
             return 0
@@ -75,6 +76,7 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
 
     protected open val showPlayerInventory get() = true
 
+    @Suppress("MemberVisibilityCanPrivate")
     protected fun addPlayerExtraSlots(player: EntityPlayer?): Int {
         if ((player == null) || !this.showPlayerExtraSlots) {
             return 0
@@ -103,9 +105,9 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
                  * Return whether this slot's stack can be taken from this slot.
                  */
                 override fun canTakeStack(playerIn: EntityPlayer?): Boolean {
-                    val itemstack = this.stack
-                    return !(!ItemStackUtil.isEmpty(itemstack) && !playerIn!!.isCreative
-                            && EnchantmentHelper.hasBindingCurse(itemstack)) && super.canTakeStack(playerIn)
+                    val itemStack = this.stack
+                    return !(!itemStack.isEmpty && !playerIn!!.isCreative
+                            && EnchantmentHelper.hasBindingCurse(itemStack)) && super.canTakeStack(playerIn)
                 }
 
                 @SideOnly(Side.CLIENT)
@@ -149,7 +151,7 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
     //#endregion
 
     override fun transferStackInSlot(playerIn: EntityPlayer?, index: Int): ItemStack {
-        var copyStack = ItemStackUtil.emptyStack
+        var copyStack = ItemStack.EMPTY
 
         val slot = this.inventorySlots[index]
         if (slot != null && slot.hasStack) {
@@ -164,7 +166,7 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
                 }
             }
             if (!merged) {
-                return ItemStackUtil.emptyStack
+                return ItemStack.EMPTY
             }
         }
 

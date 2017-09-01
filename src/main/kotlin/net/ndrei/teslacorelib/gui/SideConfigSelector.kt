@@ -40,8 +40,8 @@ class SideConfigSelector(left: Int, top: Int, width: Int, height: Int, private v
             if (localY in 2..14) {
                 var localX = mouseX - guiX - this.left
                 val index = localX / 18
-                if (index != this.selectedInventory && index >= 0 && index < colors.size && index < 8 && colors[index].highlight != null) {
-                    localX = localX - index * 18
+                if (index != this.selectedInventory && index >= 0 && index < colors.size && index < 8) {
+                    localX -= index * 18
                     if (localX in 2..14) {
                         val box = colors[index].highlight
                         container.drawFilledRect(box.left, box.top, box.width, box.height,
@@ -93,7 +93,7 @@ class SideConfigSelector(left: Int, top: Int, width: Int, height: Int, private v
                 var localX = mouseX - container.guiLeft - this.left
                 val index = localX / 18
                 val colors = this.sidedConfig.coloredInfo
-                if (index != oldIndex && index >= 0 && index < colors.size && index < 8 && colors[index].highlight != null) {
+                if (index != oldIndex && index >= 0 && index < colors.size && index < 8) {
                     localX -= index * 18
                     if (localX in 2..14) {
                         this.selectedInventory = index

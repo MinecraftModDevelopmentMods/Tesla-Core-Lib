@@ -28,13 +28,12 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
     override fun getTankProperties(): Array<IFluidTankProperties> {
         val list = Lists.newArrayList<IFluidTankProperties>()
 
-        for (tank in this.tanks!!) {
+        for (tank in this.tanks) {
             var canDrain = true
             var canFill = true
             if (tank is IFilteredFluidTank) {
-                val filtered = tank
-                canDrain = filtered.canDrain()
-                canFill = filtered.canFill()
+                canDrain = tank.canDrain()
+                canFill = tank.canFill()
             }
             list.add(FluidTankProperties(tank.fluid, tank.capacity, canFill, canDrain))
         }
@@ -43,27 +42,25 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
     }
 
     override fun fill(resource: FluidStack, doFill: Boolean): Int {
-        var resource = resource
+        val source = resource.copy()
         var used = 0
-        resource = resource.copy()
 
-        for (tank in this.tanks!!) {
+        for (tank in this.tanks) {
             if (tank is IFilteredFluidTank) {
-                val filtered = tank
-                if (!filtered.canFill() || !filtered.acceptsFluid(resource)) {
+                if (!tank.canFill() || !tank.acceptsFluid(source)) {
                     continue
                 }
             }
 
-            val amount = tank.fill(resource, doFill)
-            used += Math.min(amount, resource.amount)
-            if (resource.amount <= amount) {
+            val amount = tank.fill(source, doFill)
+            used += Math.min(amount, source.amount)
+            if (source.amount <= amount) {
                 break
             }
-            resource.amount -= amount
+            source.amount -= amount
         }
 
-        // TeslaCoreLib.logger.info("Tank filled with " + used + " mb of " + resource.getFluid().getName());
+        // TeslaCoreLib.logger.info("Tank filled with " + used + " mb of " + source.getFluid().getName());
         return used
     }
 
@@ -76,13 +73,13 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
     }
 
     private fun drain(maxDrain: Int, doDrain: Boolean, filter: FluidStack?): FluidStack? {
-        var filter = filter
-        var fluid: FluidStack? = if (filter == null) null else filter.copy()
+        var currentFilter = filter
+        var fluid: FluidStack? = if (currentFilter == null) null else currentFilter.copy()
         if (fluid != null) {
             fluid.amount = 0
         }
 
-        for (tank in this.tanks!!) {
+        for (tank in this.tanks) {
             if (tank is IFilteredFluidTank) {
                 if (!tank.canDrain()) {
                     continue
@@ -91,7 +88,7 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
 
             val contained = tank.fluid ?: continue
 
-            if (filter != null && !contained.isFluidEqual(filter)) {
+            if (currentFilter != null && !contained.isFluidEqual(currentFilter)) {
                 continue
             }
 
@@ -99,9 +96,9 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
 
             if (fluid == null) {
                 fluid = drained.copy()
-                if (filter == null) {
+                if (currentFilter == null) {
                     // make sure we are not extracting different fluids from other tanks
-                    filter = fluid
+                    currentFilter = fluid
                 }
             } else {
                 fluid.amount += drained.amount
@@ -118,13 +115,14 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
     //#endregion
 
     fun getTanks(): Array<IFluidTank> {
-        return this.tanks!!.toTypedArray()
+        return this.tanks.toTypedArray()
     }
 
     fun addTank(tank: IFluidTank) {
-        this.tanks!!.add(tank)
+        this.tanks.add(tank)
     }
 
+    @Suppress("unused")
     fun addTank(acceptedFluid: Fluid, capacity: Int): FilteredFluidTank {
         val tank = FilteredFluidTank(acceptedFluid, FluidTank(capacity))
         this.addTank(tank)
@@ -146,7 +144,7 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
 
         val list = NBTTagList()
         for (rawTank in this.tanks) {
-            val tank = if (rawTank is FilteredFluidTank) rawTank.innerTank else rawTank
+            val tank = (rawTank as? FilteredFluidTank)?.innerTank ?: rawTank
             val tankNbt: NBTTagCompound
             if (tank is ISerializableFluidTank) {
                 tankNbt = tank.serializeNBT()
@@ -170,7 +168,7 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
         val list = nbt.getTagList("tanks", Constants.NBT.TAG_COMPOUND)
         if (list != null) {
             var index = 0
-            while (index < list.tagCount() && index < this.tanks!!.size) {
+            while (index < list.tagCount() && index < this.tanks.size) {
                 var tank = this.tanks[index]
                 if (tank is FilteredFluidTank) {
                     tank = tank.innerTank
@@ -179,11 +177,10 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
                 if (tank is ISerializableFluidTank) {
                     tank.deserializeNBT(tankNbt)
                 } else {
-                    val fluid: FluidStack?
-                    if (tankNbt.hasKey("_empty")) {
-                        fluid = null
+                    val fluid: FluidStack? = if (tankNbt.hasKey("_empty")) {
+                        null
                     } else {
-                        fluid = FluidStack.loadFluidStackFromNBT(tankNbt)
+                        FluidStack.loadFluidStackFromNBT(tankNbt)
                     }
                     if (tank.fluidAmount > 0) {
                         // drain the tank
@@ -215,6 +212,7 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
 //        return false
 //    }
 
+    @Suppress("unused")
     fun fillFluidFrom(bucket: ItemStack): ItemStack = this.tanks.fillFrom(bucket)
 //            : ItemStack {
 //        if (!ItemStackUtil.isEmpty(bucket) && bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
