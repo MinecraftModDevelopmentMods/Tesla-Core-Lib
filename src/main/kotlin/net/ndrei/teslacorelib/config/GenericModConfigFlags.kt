@@ -38,7 +38,14 @@ abstract class GenericModConfigFlags: IModConfigFlags {
     }
 
     protected fun readFlags(key: String, description: String, category: String = "flags", vararg defaultValues: String) {
-        val list = this.config.getStringList(key, category, defaultValues, description + "\n")
+        val k = key.normalize()
+        val defaults = mutableListOf(*defaultValues)
+        this.defaults
+            .filterKeys { it.startsWith("$k#") }
+            .mapKeys { (it, _) ->  it.substring("$k#".length) }
+            .filterValues { it }
+            .mapTo(defaults) { it.key }
+        val list = this.config.getStringList(key, category, defaults.toTypedArray(), description + "\n")
         list.forEach { this.setFlag("$key#$it".normalize(), true) }
     }
 
