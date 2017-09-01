@@ -1,5 +1,6 @@
 package net.ndrei.teslacorelib.config
 
+import net.minecraftforge.common.config.Configuration
 import net.ndrei.teslacorelib.items.gears.CoreGearType
 
 /**
