@@ -29,7 +29,7 @@ open class BaseTieredAddon(modId: String, tab: CreativeTabs, registryName: Strin
         val addons = machine.addons
         for (addon in addons) {
             if (addon !is BaseTieredAddon) {
-                break
+                continue
             }
             val tiered = addon
 
