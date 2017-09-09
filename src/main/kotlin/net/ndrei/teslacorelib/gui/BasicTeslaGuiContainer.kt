@@ -47,6 +47,7 @@ open class BasicTeslaGuiContainer<out T : SidedTileEntity>(val guiId: Int, conta
 
     override fun drawScreen(mouseX: Int, mouseY: Int, partialTicks: Float) {
         super.drawDefaultBackground()
+        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
         super.drawScreen(mouseX, mouseY, partialTicks)
         super.renderHoveredToolTip(mouseX, mouseY)
     }
