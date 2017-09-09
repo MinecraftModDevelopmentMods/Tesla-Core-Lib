@@ -11,6 +11,7 @@ import net.ndrei.teslacorelib.energy.EnergySystemFactory
 import net.ndrei.teslacorelib.energy.IGenericEnergyStorage
 import net.ndrei.teslacorelib.gui.BasicRenderedGuiPiece
 import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer
+import net.ndrei.teslacorelib.gui.IGeneratorInfoProvider
 import net.ndrei.teslacorelib.gui.IGuiContainerPiece
 import net.ndrei.teslacorelib.inventory.BoundingRectangle
 import net.ndrei.teslacorelib.inventory.ColoredItemHandler
@@ -20,7 +21,7 @@ import net.ndrei.teslacorelib.inventory.EnergyStorage
  * Created by CF on 2017-06-27.
  */
 @Suppress("MemberVisibilityCanPrivate")
-abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTileEntity(typeId) {
+abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTileEntity(typeId), IGeneratorInfoProvider {
     private lateinit var generatedPower: EnergyStorage
     private lateinit var chargePadItems: ItemStackHandler
 
@@ -95,14 +96,14 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
     protected open val energyFillRate: Long
         get() = 160
 
-//    val generatedPowerCapacity: Long
-//        get() = this.generatedPower.capacity
-//
-//    val generatedPowerStored: Long
-//        get() = this.generatedPower.stored
-//
-//    val generatedPowerReleaseRate: Long
-//        get() = this.generatedPower.getEnergyOutputRate()
+    override final val generatedPowerCapacity: Long
+        get() = this.generatedPower.capacity
+
+    override final val generatedPowerStored: Long
+        get() = this.generatedPower.stored
+
+    override final val generatedPowerReleaseRate: Long
+        get() = this.generatedPower.getEnergyOutputRate()
 
     //endregion
     //#region write/read/sync   methods
