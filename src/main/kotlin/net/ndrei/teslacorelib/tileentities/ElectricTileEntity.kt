@@ -1,7 +1,6 @@
 package net.ndrei.teslacorelib.tileentities
 
 import net.minecraft.item.EnumDyeColor
-import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.capabilities.Capability
 import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer
@@ -22,15 +21,18 @@ abstract class ElectricTileEntity protected constructor(typeId: Int) : SidedTile
     override fun initializeInventories() {
         this.energyStorage = object : EnergyStorage(this.maxEnergy, this.energyInputRate, this.energyOutputRate) {
             override fun onChanged(old: Long, current: Long) {
-                this@ElectricTileEntity.markDirty()
-                this@ElectricTileEntity.forceSync()
+//                this@ElectricTileEntity.markDirty()
+//                this@ElectricTileEntity.forceSync()
+                this@ElectricTileEntity.partialSync(SYNC_ENERGY)
             }
         }
         this.energyStorage.setSidedConfig(EnumDyeColor.LIGHT_BLUE, this.sideConfig, this.energyBoundingBox)
+        this.registerSyncTagPart(SYNC_ENERGY, this.energyStorage)
 
         super.initializeInventories()
     }
 
+    @Suppress("MemberVisibilityCanPrivate")
     protected val energyBoundingBox: BoundingRectangle
         get() = BoundingRectangle(7, 25, 18, 54)
 
@@ -51,21 +53,21 @@ abstract class ElectricTileEntity protected constructor(typeId: Int) : SidedTile
 
     //region storage & sync    methods
 
-    override fun readFromNBT(compound: NBTTagCompound) {
-        super.readFromNBT(compound)
-
-        if (compound.hasKey("energy")) {
-            this.energyStorage.deserializeNBT(compound.getCompoundTag("energy"))
-        }
-    }
-
-    override fun writeToNBT(compound: NBTTagCompound): NBTTagCompound {
-        val nbt = super.writeToNBT(compound)
-
-        nbt.setTag("energy", this.energyStorage.serializeNBT())
-
-        return nbt
-    }
+//    override fun readFromNBT(compound: NBTTagCompound) {
+//        super.readFromNBT(compound)
+//
+////        if (compound.hasKey(SYNC_ENERGY)) {
+////            this.energyStorage.deserializeNBT(compound.getCompoundTag(SYNC_ENERGY))
+////        }
+//    }
+//
+//    override fun writeToNBT(compound: NBTTagCompound): NBTTagCompound {
+//        val nbt = super.writeToNBT(compound)
+//
+////        nbt.setTag(SYNC_ENERGY, this.energyStorage.serializeNBT())
+//
+//        return nbt
+//    }
 
     //endregion
 
@@ -117,4 +119,8 @@ abstract class ElectricTileEntity protected constructor(typeId: Int) : SidedTile
     }
 
     protected abstract fun protectedUpdate()
+
+    companion object {
+        protected const val SYNC_ENERGY = "energy"
+    }
 }

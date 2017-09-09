@@ -27,7 +27,9 @@ open class GenericEnergyStorage(capacity: Long, protected var inputRate: Long, p
         if (!simulated) {
             val old = this.storedPower
             this.storedPower += acceptedTesla
-            this.onChanged(old, this.storedPower)
+            if (old != this.storedPower) {
+                this.onChanged(old, this.storedPower)
+            }
         }
 
         return acceptedTesla
@@ -46,7 +48,9 @@ open class GenericEnergyStorage(capacity: Long, protected var inputRate: Long, p
         if (!simulated) {
             val old = this.storedPower
             this.storedPower -= removedPower
-            this.onChanged(old, this.storedPower)
+            if (old != this.storedPower) {
+                this.onChanged(old, this.storedPower)
+            }
         }
 
         return removedPower

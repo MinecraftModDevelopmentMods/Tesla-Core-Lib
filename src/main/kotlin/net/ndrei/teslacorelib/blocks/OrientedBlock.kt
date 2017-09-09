@@ -81,7 +81,7 @@ abstract class OrientedBlock<T : SidedTileEntity>
             val te = world.getTileEntity(pos) as? SidedTileEntity
             val bucket = player.getHeldItem(hand)
             if (!bucket.isEmpty && bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
-                if ((te != null) && te.handleBucket(player, hand, side)) {
+                if ((te != null) && te.handleBucket(player, hand/*, side*/)) {
                     return true
                 }
             }

@@ -3,7 +3,7 @@ package net.ndrei.teslacorelib.tileentities
 import net.minecraft.inventory.Slot
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.NBTTagInt
 import net.minecraftforge.items.ItemStackHandler
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer
 import net.ndrei.teslacorelib.containers.FilteredSlot
@@ -14,8 +14,8 @@ import net.ndrei.teslacorelib.inventory.ColoredItemHandler
 import net.ndrei.teslacorelib.inventory.EnergyStorage
 import net.ndrei.teslacorelib.items.SpeedUpgradeTier1
 import net.ndrei.teslacorelib.items.SpeedUpgradeTier2
-import net.ndrei.teslacorelib.render.HudInfoLine
-import java.awt.Color
+import java.util.function.Consumer
+import java.util.function.Supplier
 
 /**
  * Created by CF on 2017-06-27.
@@ -24,7 +24,7 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
     private var lastWorkTicks = 0
     private var workTick = 0
 
-    protected var outOfPower = false
+//    protected var outOfPower = false
 
     private lateinit var energyItems: ItemStackHandler
 
@@ -37,7 +37,8 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
 
         this.energyItems = object : ItemStackHandler(2) {
             override fun onContentsChanged(slot: Int) {
-                this@ElectricMachine.markDirty()
+                // this@ElectricMachine.markDirty()
+                this@ElectricMachine.partialSync(SYNC_ENERGY_ITEMS)
             }
         }
         super.addInventory(object : ColoredItemHandler(this.energyItems, EnumDyeColor.CYAN, "Energy Items", -10, BoundingRectangle(25, 25, 18, 54)) {
@@ -64,41 +65,57 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
                 return pieces
             }
         })
-        super.addInventoryToStorage(this.energyItems, "inv_energy_items")
+        super.addInventoryToStorage(this.energyItems, SYNC_ENERGY_ITEMS)
+
+        this.registerSyncTagPart(SYNC_WORK_ENERGY, Consumer {
+            if (this.workEnergy == null) {
+                this.resetWorkEnergyBuffer()
+            }
+            this.workEnergy!!.deserializeNBT(it)
+        }, Supplier {
+            if (this.workEnergy != null) {
+                this.workEnergy!!.serializeNBT()
+            } else {
+                null
+            }
+        })
+
+        this.registerSyncIntPart(SYNC_WORK_TICKS, Consumer { this.workTick = it.int }, Supplier { NBTTagInt(this.workTick) })
+        this.registerSyncIntPart(SYNC_WORK_LAST_TICKS, Consumer { this.lastWorkTicks = it.int }, Supplier { NBTTagInt(this.lastWorkTicks) })
     }
 
     //#endregion
     //#region write/read/sync   methods
 
-    override fun writeToNBT(compound: NBTTagCompound): NBTTagCompound {
-        var compound = compound
-        compound = super.writeToNBT(compound)
+//    override fun writeToNBT(compound: NBTTagCompound): NBTTagCompound {
+//        var compound = compound
+//        compound = super.writeToNBT(compound)
+//
+////        compound.setInteger("tick_work", this.workTick)
+////        compound.setInteger("tick_lastWork", this.lastWorkTicks)
+////        compound.setBoolean("out_of_power", this.outOfPower)
+//
+////        if (this.workEnergy != null) {
+////            compound.setTag(SYNC_WORK_ENERGY, this.workEnergy!!.serializeNBT())
+////        }
+//
+//        return compound
+//    }
 
-        compound.setInteger("tick_work", this.workTick)
-        compound.setInteger("tick_lastWork", this.lastWorkTicks)
-        compound.setBoolean("out_of_power", this.outOfPower)
-
-        if (this.workEnergy != null) {
-            compound.setTag("work_energy", this.workEnergy!!.serializeNBT())
-        }
-
-        return compound
-    }
-
-    override fun readFromNBT(compound: NBTTagCompound) {
-        super.readFromNBT(compound)
-
-        this.lastWorkTicks = compound.getInteger("tick_lastWork")
-        this.workTick = compound.getInteger("tick_work")
-        this.outOfPower = compound.getBoolean("out_of_power")
-
-        if (compound.hasKey("work_energy")) {
-            if (this.workEnergy == null) {
-                this.workEnergy = EnergyStorage(this.energyForWork.toLong(), this.energyForWorkRate.toLong(), 0)
-            }
-            this.workEnergy!!.deserializeNBT(compound.getCompoundTag("work_energy"))
-        }
-    }
+//    override fun readFromNBT(compound: NBTTagCompound) {
+//        super.readFromNBT(compound)
+//
+////        this.lastWorkTicks = compound.getInteger("tick_lastWork")
+////        this.workTick = compound.getInteger("tick_work")
+////        this.outOfPower = compound.getBoolean("out_of_power")
+//
+////        if (compound.hasKey(SYNC_WORK_ENERGY)) {
+////            if (this.workEnergy == null) {
+////                this.workEnergy = EnergyStorage(this.energyForWork.toLong(), this.energyForWorkRate.toLong(), 0)
+////            }
+////            this.workEnergy!!.deserializeNBT(compound.getCompoundTag(SYNC_WORK_ENERGY))
+////        }
+//    }
 
     //#endregion
     //#region gui / container   methods
@@ -111,19 +128,19 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
         return pieces
     }
 
-    override val hudLines: List<HudInfoLine>
-        get() {
-            val list = super.hudLines.toMutableList()
-
-            if (this.outOfPower) {
-                list.add(HudInfoLine(Color.RED,
-                        Color(255, 0, 0, 42),
-                        "out of power")
-                        .setTextAlignment(HudInfoLine.TextAlignment.CENTER))
-            }
-
-            return list.toList()
-        }
+//    override val hudLines: List<HudInfoLine>
+//        get() {
+//            val list = super.hudLines.toMutableList()
+//
+//            if (this.outOfPower) {
+//                list.add(HudInfoLine(Color.RED,
+//                        Color(255, 0, 0, 42),
+//                        "out of power")
+//                        .setTextAlignment(HudInfoLine.TextAlignment.CENTER))
+//            }
+//
+//            return list.toList()
+//        }
 
     //#endregion
 
@@ -168,22 +185,21 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
         get() = if (this.workEnergy != null) this.workEnergy!!.getEnergyInputRate() else 0
 
     private val finalEnergyForWork: Int
-        get() {
-            var energy = this.energyForWork.toFloat()
-            for (addon in this.addons) {
-                if (!addon.isValid(this)) {
-                    continue
-                }
+        get() = Math.round(
+            this.addons
+                .filter { it.isValid(this) }
+                .fold(this.energyForWork.toFloat()) { energy, it -> energy * it.workEnergyMultiplier }
+        )
 
-                energy *= addon.workEnergyMultiplier
-            }
-            return Math.round(energy)
-        }
-
-    protected fun resetWorkEnergyBuffer() {
-        this.workEnergy = EnergyStorage(this.finalEnergyForWork.toLong(),
+    private fun resetWorkEnergyBuffer() {
+        this.workEnergy = object : EnergyStorage(this.finalEnergyForWork.toLong(),
                 Math.round(this.energyForWorkRate * this.energyForWorkRateMultiplier).toLong(),
-                0)
+            0) {
+            override fun onChanged(old: Long, current: Long) {
+                super.onChanged(old, current)
+                this@ElectricMachine.partialSync(SYNC_WORK_ENERGY)
+            }
+        }
     }
 
     fun updateWorkEnergyRate() {
@@ -195,6 +211,22 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
     fun updateWorkEnergyCapacity() {
         if (this.workEnergy != null) {
             this.workEnergy!!.setCapacity(this.finalEnergyForWork.toLong())
+        }
+    }
+
+    private fun setWorkTicks(value: Int) {
+        if (this.workTick != value) {
+            this.workTick = value
+            // TODO: figure out if client cares about this or not
+//            this.partialSync(SYNC_WORK_TICKS)
+        }
+    }
+
+    private fun setLastWorkTicks(value: Int) {
+        if (this.lastWorkTicks != value) {
+            this.lastWorkTicks = value
+            // TODO: figure out if client cares about this or not
+//            this.partialSync(SYNC_WORK_LAST_TICKS)
         }
     }
 
@@ -213,16 +245,19 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
             }
         }
 
-        this.workTick = Math.min(this.lastWorkTicks + 1, this.workTick + 1)
+        this.setWorkTicks(Math.min(this.lastWorkTicks + 1, this.workTick + 1))
         if (this.workEnergy!!.isFull && this.workTick >= this.lastWorkTicks && !this.getWorld().isRemote) {
             val work = this.performWork()
-            val oldCapacity = this.workEnergy!!.capacity
-            this.resetWorkEnergyBuffer()
-            this.workEnergy!!.givePower(Math.round(oldCapacity * (1 - Math.max(0f, Math.min(1f, work)))).toLong())
-
-            this.workTick = 0
-            this.lastWorkTicks = this.minimumWorkTicks
-            this.forceSync()
+            if (work > 0f) {
+                val oldCapacity = this.workEnergy!!.capacity
+                this.resetWorkEnergyBuffer()
+                this.workEnergy!!.givePower(Math.round(oldCapacity * (1 - Math.max(0f, Math.min(1f, work)))).toLong())
+            }
+            // this.workTick = 0
+            // this.lastWorkTicks = this.minimumWorkTicks
+            this.setWorkTicks(0)
+            this.setLastWorkTicks(this.minimumWorkTicks)
+            // this.forceSync()
         }
     }
 
@@ -256,4 +291,11 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
     }
 
     //endregion
+
+    companion object {
+        protected const val SYNC_ENERGY_ITEMS = "inv_energy_items"
+        protected const val SYNC_WORK_ENERGY = "work_energy"
+        protected const val SYNC_WORK_TICKS = "tick_work"
+        protected const val SYNC_WORK_LAST_TICKS = "tick_lastWork"
+    }
 }

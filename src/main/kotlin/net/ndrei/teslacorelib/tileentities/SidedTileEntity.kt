@@ -11,7 +11,7 @@ import net.minecraft.inventory.Slot
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.*
 import net.minecraft.network.play.server.SPacketSetSlot
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumActionResult
@@ -22,6 +22,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.util.Constants
+import net.minecraftforge.common.util.INBTSerializable
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.IFluidTank
@@ -53,18 +54,31 @@ import net.ndrei.teslacorelib.utils.fillFrom
 import net.ndrei.teslacorelib.utils.processInputInventory
 import net.ndrei.teslacorelib.utils.withAlpha
 import java.awt.Color
+import java.util.function.Consumer
+import java.util.function.Supplier
 
 /**
  * Created by CF on 2017-06-27.
  */
-abstract class SidedTileEntity protected constructor(protected val entityTypeId: Int)
+@Suppress("MemberVisibilityCanPrivate")
+abstract class SidedTileEntity protected constructor(private val entityTypeId: Int)
     : TileEntity(), ITickable, IHudInfoProvider, ISimpleNBTMessageHandler, IGuiContainerProvider, ITeslaWrenchHandler, IRedstoneControlledMachine {
     private var syncTick = SYNC_ON_TICK
+    private val syncKeys = mutableSetOf<String>()
+    private val syncParts = mutableMapOf<String, SyncPartInfo>()
+    private val fakeSyncTarget = object: ISyncTarget {
+        override fun partialSync(key: String) {
+            this@SidedTileEntity.partialSync(key)
+        }
+
+        override fun forceSync() {
+            this@SidedTileEntity.forceSync()
+        }
+    }
 
     protected val sideConfig: SidedItemHandlerConfig
 
     private val itemHandler: SidedItemHandler
-    private val inventoryStorage: MutableList<SidedTileEntity.InventoryStorageInfo>
 
     protected val fluidHandler: SidedFluidHandler
     private var fluidItems: ItemStackHandler? = null
@@ -78,21 +92,28 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     init {
         this.sideConfig = object : SidedItemHandlerConfig() {
             override fun updated() {
+                this@SidedTileEntity.partialSync(SYNC_SIDE_CONFIG)
                 this@SidedTileEntity.notifyNeighbours()
             }
         }
+        this.registerSyncListPart(SYNC_SIDE_CONFIG, this.sideConfig)
+
         this.itemHandler = SidedItemHandler(this.sideConfig)
+
+        @Suppress("LeakingThis") // trust me, I know what I'm doing! :S
         this.fluidHandler = SidedFluidHandler(this.sideConfig, this)
-        this.inventoryStorage = mutableListOf()
+        this.registerSyncTagPart(SYNC_FLUIDS, this.fluidHandler)
+
+        this.registerSyncStringPart(SYNC_REDSTONE_CONTROL,
+            Consumer { this.redstoneSetting = IRedstoneControlledMachine.RedstoneControl.valueOf(it.string) },
+            Supplier { NBTTagString(this.redstoneSetting.name) })
+
+        this.registerSyncBytePart(SYNC_IS_PAUSED,
+            Consumer { this.paused = this.canBePaused() && (it.byte != 0.toByte()) },
+            Supplier { NBTTagByte(if (this.paused) 1 else 0) })
 
         this.initializeInventories()
         this.ensureFluidItems()
-    }
-
-    private fun notifyNeighbours() {
-        if (this.getWorld() != null) {
-            this.getWorld().notifyNeighborsOfStateChange(this.getPos(), this.getBlockType(),true)
-        }
     }
 
     //region inventory         methods
@@ -103,26 +124,12 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
     protected fun addSimpleInventory(stacks: Int, storageKey: String, color: EnumDyeColor, displayName: String,
                                      boundingBox: BoundingRectangle,
-                                     inputFilter: ((stack: ItemStack, slot: Int) -> Boolean)?,
-                                     outputFilter: ((stack: ItemStack, slot: Int) -> Boolean)?,
+                                     inputFilter: ((stack: ItemStack, slot: Int) -> Boolean)? = null,
+                                     outputFilter: ((stack: ItemStack, slot: Int) -> Boolean)? = null,
                                      lockable: Boolean = false): IItemHandler {
         val handler = when(lockable) {
-            true -> object : LockableItemHandler(stacks) {
-                override fun onContentsChanged(slot: Int) {
-                    super.onContentsChanged(slot)
-
-                    this@SidedTileEntity.markDirty()
-                    this@SidedTileEntity.forceSync()
-                }
-            }
-            false -> object : ItemStackHandler(stacks) {
-                override fun onContentsChanged(slot: Int) {
-                    super.onContentsChanged(slot)
-
-                    this@SidedTileEntity.markDirty()
-                    this@SidedTileEntity.forceSync()
-                }
-            }
+            true -> LockableItemHandler(stacks)
+            false -> SyncItemHandler(stacks)
         }
 
         this.addInventory(object : ColoredItemHandler(handler, color, displayName, boundingBox) {
@@ -146,10 +153,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         return handler
     }
 
-    protected fun addInventory(handler: IItemHandler?) {
-        if (handler == null) {
-            return
-        }
+    protected fun addInventory(handler: IItemHandler) {
         this.itemHandler.addItemHandler(handler)
 
         if (handler is ColoredItemHandler) {
@@ -163,13 +167,14 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     }
 
     protected fun addInventoryToStorage(handler: ItemStackHandler, storageKey: String) {
-        this.inventoryStorage.add(SidedTileEntity.InventoryStorageInfo(handler, storageKey))
+        if (handler is ISyncItemHandler) {
+            handler.setSyncTarget(this.fakeSyncTarget, storageKey)
+        }
+        this.registerSyncTagPart(storageKey, handler)
     }
 
-    private class InventoryStorageInfo internal constructor(internal val inventory: ItemStackHandler, internal val storageKey: String)
-
     open fun getInventoryLockState(color: EnumDyeColor): Boolean? {
-        val inventory = (0..this.itemHandler.inventories-1)
+        val inventory = (0 until this.itemHandler.inventories)
                 .map { this.itemHandler.getInventory(it) }
                 .firstOrNull { (it is ColoredItemHandler) && (it.color == color) }
 
@@ -183,7 +188,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     }
 
     open fun toggleInventoryLock(color: EnumDyeColor) {
-        val inventory = (0..this.itemHandler.inventories-1)
+        val inventory = (0 until this.itemHandler.inventories)
                 .map { this.itemHandler.getInventory(it) }
                 .firstOrNull { (it is ColoredItemHandler) && (it.color == color) }
 
@@ -201,11 +206,17 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         }
     }
 
+    protected open fun processImmediateInventories() {
+        if (this.fluidItems != null) {
+            this.processFluidItems(this.fluidItems!!)
+        }
+    }
+
     //endregion
 
     //region inventory addons  methods
 
-    protected fun createAddonsInventory() {
+    private fun createAddonsInventory() {
         if (this.supportsAddons()) {
             this.addonItems = object : ItemStackHandler(4) {
                 private val items = arrayOf<ItemStack?>(null, null, null, null)
@@ -215,7 +226,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                 }
 
                 override fun onLoad() {
-                    for (index in 0..this.slots - 1) {
+                    for (index in 0 until this.slots) {
                         this.testSlot(index)
                     }
                 }
@@ -241,7 +252,8 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                         this.items[slot] = stack
                         (item as BaseAddon).onAdded(this.items[slot]!!, this@SidedTileEntity)
                     }
-                    this@SidedTileEntity.markDirty()
+
+                    this@SidedTileEntity.partialSync("addonItems")
                 }
 
                 override fun getSlotLimit(slot: Int): Int {
@@ -272,6 +284,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                     return pieces
                 }
             })
+            this.registerSyncTagPart("addonItems", this.addonItems!!)
         }
     }
 
@@ -280,11 +293,11 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     protected fun <T : BaseAddon> getAddon(addonClass: Class<T>?): T? {
         if (this.addonItems != null && addonClass != null) {
             val addon = (0 until this.addonItems!!.slots)
-                    .map { this.addonItems!!.getStackInSlot(it) }
-                    .filterNot { it.isEmpty }
-                    .map { it.item }
-                    .filter { addonClass.isAssignableFrom(it.javaClass) }
-                    .firstOrNull() ?: return null
+                .map { this.addonItems!!.getStackInSlot(it) }
+                .filterNot { it.isEmpty }
+                .map { it.item }
+                .firstOrNull { addonClass.isAssignableFrom(it.javaClass) }
+                ?: return null
             @Suppress("UNCHECKED_CAST")
             return addon as T
         }
@@ -294,9 +307,8 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     protected fun <T : BaseAddon> getAddonStack(addonClass: Class<T>?): ItemStack {
         if (this.addonItems != null && addonClass != null) {
             val addon = (0 until this.addonItems!!.slots)
-                    .map { this.addonItems!!.getStackInSlot(it) }
-                    .filter { !it.isEmpty && addonClass.isAssignableFrom(it.item.javaClass) }
-                    .firstOrNull()
+                .map { this.addonItems!!.getStackInSlot(it) }
+                .firstOrNull { !it.isEmpty && addonClass.isAssignableFrom(it.item.javaClass) }
             return addon ?: ItemStack.EMPTY
         }
         return ItemStack.EMPTY
@@ -335,7 +347,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
     fun removeAddon(addon: BaseAddon, drop: Boolean): ItemStack {
         if (this.addonItems != null && !this.getWorld().isRemote) {
-            for (index in 0..this.addonItems!!.slots - 1) {
+            for (index in 0 until this.addonItems!!.slots) {
                 val stack = this.addonItems!!.getStackInSlot(index)
                 if (!stack.isEmpty && (stack.item === addon)) {
                     this.addonItems!!.setStackInSlot(index, ItemStack.EMPTY)
@@ -357,8 +369,9 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     protected fun addFluidTank(filter: Fluid, capacity: Int, color: EnumDyeColor?, name: String?, boundingBox: BoundingRectangle?): IFluidTank {
         val tank = object : FluidTank(capacity) {
             override fun onContentsChanged() {
-                this@SidedTileEntity.markDirty()
-                this@SidedTileEntity.forceSync()
+//                this@SidedTileEntity.markDirty()
+//                this@SidedTileEntity.forceSync()
+                this@SidedTileEntity.partialSync(SYNC_FLUIDS)
             }
         }
         val colored = this.fluidHandler.addTank(filter, tank, color ?: EnumDyeColor.BLACK, name ?: "yup, this is a thing!", boundingBox ?: BoundingRectangle.EMPTY)
@@ -402,18 +415,20 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
 //    protected fun addSimpleFluidTank(capacity: Int, name: String, color: EnumDyeColor, guiLeft: Int, guiTop: Int, tankType: FluidTankType): IFluidTank
 //        = this.addSimpleFluidTank(capacity, name, color, guiLeft, guiTop, tankType, { tankType.canFill }, { tankType.canDrain })
-//
-    protected fun addSimpleFluidTank(capacity: Int, name: String, color: EnumDyeColor, guiLeft: Int, guiTop: Int, tankType: FluidTankType,
+
+    protected fun addSimpleFluidTank(capacity: Int, name: String, color: EnumDyeColor, guiLeft: Int, guiTop: Int,
+                                     tankType: FluidTankType = FluidTankType.BOTH,
                                      externalFillFilter: ((FluidStack) -> Boolean)? = null,
                                      externalDrainFilter: ((FluidStack) -> Boolean)? = null): IFluidTank {
         val tank = object: FluidTank(capacity) {
             override fun onContentsChanged() {
-                this@SidedTileEntity.markDirty()
-                this@SidedTileEntity.forceSync()
+//                this@SidedTileEntity.markDirty()
+//                this@SidedTileEntity.forceSync()
+                this@SidedTileEntity.partialSync(SYNC_FLUIDS)
             }
         }
 
-        this.addFluidTank(object: ColoredFluidHandler(tank, color, name, BoundingRectangle(guiLeft, guiTop, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT)) {
+        this.addFluidTank(object: ColoredFluidHandler(tank, color, name, BoundingRectangle.fluid(guiLeft, guiTop)) {
             override fun acceptsFluid(fluid: FluidStack) = if (externalFillFilter == null) this.tankType.canFill else externalFillFilter(fluid)
             override fun canDrain() = this.fluid.let { if (it == null) false else if (externalDrainFilter == null) this.tankType.canDrain else externalDrainFilter(it) }
         }.also { it.tankType = tankType }, null)
@@ -440,6 +455,9 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                 val box = this.fluidItemsBoundingBox
 
                 this.fluidItems = object : ItemStackHandler(2) {
+                    override fun onContentsChanged(slot: Int) {
+                        this@SidedTileEntity.partialSync(SYNC_FLUID_ITEMS)
+                    }
                 }
                 this.addInventory(object : ColoredItemHandler(this.fluidItems!!, color, "Fluid Containers", box) {
                     override fun canInsertItem(slot: Int, stack: ItemStack): Boolean {
@@ -453,10 +471,10 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                     override fun getSlots(container: BasicTeslaContainer<*>): MutableList<Slot> {
                         val slots = mutableListOf<Slot>()
 
-                        val box = this.boundingBox
-                        if (!box.isEmpty) {
-                            slots.add(FilteredSlot(this.itemHandlerForContainer, 0, box.left + 1, box.top + 1))
-                            slots.add(FilteredSlot(this.itemHandlerForContainer, 1, box.left + 1, box.top + 1 + 36))
+                        val bounds = this.boundingBox
+                        if (!bounds.isEmpty) {
+                            slots.add(FilteredSlot(this.itemHandlerForContainer, 0, bounds.left + 1, bounds.top + 1))
+                            slots.add(FilteredSlot(this.itemHandlerForContainer, 1, bounds.left + 1, bounds.top + 1 + 36))
                         }
 
                         return slots
@@ -465,14 +483,15 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                     override fun getGuiContainerPieces(container: BasicTeslaGuiContainer<*>): MutableList<IGuiContainerPiece> {
                         val pieces = mutableListOf<IGuiContainerPiece>()
 
-                        val box = this.boundingBox
-                        if (!box.isEmpty) {
-                            this@SidedTileEntity.addFluidItemsBackground(pieces, box)
+                        val bounds = this.boundingBox
+                        if (!bounds.isEmpty) {
+                            this@SidedTileEntity.addFluidItemsBackground(pieces, bounds)
                         }
 
                         return pieces
                     }
                 })
+                this.registerSyncTagPart(SYNC_FLUID_ITEMS, this.fluidItems!!)
             }
         }
     }
@@ -515,7 +534,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         }
     }
 
-    fun handleBucket(player: EntityPlayer, hand: EnumHand, side: EnumFacing): Boolean {
+    fun handleBucket(player: EntityPlayer, hand: EnumHand/*, side: EnumFacing*/): Boolean {
         val bucket = player.getHeldItem(hand)
         if (!bucket.isEmpty && bucket.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
             val handler = ItemStackHandler(2)
@@ -534,7 +553,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
     //endregion
 
-    //region storage & sync    methods
+    //region storage           methods
 
     val facing: EnumFacing
         get() {
@@ -547,72 +566,42 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
     override fun readFromNBT(compound: NBTTagCompound) {
         super.readFromNBT(compound)
-        if (compound.hasKey("addonItems") && this.addonItems != null) {
-            this.addonItems!!.deserializeNBT(compound.getCompoundTag("addonItems"))
-        }
+        compound.readSyncParts()
+    }
 
-        if (compound.hasKey("fluids")) {
-            this.fluidHandler.deserializeNBT(compound.getCompoundTag("fluids"))
+    private fun NBTTagCompound.readSyncParts() {
+        this@SidedTileEntity.syncParts.forEach { key, part ->
+            if (this.hasKey(key, part.nbtType)) {
+                part.reader(this.getTag(key))
+            }
         }
-        if (compound.hasKey("fluidItems") && this.fluidItems != null) {
-            this.fluidItems!!.deserializeNBT(compound.getCompoundTag("fluidItems"))
-        }
+    }
 
-        this.syncTick = compound.getInteger("tick_sync")
+    private fun writeToNBT(): NBTTagCompound =
+        this.setupSpecialNBTMessage().also { this.writeToNBT(it) }
 
-        if (compound.hasKey("side_config", Constants.NBT.TAG_LIST)) {
-            val list = compound.getTagList("side_config", Constants.NBT.TAG_COMPOUND)
-            this.sideConfig.deserializeNBT(list)
-        }
+    override fun writeToNBT(compound: NBTTagCompound): NBTTagCompound =
+        super.writeToNBT(compound).writeSyncParts(this.syncParts)
 
-        if (!this.inventoryStorage.isEmpty()) {
-            for (storage in this.inventoryStorage) {
-                if (compound.hasKey(storage.storageKey, Constants.NBT.TAG_COMPOUND)) {
-                    storage.inventory.deserializeNBT(compound.getCompoundTag(storage.storageKey))
-                }
+    private fun writePartialNBT(keys: Set<String>): NBTTagCompound =
+        this.setupSpecialNBTMessage("PARTIAL_SYNC").writeSyncParts(this.syncParts.filterKeys { keys.contains(it) })
+
+    private fun NBTTagCompound.writeSyncParts(parts: Map<String, SyncPartInfo>) =
+        this.also { nbt ->
+            parts.forEach { key, part ->
+                nbt.setTag(key, part.writer())
             }
         }
 
-        if (compound.hasKey("redstone", Constants.NBT.TAG_STRING)) {
-            this.redstoneSetting = IRedstoneControlledMachine.RedstoneControl.valueOf(compound.getString("redstone"))
-        }
-
-        this.paused = if (compound.hasKey("paused")) compound.getBoolean("paused") else false
+    override fun getUpdateTag(): NBTTagCompound = super.getUpdateTag().also {
+        this.writeToNBT(it)
     }
 
-    override fun writeToNBT(compound: NBTTagCompound): NBTTagCompound {
-        val nbt = super.writeToNBT(compound)
+    //#endregion
 
-        nbt.setTag("fluids", this.fluidHandler.serializeNBT())
-        if (this.fluidItems != null) {
-            nbt.setTag("fluidItems", this.fluidItems!!.serializeNBT())
-        }
-        if (this.addonItems != null) {
-            nbt.setTag("addonItems", this.addonItems!!.serializeNBT())
-        }
+    //#region sync & network    methods
 
-        nbt.setInteger("tick_sync", this.syncTick)
-
-        nbt.setTag("side_config", this.sideConfig.serializeNBT())
-
-        if (!this.inventoryStorage.isEmpty()) {
-            for (storage in this.inventoryStorage) {
-                nbt.setTag(storage.storageKey, storage.inventory.serializeNBT())
-            }
-        }
-
-        if (this.canBePaused())
-            nbt.setBoolean("paused", this.paused)
-
-        nbt.setString("redstone", this.redstoneSetting.name)
-
-        return nbt
-    }
-
-    private fun writeToNBT(): NBTTagCompound {
-        val compound = this.setupSpecialNBTMessage()
-        return this.writeToNBT(compound)
-    }
+    private class SyncPartInfo(val nbtType: Int, val reader: (NBTBase) -> Unit, val writer: () -> NBTBase?)
 
     fun setupSpecialNBTMessage(messageType: String? = null): NBTTagCompound {
         val compound = NBTTagCompound()
@@ -623,7 +612,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         return compound
     }
 
-    override fun handleServerMessage(message: SimpleNBTMessage): SimpleNBTMessage? {
+    override final fun handleServerMessage(message: SimpleNBTMessage): SimpleNBTMessage? {
         val compound = message.compound
         if (compound != null) {
             val tetId = compound.getInteger("__tetId")
@@ -641,7 +630,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         return null
     }
 
-    override fun handleClientMessage(player: EntityPlayerMP?, message: SimpleNBTMessage): SimpleNBTMessage? {
+    override final fun handleClientMessage(player: EntityPlayerMP?, message: SimpleNBTMessage): SimpleNBTMessage? {
         val compound = message.compound
         if (compound != null) {
             val tetId = compound.getInteger("__tetId")
@@ -662,6 +651,9 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     }
 
     protected open fun processServerMessage(messageType: String, compound: NBTTagCompound): SimpleNBTMessage? {
+        if (messageType == "PARTIAL_SYNC") {
+            compound.readSyncParts()
+        }
         return null
     }
 
@@ -681,6 +673,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                         if (tank != null) {
                             player.inventory.itemStack = tank.fillFrom(stack)
                             player.connection.sendPacket(SPacketSetSlot(-1, 0, player.inventory.itemStack))
+                            this.partialSync(SYNC_FLUIDS)
                         }
                     }
                 }
@@ -701,7 +694,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                                 .filterIsInstance<ColoredFluidHandler>()
                                 .firstOrNull { it.color == color }
                                 .let {
-                                    if ((it is ITypedFluidTank) && (it is IFluidTankWrapper) && (it.tankType == FluidTankType.INPUT))
+                                    if ((it is ITypedFluidTank) && (it.tankType == FluidTankType.INPUT))
                                         it.innerTank
                                     else
                                         it
@@ -709,6 +702,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                         if (tank != null) {
                             player.inventory.itemStack = stack.fillFrom(tank)
                             player.connection.sendPacket(SPacketSetSlot(-1, 0, player.inventory.itemStack))
+                            this.partialSync(SYNC_FLUIDS)
                         }
                     }
                 }
@@ -722,12 +716,12 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     }
 
     protected open fun processClientMessage(messageType: String?, compound: NBTTagCompound): SimpleNBTMessage? {
-        if (messageType != null && messageType == "TOGGLE_SIDE") {
+        if (messageType == "TOGGLE_SIDE") {
             val color = EnumDyeColor.byMetadata(compound.getInteger("color"))
             val facing = EnumFacing.getFront(compound.getInteger("side"))
             this.sideConfig.toggleSide(color, facing)
-            this.markDirty()
-            this@SidedTileEntity.forceSync()
+//            this.markDirty()
+//            this@SidedTileEntity.forceSync()
         }
         else if (messageType == "TOGGLE_LOCK") {
             val color = EnumDyeColor.byMetadata(compound.getInteger("color"))
@@ -748,6 +742,78 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
 
     fun sendToServer(compound: NBTTagCompound) {
         TeslaCoreLib.network.sendToServer(SimpleNBTMessage(this, compound))
+    }
+
+    protected fun forceSync() {
+        if (this.getWorld() != null && !this.getWorld().isRemote) {
+            this.syncTick = SYNC_ON_TICK
+        }
+    }
+
+    protected fun partialSync(key: String, markDirty: Boolean = true) {
+        if ((this.getWorld()?.isRemote == false) && !key.isEmpty()) {
+            this.syncKeys.add(key)
+        }
+
+        if (markDirty) {
+            this.markDirty()
+        }
+    }
+
+    private inline fun <reified TT : NBTBase> Consumer<TT>.makeReader(key: String? = null): (NBTBase) -> Unit = { it ->
+        if (it is TT) {
+            this.accept(it)
+        } else if (!key.isNullOrBlank()) {
+            TeslaCoreLib.logger.warn("Wrong sync message received for '$key'. Expected '${TT::class.java.name}' but found '${it.javaClass.name}'.")
+        }
+    }
+
+    private inline fun <reified TT : NBTBase> Supplier<TT?>.makeWriter(): () -> NBTBase? = { this.get() }
+
+    protected fun registerSyncPart(key: String, nbtType: Int, reader: (NBTBase) -> Unit, writer: () -> NBTBase?) {
+        this.syncParts.putIfAbsent(key, SyncPartInfo(nbtType, reader, writer))
+    }
+
+    protected fun registerSyncIntPart(key: String, reader: Consumer<NBTTagInt>, writer: Supplier<NBTTagInt?>) {
+        this.registerSyncPart(key, Constants.NBT.TAG_INT, reader.makeReader(key), writer.makeWriter())
+    }
+
+    protected fun registerSyncBytePart(key: String, reader: Consumer<NBTTagByte>, writer: Supplier<NBTTagByte?>) {
+        this.registerSyncPart(key, Constants.NBT.TAG_BYTE, reader.makeReader(key), writer.makeWriter())
+    }
+
+    protected fun registerSyncStringPart(key: String, reader: Consumer<NBTTagString>, writer: Supplier<NBTTagString?>) {
+        this.registerSyncPart(key, Constants.NBT.TAG_STRING, reader.makeReader(key), writer.makeWriter())
+    }
+
+    protected fun registerSyncFloatPart(key: String, reader: Consumer<NBTTagFloat>, writer: Supplier<NBTTagFloat?>) {
+        this.registerSyncPart(key, Constants.NBT.TAG_FLOAT, reader.makeReader(key), writer.makeWriter())
+    }
+
+    protected fun registerSyncTagPart(key: String, reader: Consumer<NBTTagCompound>, writer: Supplier<NBTTagCompound?>) {
+        this.registerSyncPart(key, Constants.NBT.TAG_COMPOUND, reader.makeReader(key), writer.makeWriter())
+    }
+
+    protected fun registerSyncTagPart(key: String, thing: INBTSerializable<NBTTagCompound>) {
+        this.registerSyncPart(key, Constants.NBT.TAG_COMPOUND,
+            (Consumer<NBTTagCompound> { thing.deserializeNBT(it) }).makeReader(key),
+            (Supplier<NBTTagCompound?> { thing.serializeNBT() }).makeWriter())
+    }
+
+    protected fun registerSyncListPart(key: String, reader: Consumer<NBTTagList>, writer: Supplier<NBTTagList?>) {
+        this.registerSyncPart(key, Constants.NBT.TAG_LIST, reader.makeReader(key), writer.makeWriter())
+    }
+
+    protected fun registerSyncListPart(key: String, thing: INBTSerializable<NBTTagList>) {
+        this.registerSyncPart(key, Constants.NBT.TAG_LIST,
+            (Consumer<NBTTagList> { thing.deserializeNBT(it) }).makeReader(key),
+            (Supplier<NBTTagList?> { thing.serializeNBT() }).makeWriter())
+    }
+
+    private fun notifyNeighbours() {
+        if (this.getWorld() != null) {
+            this.getWorld().notifyNeighborsOfStateChange(this.getPos(), this.getBlockType(), true)
+        }
     }
 
     //endregion
@@ -801,26 +867,18 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     override fun <T> getCapability(capability: Capability<T>, facing: EnumFacing?): T? {
         val oriented = this.orientFacing(facing)
 
-        if (capability === CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return this.itemHandler.getSideWrapper(oriented) as T
-        } else if (capability === TeslaCoreCapabilities.CAPABILITY_GUI_CONTAINER) {
-            return this as T
-        } else if (capability === TeslaCoreCapabilities.CAPABILITY_WRENCH) {
-            return this as T
+        return when {
+            capability === CapabilityItemHandler.ITEM_HANDLER_CAPABILITY -> this.itemHandler.getSideWrapper(oriented) as T
+            capability === TeslaCoreCapabilities.CAPABILITY_GUI_CONTAINER -> this as T
+            capability === TeslaCoreCapabilities.CAPABILITY_WRENCH -> this as T
+            else -> this.fluidHandler.getCapability(capability, oriented) ?: super.getCapability(capability, facing)
         }
-
-        val c = this.fluidHandler.getCapability(capability, oriented)
-        if (c != null) {
-            return c
-        }
-
-        return super.getCapability(capability, facing)
     }
 
     override fun getHudLines(face: EnumFacing?): List<HudInfoLine> {
         return listOf(*(if ((face != null) && Minecraft.getMinecraft().player.isSneaking) {
             arrayOf(HudInfoLine(Color.LIGHT_GRAY, Color.LIGHT_GRAY.withAlpha(.24f), "Side: ${this.getSideDirection(face).toUpperCase()} (${face.toString().capitalize()})"))
-        } else arrayOf<HudInfoLine>()), *this.hudLines.toTypedArray())
+        } else arrayOf()), *this.hudLines.toTypedArray())
     }
 
     protected fun getSideDirection(face: EnumFacing)
@@ -835,7 +893,7 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     protected open val hudLines: List<HudInfoLine>
         get() = if (this.isPaused())
             listOf(
-                    HudInfoLine(Color.RED, Color.RED.withAlpha(.24f), "PAUSED").setTextAlignment(HudInfoLine.TextAlignment.CENTER)
+                HudInfoLine(Color.RED, Color.RED.withAlpha(.24f), SYNC_IS_PAUSED).setTextAlignment(HudInfoLine.TextAlignment.CENTER)
             )
         else
             listOf()
@@ -919,15 +977,12 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
             pieces.add(SideConfigSelector(7, 81, 162, 18, this.sideConfig, configurator))
         }
 
-        for (i in 0..this.itemHandler.inventories - 1) {
-            val handler = this.itemHandler.getInventory(i)
-            if (handler is IGuiContainerPiecesProvider) {
-                val childPieces = (handler as IGuiContainerPiecesProvider).getGuiContainerPieces(container)
-                if (childPieces.size > 0) {
-                    pieces.addAll(childPieces)
-                }
-            }
-        }
+        (0 until this.itemHandler.inventories)
+            .map { this.itemHandler.getInventory(it) }
+            .filterIsInstance<IGuiContainerPiecesProvider>()
+            .map { it.getGuiContainerPieces(container) }
+            .filter { it.size > 0 }
+            .forEach { pieces.addAll(it) }
 
         val fluidPieces = this.fluidHandler.getGuiContainerPieces(container)
         if (fluidPieces.size > 0) {
@@ -945,21 +1000,13 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     protected open val showSideConfiguratorPiece = true
     protected open val showRedstoneControlPiece = true
 
-    override fun getSlots(container: BasicTeslaContainer<*>): MutableList<Slot> {
-        val slots = Lists.newArrayList<Slot>()
-
-        for (i in 0..this.itemHandler.inventories - 1) {
-            val handler = this.itemHandler.getInventory(i)
-            if (handler is IContainerSlotsProvider) {
-                val childSlots = (handler as IContainerSlotsProvider).getSlots(container)
-                if (childSlots.size > 0) {
-                    slots.addAll(childSlots)
-                }
-            }
-        }
-
-        return slots
-    }
+    override fun getSlots(container: BasicTeslaContainer<*>): MutableList<Slot> =
+        (0 until this.itemHandler.inventories)
+            .map { this.itemHandler.getInventory(it) }
+            .filterIsInstance<IContainerSlotsProvider>()
+            .map { it.getSlots(container) }
+            .filter { it.size > 0 }
+            .fold(mutableListOf()) { slots, it -> slots.also { _ -> slots.addAll(it) } }
 
     //#endregion
 
@@ -974,21 +1021,19 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
                 val message = this.setupSpecialNBTMessage("REDSTONE_CONTROL")
                 message.setString("setting", value.name)
                 this.sendToServer(message)
+            } else {
+                this.partialSync(SYNC_REDSTONE_CONTROL)
             }
             this.redstoneSetting = value
         }
 
     override final fun toggleRedstoneControl() {
-//        val new = this.redstoneSetting.getNext()
-//        if (TeslaCoreLib.isClientSide) {
-//            val message = this.setupSpecialNBTMessage("REDSTONE_CONTROL")
-//            message.setString("setting", new.name)
-//            this.sendToServer(message)
-//        }
         this.redstoneControl = this.redstoneSetting.getNext()
     }
 
     //#endregion
+
+    //#region paused toggling   members
 
     open fun canBePaused() = true
 
@@ -1007,37 +1052,13 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         }
         else {
             this.notifyNeighbours()
+            this.partialSync(SYNC_IS_PAUSED)
         }
     }
 
-    override final fun update() {
-        if (!this.isPaused() && (!this.allowRedstoneControl || this.redstoneSetting.canRun { this.world.getRedstonePower(this.pos, this.facing) })) {
-            this.innerUpdate()
-            this.processImmediateInventories()
-        }
+    //#endregion
 
-        if (!this.getWorld().isRemote) {
-            this.syncTick++
-            if (this.syncTick >= SYNC_ON_TICK) {
-                TeslaCoreLib.network.send(SimpleNBTMessage(this, this.writeToNBT()))
-                this.syncTick = 0
-            }
-        }
-    }
-
-    protected abstract fun innerUpdate()
-
-    protected fun forceSync() {
-        if (this.getWorld() != null && !this.getWorld().isRemote) {
-            this.syncTick = SYNC_ON_TICK
-        }
-    }
-
-    protected open fun processImmediateInventories() {
-        if (this.fluidItems != null) {
-            this.processFluidItems(this.fluidItems!!)
-        }
-    }
+    //#region item spawning     members
 
     fun onBlockBroken() {
         if (!this.wasPickedUpInItemStack) {
@@ -1046,12 +1067,10 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
     }
 
     protected fun processBlockBroken() {
-        for (i in 0 until this.itemHandler.slots) {
-            val stack = this.itemHandler.getStackInSlot(i)
-            if (!stack.isEmpty) {
-                InventoryHelper.spawnItemStack(this.getWorld(), pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(), stack)
-            }
-        }
+        (0 until this.itemHandler.slots)
+            .map { this.itemHandler.getStackInSlot(it) }
+            .filterNot { it.isEmpty }
+            .forEach { InventoryHelper.spawnItemStack(this.getWorld(), pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(), it) }
     }
 
     fun spawnItemFromFrontSide(stack: ItemStack): EntityItem? {
@@ -1072,7 +1091,41 @@ abstract class SidedTileEntity protected constructor(protected val entityTypeId:
         return entity
     }
 
+    //#endregion
+
+    override final fun update() {
+        if (!this.isPaused() && (!this.allowRedstoneControl || this.redstoneSetting.canRun { this.world.getRedstonePower(this.pos, this.facing) })) {
+            this.innerUpdate()
+            this.processImmediateInventories()
+        }
+
+        if (!this.getWorld().isRemote) {
+            // this.syncTick++ // <-- hopefully this will reduce lag and not create additional problems
+            if (this.syncTick >= SYNC_ON_TICK) {
+                TeslaCoreLib.logger.info("Full TileEntity Sync at: ${this.pos}")
+                TeslaCoreLib.network.send(SimpleNBTMessage(this, this.writeToNBT()))
+                this.syncTick = 0
+                this.syncKeys.clear() // don't care about partial sync anymore
+            }
+
+            if (this.syncKeys.count() > 0) {
+                val set = this.syncKeys.toSet()
+                TeslaCoreLib.logger.info("Partial TileEntity Sync [${set.joinToString(", ")}] at: ${this.pos}")
+                TeslaCoreLib.network.send(SimpleNBTMessage(this, this.writePartialNBT(set)))
+                this.syncKeys.clear()
+            }
+        }
+    }
+
+    protected abstract fun innerUpdate()
+
     companion object {
         private const val SYNC_ON_TICK = 20
+
+        protected const val SYNC_SIDE_CONFIG = "side_config"
+        protected const val SYNC_FLUIDS = "fluids"
+        protected const val SYNC_FLUID_ITEMS = "fluidItems"
+        protected const val SYNC_REDSTONE_CONTROL = "redstone"
+        protected const val SYNC_IS_PAUSED = "paused"
     }
 }

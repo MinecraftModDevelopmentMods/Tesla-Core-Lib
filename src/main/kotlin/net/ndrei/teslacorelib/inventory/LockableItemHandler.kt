@@ -4,14 +4,13 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.NonNullList
 import net.minecraftforge.common.util.Constants
-import net.minecraftforge.items.ItemStackHandler
 import net.ndrei.teslacorelib.compatibility.ItemStackUtil
 
 /**
  * Created by CF on 2017-06-30.
  */
 @Suppress("unused")
-open class LockableItemHandler : ItemStackHandler, IFilteredItemHandler {
+open class LockableItemHandler : SyncItemHandler, IFilteredItemHandler {
     constructor(stacks: NonNullList<ItemStack>) : super(stacks)
     constructor(size: Int) : super(size)
 
@@ -23,10 +22,11 @@ open class LockableItemHandler : ItemStackHandler, IFilteredItemHandler {
         set(value) {
             this._locked = value
             if (this._locked) {
-                this.filter = (0..this.slots-1)
+                this.filter = (0 until this.slots)
                         .map { if (this.getStackInSlot(it).isEmpty) ItemStack.EMPTY else ItemStackUtil.copyWithSize(this.getStackInSlot(it), 1) }
                         .toTypedArray()
             }
+            this.onContentsChanged(-1)
         }
 
 //    override fun extractItem(slot: Int, amount: Int, simulate: Boolean): ItemStack {

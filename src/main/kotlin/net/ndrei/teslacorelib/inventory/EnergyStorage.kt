@@ -92,6 +92,7 @@ open class EnergyStorage(maxStoredEnergy: Long, inputRate: Long, outputRate: Lon
      */
     fun setEnergyInputRate(rate: Long): EnergyStorage {
         this.inputRate = rate
+        this.onChanged(this.stored, this.stored)
         return this
     }
 
@@ -113,6 +114,7 @@ open class EnergyStorage(maxStoredEnergy: Long, inputRate: Long, outputRate: Lon
      */
     fun setEnergyOutputRate(rate: Long): EnergyStorage {
         this.outputRate = rate
+        this.onChanged(this.stored, this.stored)
         return this
     }
 
