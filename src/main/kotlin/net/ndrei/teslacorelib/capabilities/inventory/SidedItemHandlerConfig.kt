@@ -118,4 +118,12 @@ open class SidedItemHandlerConfig : ISidedItemHandlerConfig, INBTSerializable<NB
 
         this.updated()
     }
+
+    fun setColorIndex(color: EnumDyeColor, index: Int) {
+        this.information.forEach {
+            if (it.color == color) {
+                it.index = index
+            }
+        }
+    }
 }

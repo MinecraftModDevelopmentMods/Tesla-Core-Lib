@@ -31,6 +31,7 @@ import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import net.minecraftforge.items.CapabilityItemHandler
 import net.minecraftforge.items.IItemHandler
+import net.minecraftforge.items.IItemHandlerModifiable
 import net.minecraftforge.items.ItemStackHandler
 import net.ndrei.teslacorelib.TeslaCoreLib
 import net.ndrei.teslacorelib.blocks.OrientedBlock
@@ -126,13 +127,13 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
                                      boundingBox: BoundingRectangle,
                                      inputFilter: ((stack: ItemStack, slot: Int) -> Boolean)? = null,
                                      outputFilter: ((stack: ItemStack, slot: Int) -> Boolean)? = null,
-                                     lockable: Boolean = false): IItemHandler {
+                                     lockable: Boolean = false, colorIndex: Int? = null): IItemHandlerModifiable {
         val handler = when(lockable) {
             true -> LockableItemHandler(stacks)
             false -> SyncItemHandler(stacks)
         }
 
-        this.addInventory(object : ColoredItemHandler(handler, color, displayName, boundingBox) {
+        this.addInventory(object : ColoredItemHandler(handler, color, displayName, colorIndex, boundingBox) {
             override fun canInsertItem(slot: Int, stack: ItemStack) =
                 (if (slot in 0 until this.slots) {
                     if (inputFilter != null) inputFilter(stack, slot)
@@ -149,7 +150,6 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
         })
 
         this.addInventoryToStorage(handler, storageKey)
-
         return handler
     }
 
@@ -459,7 +459,7 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
                         this@SidedTileEntity.partialSync(SYNC_FLUID_ITEMS)
                     }
                 }
-                this.addInventory(object : ColoredItemHandler(this.fluidItems!!, color, "Fluid Containers", box) {
+                this.addInventory(object : ColoredItemHandler(this.fluidItems!!, color, "Fluid Containers", this.fluidItemsColorIndex, box) {
                     override fun canInsertItem(slot: Int, stack: ItemStack): Boolean {
                         return slot == 0 && this@SidedTileEntity.acceptsFluidItem(stack)
                     }
@@ -513,6 +513,8 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
             }
             return BoundingRectangle(x, y, FluidTankPiece.WIDTH, FluidTankPiece.HEIGHT)
         }
+
+    protected open val fluidItemsColorIndex: Int? = null
 
     protected open fun addFluidItemsBackground(pieces: MutableList<IGuiContainerPiece>, box: BoundingRectangle) {
         pieces.add(BasicRenderedGuiPiece(box.left, box.top, 18, 54,
