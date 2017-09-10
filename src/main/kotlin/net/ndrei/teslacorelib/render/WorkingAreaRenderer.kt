@@ -60,9 +60,12 @@ object WorkingAreaRenderer : TileEntitySpecialRenderer<TileEntity>() {
         GlStateManager.color(1f, 1f, 1f, 1f)
         GlStateManager.enableLighting()
         RenderHelper.enableStandardItemLighting()
+        GlStateManager.disableAlpha()
+        GlStateManager.disableBlend()
 
         Minecraft.getMinecraft().entityRenderer.enableLightmap()
         GlStateManager.enableTexture2D()
+
         GlStateManager.popAttrib()
         GlStateManager.popMatrix()
     }
