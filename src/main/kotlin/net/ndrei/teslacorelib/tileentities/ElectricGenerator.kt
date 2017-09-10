@@ -159,7 +159,8 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
 
             val power = this.consumeFuel()
             if (power > 0) {
-                this.generatedPower = EnergyStorage(power, 0, this.energyFillRate)
+                this.generatedPower.setCapacity(power)
+                this.generatedPower.setEnergyOutputRate(this.energyFillRate)
                 this.generatedPower.givePower(power)
             }
         }
