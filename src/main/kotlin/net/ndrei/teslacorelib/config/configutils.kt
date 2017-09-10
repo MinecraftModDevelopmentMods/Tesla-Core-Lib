@@ -2,7 +2,9 @@
 
 package net.ndrei.teslacorelib.config
 
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.google.gson.JsonSyntaxException
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.util.JsonUtils
@@ -55,3 +57,24 @@ fun JsonObject.readItemStacks(): List<ItemStack> {
 fun JsonObject.readItemStack(memberName: String) = this.readItemStacks(memberName).firstOrNull()
 
 fun JsonObject.readItemStack() = this.readItemStacks().firstOrNull()
+
+fun JsonElement.getMember(memberName: String, throwError: Boolean = false): JsonElement? =
+    if ((this is JsonObject) && this.has(memberName))
+        this.get(memberName)
+    else if (this.isJsonPrimitive)
+        this // assume this is the member one was looking for
+    else if (throwError)
+        throw JsonSyntaxException("Missing $memberName.")
+    else
+        null
+
+fun JsonElement.getLong(memberName: String, fallback: Long = 0L, throwError: Boolean = false): Long {
+    val member = this.getMember(memberName, throwError)
+    if (member?.isJsonPrimitive == true) {
+        return member.asJsonPrimitive.asLong
+    }
+    else if (throwError) {
+        throw JsonSyntaxException("Missing $memberName, expected to find a Long.")
+    }
+    return fallback
+}
