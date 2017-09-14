@@ -8,6 +8,7 @@ import net.ndrei.teslacorelib.gui.IGuiContainerPiece
 import net.ndrei.teslacorelib.gui.TeslaEnergyLevelPiece
 import net.ndrei.teslacorelib.inventory.BoundingRectangle
 import net.ndrei.teslacorelib.inventory.EnergyStorage
+import net.ndrei.teslacorelib.inventory.SyncProviderLevel
 
 /**
  * Created by CF on 2017-06-27.
@@ -27,7 +28,7 @@ abstract class ElectricTileEntity protected constructor(typeId: Int) : SidedTile
             }
         }
         this.energyStorage.setSidedConfig(EnumDyeColor.LIGHT_BLUE, this.sideConfig, this.energyBoundingBox)
-        this.registerSyncTagPart(SYNC_ENERGY, this.energyStorage)
+        this.registerSyncTagPart(SYNC_ENERGY, this.energyStorage, SyncProviderLevel.GUI)
 
         super.initializeInventories()
     }

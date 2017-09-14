@@ -12,6 +12,7 @@ import net.ndrei.teslacorelib.gui.*
 import net.ndrei.teslacorelib.inventory.BoundingRectangle
 import net.ndrei.teslacorelib.inventory.ColoredItemHandler
 import net.ndrei.teslacorelib.inventory.EnergyStorage
+import net.ndrei.teslacorelib.inventory.SyncProviderLevel
 import net.ndrei.teslacorelib.items.SpeedUpgradeTier1
 import net.ndrei.teslacorelib.items.SpeedUpgradeTier2
 import java.util.function.Consumer
@@ -78,7 +79,7 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
             } else {
                 null
             }
-        })
+        }, SyncProviderLevel.GUI)
 
         this.registerSyncIntPart(SYNC_WORK_TICKS, Consumer { this.workTick = it.int }, Supplier { NBTTagInt(this.workTick) })
         this.registerSyncIntPart(SYNC_WORK_LAST_TICKS, Consumer { this.lastWorkTicks = it.int }, Supplier { NBTTagInt(this.lastWorkTicks) })

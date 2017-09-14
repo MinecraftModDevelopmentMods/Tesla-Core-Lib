@@ -4,7 +4,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.util.NonNullList
 import net.minecraftforge.items.ItemStackHandler
 
-open class SyncItemHandler : ItemStackHandler, ISyncItemHandler {
+open class SyncItemHandler : ItemStackHandler, ISyncProvider {
     constructor(stacks: NonNullList<ItemStack>) : super(stacks)
     constructor(size: Int) : super(size)
 

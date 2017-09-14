@@ -2,6 +2,7 @@ package net.ndrei.teslacorelib.containers
 
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.inventory.Container
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.inventory.Slot
@@ -29,6 +30,20 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
             this.playerExtraSlots = this.addPlayerExtraSlots(player)
             this.playerQuickSlots = this.addPlayerQuickBar(player)
             this.playerSlots = this.addPlayerInventory(player)
+
+            if (player is EntityPlayerMP) {
+                // server side, register TE
+                @Suppress("LeakingThis")
+                this.entity.containerOpened(this, player)
+            }
+        }
+    }
+
+    override fun onContainerClosed(playerIn: EntityPlayer?) {
+        super.onContainerClosed(playerIn)
+
+        if (playerIn is EntityPlayerMP) {
+            this.entity.containerClosed(this, playerIn)
         }
     }
 
@@ -128,8 +143,6 @@ open class BasicTeslaContainer<T : SidedTileEntity>(private val entity: T, priva
     }
 
     protected open val showPlayerExtraSlots get() = true
-
-    //endregion
 
     fun hasPlayerInventory(): Boolean {
         return this.playerSlots > 0

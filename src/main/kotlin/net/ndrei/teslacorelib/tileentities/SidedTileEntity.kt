@@ -90,6 +90,8 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
     private var paused = false
     private var redstoneSetting = IRedstoneControlledMachine.RedstoneControl.AlwaysActive
 
+    private var containerRefCount = 0
+
     init {
         this.sideConfig = object : SidedItemHandlerConfig() {
             override fun updated() {
@@ -167,7 +169,7 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
     }
 
     protected fun addInventoryToStorage(handler: ItemStackHandler, storageKey: String) {
-        if (handler is ISyncItemHandler) {
+        if (handler is ISyncProvider) {
             handler.setSyncTarget(this.fakeSyncTarget, storageKey)
         }
         this.registerSyncTagPart(storageKey, handler)
@@ -568,6 +570,9 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
 
     override fun readFromNBT(compound: NBTTagCompound) {
         super.readFromNBT(compound)
+        if ((this.getWorld() != null) && this.getWorld().isRemote) {
+            TeslaCoreLib.logger.info("Full Sync received for: ${this.javaClass.name} at ${this.pos}.")
+        }
         compound.readSyncParts()
     }
 
@@ -586,7 +591,9 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
         super.writeToNBT(compound).writeSyncParts(this.syncParts)
 
     private fun writePartialNBT(keys: Set<String>): NBTTagCompound =
-        this.setupSpecialNBTMessage("PARTIAL_SYNC").writeSyncParts(this.syncParts.filterKeys { keys.contains(it) })
+        this.setupSpecialNBTMessage("PARTIAL_SYNC").writeSyncParts(this.syncParts.filter {
+            keys.contains(it.key) && it.value.level.shouldSync(this.containerRefCount > 0)
+        })
 
     private fun NBTTagCompound.writeSyncParts(parts: Map<String, SyncPartInfo>) =
         this.also { nbt ->
@@ -603,7 +610,19 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
 
     //#region sync & network    methods
 
-    private class SyncPartInfo(val nbtType: Int, val reader: (NBTBase) -> Unit, val writer: () -> NBTBase?)
+    @Suppress("UNUSED_PARAMETER")
+    fun containerOpened(container: BasicTeslaContainer<*>, player: EntityPlayerMP) {
+        this.containerRefCount++
+        this.forceSync() // force full sync
+        this.testSync() // sync now, don't wait for next tick
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun containerClosed(container: BasicTeslaContainer<*>, player: EntityPlayerMP) {
+        this.containerRefCount--
+    }
+
+    private class SyncPartInfo(val level: SyncProviderLevel, val nbtType: Int, val reader: (NBTBase) -> Unit, val writer: () -> NBTBase?)
 
     fun setupSpecialNBTMessage(messageType: String? = null): NBTTagCompound {
         val compound = NBTTagCompound()
@@ -654,6 +673,7 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
 
     protected open fun processServerMessage(messageType: String, compound: NBTTagCompound): SimpleNBTMessage? {
         if (messageType == "PARTIAL_SYNC") {
+            TeslaCoreLib.logger.info("Partial Sync [${compound.keySet.joinToString(", ")}] received for: ${this.javaClass.name} at ${this.pos}.")
             compound.readSyncParts()
         }
         return null
@@ -762,6 +782,25 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
         }
     }
 
+    private fun testSync() {
+        if (this.syncTick >= SYNC_ON_TICK) {
+//            TeslaCoreLib.logger.info("Full TileEntity Sync at: ${this.pos}")
+            TeslaCoreLib.network.send(SimpleNBTMessage(this, this.writeToNBT()))
+            this.syncTick = 0
+            this.syncKeys.clear() // don't care about partial sync anymore
+        }
+
+        if (this.syncKeys.count() > 0) {
+            val set = this.syncKeys.toSet()
+//            TeslaCoreLib.logger.info("Partial TileEntity Sync [${set.joinToString(", ")}] at: ${this.pos}")
+            val nbt = this.writePartialNBT(set)
+            if (nbt.keySet.any { !it.startsWith("__") }) {
+                TeslaCoreLib.network.send(SimpleNBTMessage(this, nbt))
+            }
+            this.syncKeys.clear()
+        }
+    }
+
     private inline fun <reified TT : NBTBase> Consumer<TT>.makeReader(key: String? = null): (NBTBase) -> Unit = { it ->
         if (it is TT) {
             this.accept(it)
@@ -772,44 +811,46 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
 
     private inline fun <reified TT : NBTBase> Supplier<TT?>.makeWriter(): () -> NBTBase? = { this.get() }
 
-    protected fun registerSyncPart(key: String, nbtType: Int, reader: (NBTBase) -> Unit, writer: () -> NBTBase?) {
-        this.syncParts.putIfAbsent(key, SyncPartInfo(nbtType, reader, writer))
+    protected fun registerSyncPart(key: String, nbtType: Int, reader: (NBTBase) -> Unit, writer: () -> NBTBase?, level: SyncProviderLevel = SyncProviderLevel.TICK) {
+        this.syncParts.putIfAbsent(key, SyncPartInfo(level, nbtType, reader, writer))
     }
 
-    protected fun registerSyncIntPart(key: String, reader: Consumer<NBTTagInt>, writer: Supplier<NBTTagInt?>) {
-        this.registerSyncPart(key, Constants.NBT.TAG_INT, reader.makeReader(key), writer.makeWriter())
+    protected fun registerSyncIntPart(key: String, reader: Consumer<NBTTagInt>, writer: Supplier<NBTTagInt?>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
+        this.registerSyncPart(key, Constants.NBT.TAG_INT, reader.makeReader(key), writer.makeWriter(), level)
     }
 
-    protected fun registerSyncBytePart(key: String, reader: Consumer<NBTTagByte>, writer: Supplier<NBTTagByte?>) {
-        this.registerSyncPart(key, Constants.NBT.TAG_BYTE, reader.makeReader(key), writer.makeWriter())
+    protected fun registerSyncBytePart(key: String, reader: Consumer<NBTTagByte>, writer: Supplier<NBTTagByte?>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
+        this.registerSyncPart(key, Constants.NBT.TAG_BYTE, reader.makeReader(key), writer.makeWriter(), level)
     }
 
-    protected fun registerSyncStringPart(key: String, reader: Consumer<NBTTagString>, writer: Supplier<NBTTagString?>) {
-        this.registerSyncPart(key, Constants.NBT.TAG_STRING, reader.makeReader(key), writer.makeWriter())
+    protected fun registerSyncStringPart(key: String, reader: Consumer<NBTTagString>, writer: Supplier<NBTTagString?>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
+        this.registerSyncPart(key, Constants.NBT.TAG_STRING, reader.makeReader(key), writer.makeWriter(), level)
     }
 
-    protected fun registerSyncFloatPart(key: String, reader: Consumer<NBTTagFloat>, writer: Supplier<NBTTagFloat?>) {
-        this.registerSyncPart(key, Constants.NBT.TAG_FLOAT, reader.makeReader(key), writer.makeWriter())
+    protected fun registerSyncFloatPart(key: String, reader: Consumer<NBTTagFloat>, writer: Supplier<NBTTagFloat?>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
+        this.registerSyncPart(key, Constants.NBT.TAG_FLOAT, reader.makeReader(key), writer.makeWriter(), level)
     }
 
-    protected fun registerSyncTagPart(key: String, reader: Consumer<NBTTagCompound>, writer: Supplier<NBTTagCompound?>) {
-        this.registerSyncPart(key, Constants.NBT.TAG_COMPOUND, reader.makeReader(key), writer.makeWriter())
+    protected fun registerSyncTagPart(key: String, reader: Consumer<NBTTagCompound>, writer: Supplier<NBTTagCompound?>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
+        this.registerSyncPart(key, Constants.NBT.TAG_COMPOUND, reader.makeReader(key), writer.makeWriter(), level)
     }
 
-    protected fun registerSyncTagPart(key: String, thing: INBTSerializable<NBTTagCompound>) {
+    protected fun registerSyncTagPart(key: String, thing: INBTSerializable<NBTTagCompound>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
         this.registerSyncPart(key, Constants.NBT.TAG_COMPOUND,
             (Consumer<NBTTagCompound> { thing.deserializeNBT(it) }).makeReader(key),
-            (Supplier<NBTTagCompound?> { thing.serializeNBT() }).makeWriter())
+            (Supplier<NBTTagCompound?> { thing.serializeNBT() }).makeWriter(),
+            level)
     }
 
-    protected fun registerSyncListPart(key: String, reader: Consumer<NBTTagList>, writer: Supplier<NBTTagList?>) {
-        this.registerSyncPart(key, Constants.NBT.TAG_LIST, reader.makeReader(key), writer.makeWriter())
+    protected fun registerSyncListPart(key: String, reader: Consumer<NBTTagList>, writer: Supplier<NBTTagList?>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
+        this.registerSyncPart(key, Constants.NBT.TAG_LIST, reader.makeReader(key), writer.makeWriter(), level)
     }
 
-    protected fun registerSyncListPart(key: String, thing: INBTSerializable<NBTTagList>) {
+    protected fun registerSyncListPart(key: String, thing: INBTSerializable<NBTTagList>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
         this.registerSyncPart(key, Constants.NBT.TAG_LIST,
             (Consumer<NBTTagList> { thing.deserializeNBT(it) }).makeReader(key),
-            (Supplier<NBTTagList?> { thing.serializeNBT() }).makeWriter())
+            (Supplier<NBTTagList?> { thing.serializeNBT() }).makeWriter(),
+            level)
     }
 
     private fun notifyNeighbours() {
@@ -1103,19 +1144,7 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
 
         if (!this.getWorld().isRemote) {
             // this.syncTick++ // <-- hopefully this will reduce lag and not create additional problems
-            if (this.syncTick >= SYNC_ON_TICK) {
-                TeslaCoreLib.logger.info("Full TileEntity Sync at: ${this.pos}")
-                TeslaCoreLib.network.send(SimpleNBTMessage(this, this.writeToNBT()))
-                this.syncTick = 0
-                this.syncKeys.clear() // don't care about partial sync anymore
-            }
-
-            if (this.syncKeys.count() > 0) {
-                val set = this.syncKeys.toSet()
-                TeslaCoreLib.logger.info("Partial TileEntity Sync [${set.joinToString(", ")}] at: ${this.pos}")
-                TeslaCoreLib.network.send(SimpleNBTMessage(this, this.writePartialNBT(set)))
-                this.syncKeys.clear()
-            }
+            this.testSync()
         }
     }
 

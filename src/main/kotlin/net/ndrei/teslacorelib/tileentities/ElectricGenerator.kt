@@ -16,6 +16,7 @@ import net.ndrei.teslacorelib.gui.IGuiContainerPiece
 import net.ndrei.teslacorelib.inventory.BoundingRectangle
 import net.ndrei.teslacorelib.inventory.ColoredItemHandler
 import net.ndrei.teslacorelib.inventory.EnergyStorage
+import net.ndrei.teslacorelib.inventory.SyncProviderLevel
 
 /**
  * Created by CF on 2017-06-27.
@@ -78,7 +79,7 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
                 this@ElectricGenerator.partialSync(SYNC_GENERATED_ENERGY)
             }
         }
-        this.registerSyncTagPart(SYNC_GENERATED_ENERGY, this.generatedPower)
+        this.registerSyncTagPart(SYNC_GENERATED_ENERGY, this.generatedPower, SyncProviderLevel.GUI)
     }
 
     //#endregion

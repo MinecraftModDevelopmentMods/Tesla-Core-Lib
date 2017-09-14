@@ -28,7 +28,6 @@ fun JsonObject.readFluidStack(): FluidStack? {
 fun JsonObject.readItemStacks(memberName: String): List<ItemStack> =
     if (this.has(memberName)) JsonUtils.getJsonObject(this, memberName).readItemStacks() else listOf()
 
-
 fun JsonObject.readItemStacks(): List<ItemStack> {
     val item = JsonUtils.getString(this, "name", "")
             .let {

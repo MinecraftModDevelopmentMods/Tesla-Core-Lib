@@ -1,5 +1,5 @@
 package net.ndrei.teslacorelib.inventory
 
-interface ISyncItemHandler {
+interface ISyncProvider {
     fun setSyncTarget(target: ISyncTarget, key: String?)
 }
