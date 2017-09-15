@@ -26,7 +26,6 @@ import net.minecraftforge.registries.IForgeRegistry
 import net.ndrei.teslacorelib.TeslaCoreLib
 import net.ndrei.teslacorelib.getFacingFromEntity
 import net.ndrei.teslacorelib.render.SidedTileEntityRenderer
-import net.ndrei.teslacorelib.tileentities.ElectricTileEntity
 import net.ndrei.teslacorelib.tileentities.SidedTileEntity
 
 /**
@@ -134,7 +133,7 @@ abstract class OrientedBlock<T : SidedTileEntity>
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
         val t = worldIn.getTileEntity(pos)
-        (t as? ElectricTileEntity)?.onBlockBroken()
+        (t as? SidedTileEntity)?.onBlockBroken()
         super.breakBlock(worldIn, pos, state)
     }
 
