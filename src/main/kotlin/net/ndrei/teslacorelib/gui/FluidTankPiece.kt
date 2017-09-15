@@ -1,16 +1,18 @@
 package net.ndrei.teslacorelib.gui
 
-import com.google.common.collect.Lists
-import com.mojang.realmsclient.gui.ChatFormatting
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.texture.TextureMap
-import net.minecraft.client.resources.I18n
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.text.TextFormatting
 import net.minecraftforge.fluids.IFluidTank
+import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.inventory.FluidTankType
 import net.ndrei.teslacorelib.inventory.IFluidTankWrapper
 import net.ndrei.teslacorelib.inventory.ITypedFluidTank
+import net.ndrei.teslacorelib.localization.GuiPieceType
+import net.ndrei.teslacorelib.localization.localizeModString
+import net.ndrei.teslacorelib.localization.makeTextComponent
 import net.ndrei.teslacorelib.tileentities.SidedTileEntity
 import net.ndrei.teslacorelib.utils.canFillFrom
 import net.ndrei.teslacorelib.utils.getContainedFluid
@@ -63,20 +65,49 @@ class FluidTankPiece(private val tile: SidedTileEntity, private val color: EnumD
     override fun drawForegroundTopLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, mouseX: Int, mouseY: Int) {
         if (super.isInside(container, mouseX, mouseY)) {
             val fluid = this.tank.fluid
-            val lines = Lists.newArrayList<String>()
-            lines.add(String.format("%sFluid: %s%s", ChatFormatting.DARK_PURPLE, ChatFormatting.LIGHT_PURPLE, fluid?.localizedName ?: "${ChatFormatting.GRAY}Empty"))
-            lines.add(String.format("%s%,d mb %sof", ChatFormatting.AQUA, this.tank.fluidAmount, ChatFormatting.DARK_GRAY))
-            lines.add(String.format("%s%,d mb", ChatFormatting.RESET, this.tank.capacity))
+
+            val lines = mutableListOf(
+                localizeModString(MOD_ID, GuiPieceType.FLUID_TANK.key, "fluid") {
+                    +TextFormatting.DARK_PURPLE
+                    +localizeModString(fluid?.unlocalizedName, MOD_ID, GuiPieceType.FLUID_TANK.key, "fluid_empty") {
+                        +TextFormatting.LIGHT_PURPLE
+                    }
+                }.formattedText,
+                localizeModString(MOD_ID, GuiPieceType.FLUID_TANK.key, "fluid_amount") {
+                    +TextFormatting.DARK_GRAY
+                    +this@FluidTankPiece.tank.fluidAmount.makeTextComponent(TextFormatting.AQUA)
+                    +this@FluidTankPiece.tank.capacity.makeTextComponent(TextFormatting.DARK_AQUA)
+                }.formattedText
+            )
 
             val stack = container.mc.player.inventory.itemStack
             if (!stack.isEmpty) {
                 val bucket = stack.getContainedFluid()
-                lines.add("${ChatFormatting.BLUE}hovering with: ${bucket?.localizedName ?: "${ChatFormatting.DARK_GRAY}${I18n.format(stack.unlocalizedName.let { if (it.endsWith(".name")) it else "$it.name" })}"}")
+                lines.add(
+                    localizeModString(MOD_ID, GuiPieceType.FLUID_TANK.key, "hovering with") {
+                        +TextFormatting.BLUE
+                        +localizeModString(bucket?.fluid?.unlocalizedName.let {
+                            when {
+                                it.isNullOrEmpty() -> stack.unlocalizedName.let {
+                                    when {
+                                        it.endsWith(".name") -> it
+                                        else -> it + ".name"
+                                    }
+                                }
+                                else -> it!!
+                            }
+                        }) { +TextFormatting.GRAY }
+                    }.formattedText
+                )
                 if (bucket != null) {
                     if (this.tank.canFillFrom(stack)) {
-                        lines.add("${ChatFormatting.GREEN}accepting fluid")
+                        lines.add(localizeModString(MOD_ID, GuiPieceType.FLUID_TANK.key, "accepting fluid") {
+                            +TextFormatting.GREEN
+                        }.formattedText)
                     } else {
-                        lines.add("${ChatFormatting.RED}not accepting fluid")
+                        lines.add(localizeModString(MOD_ID, GuiPieceType.FLUID_TANK.key, "not accepting fluid") {
+                            +TextFormatting.RED
+                        }.formattedText)
                     }
                 }
                 if (stack.canFillFrom(this.tank.let {
@@ -85,9 +116,11 @@ class FluidTankPiece(private val tile: SidedTileEntity, private val color: EnumD
                     else
                         it
                 })) {
-                    lines.add("${ChatFormatting.GREEN}can fill from tank")
-                } else {
-                    lines.add("${ChatFormatting.RED}can't fill from tank")
+                    lines.add(localizeModString(MOD_ID, GuiPieceType.FLUID_TANK.key, "can fill from container") {
+                        +TextFormatting.GREEN
+                    }.formattedText)
+//                } else {
+//                    lines.add("${ChatFormatting.RED}can't fill from tank")
                 }
             }
 

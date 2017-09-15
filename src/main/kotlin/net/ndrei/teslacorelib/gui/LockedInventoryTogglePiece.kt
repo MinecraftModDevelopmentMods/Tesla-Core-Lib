@@ -2,7 +2,10 @@ package net.ndrei.teslacorelib.gui
 
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.item.EnumDyeColor
+import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.inventory.BoundingRectangle
+import net.ndrei.teslacorelib.localization.GuiPieceType
+import net.ndrei.teslacorelib.localization.localizeModString
 import net.ndrei.teslacorelib.tileentities.SidedTileEntity
 
 /**
@@ -10,7 +13,7 @@ import net.ndrei.teslacorelib.tileentities.SidedTileEntity
  */
 class LockedInventoryTogglePiece(left: Int, top: Int, val entity: SidedTileEntity, val color: EnumDyeColor) : ToggleButtonPiece(left, top, 14, 14) {
     override val currentState: Int
-        get() = if (this.entity.getInventoryLockState(this.color) ?: false) 0 else 1
+        get() = if (this.entity.getInventoryLockState(this.color) == true) 0 else 1
 
     override fun drawBackgroundLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, partialTicks: Float, mouseX: Int, mouseY: Int) {
         container.bindDefaultTexture()
@@ -33,8 +36,8 @@ class LockedInventoryTogglePiece(left: Int, top: Int, val entity: SidedTileEntit
 
     override fun getStateToolTip(state: Int)
             = listOf(when (state) {
-        0 -> "Unlock Inventory"
-        1 -> "Lock Inventory"
+        0 -> localizeModString(MOD_ID, GuiPieceType.LOCKABLE_INVENTORY.key, "Unlock Inventory").formattedText
+        1 -> localizeModString(MOD_ID, GuiPieceType.LOCKABLE_INVENTORY.key, "Lock Inventory").formattedText
         else -> "???"
     }, *super.getStateToolTip(state).toTypedArray())
 

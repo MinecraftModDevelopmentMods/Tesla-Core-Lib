@@ -4,6 +4,8 @@ import com.google.common.collect.Lists
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import net.ndrei.teslacorelib.capabilities.inventory.SidedItemHandlerConfig
+import net.ndrei.teslacorelib.localization.GuiPieceType
+import net.ndrei.teslacorelib.localization.localizeModString
 
 /**
  * Created by CF on 2017-06-28.
@@ -71,7 +73,7 @@ class SideConfigSelector(left: Int, top: Int, width: Int, height: Int, private v
                 if (index >= 0 && index < colors.size && index < 8) {
                     localX -= index * 18
                     if (localX in 2..14) {
-                        val label = colors[index].name
+                        val label = localizeModString(container, GuiPieceType.SIDE_CONFIG.key, colors[index].name).formattedText
                         if (label.isNotEmpty()) {
                             container.drawTooltip(Lists.newArrayList(label),
                                     this.left + index * 18 + 9,

@@ -1,8 +1,11 @@
 package net.ndrei.teslacorelib.gui
 
 import net.minecraft.client.renderer.GlStateManager
+import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.inventory.BoundingRectangle
 import net.ndrei.teslacorelib.inventory.IRedstoneControlledMachine
+import net.ndrei.teslacorelib.localization.GuiPieceType
+import net.ndrei.teslacorelib.localization.localizeModString
 
 /**
  * Created by CF on 2017-06-29.
@@ -32,9 +35,9 @@ class RedstoneTogglePiece(private val machine: IRedstoneControlledMachine, left:
 
     override fun getStateToolTip(state: Int): List<String> =
         when (state % 3) {
-            0 -> listOf("Always Active")
-            1 -> listOf("Active on Redstone Signal")
-            2 -> listOf("Active without Redstone Signal")
+            0 -> listOf(localizeModString(MOD_ID, GuiPieceType.REDSTONE.key, "Always Active").formattedText)
+            1 -> listOf(localizeModString(MOD_ID, GuiPieceType.REDSTONE.key, "Active on Redstone Signal").formattedText)
+            2 -> listOf(localizeModString(MOD_ID, GuiPieceType.REDSTONE.key, "Active without Redstone Signal").formattedText)
             else -> listOf()
         }
 

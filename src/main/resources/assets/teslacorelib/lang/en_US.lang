@@ -35,3 +35,43 @@ item.teslacorelib.machine_case.name=Machine Case
 tile.teslacorelib.test_machine.name=Test All-in-One Machine
 tile.teslacorelib.test_machine2.name=Test Fluids Machine
 tile.teslacorelib.creative_generator.name=Creative Generator
+
+
+
+
+#*************
+#* GUI STUFF *
+#*************
+
+#core lib side config buttons
+gui.teslacorelib.side_config.energy=Energy
+gui.teslacorelib.side_config.energy_items=Energy Items
+gui.teslacorelib.side_config.fluid_containers=Fluid Containers
+
+gui.teslacorelib.side_config.back=Back
+gui.teslacorelib.side_config.front=Front
+gui.teslacorelib.side_config.right=Right
+gui.teslacorelib.side_config.left=Left
+gui.teslacorelib.side_config.up=Up
+gui.teslacorelib.side_config.down=Down
+
+
+#redstone control piece
+gui.teslacorelib.redstone.always_active=Always Active
+gui.teslacorelib.redstone.active_on_redstone_signal=Active on Redstone Signal
+gui.teslacorelib.redstone.active_without_redstone_signal=Active without Redstone Signal
+
+
+#fluid tank display piece
+gui.teslacorelib.fluid_tank.fluid=Fluid: %s
+gui.teslacorelib.fluid_tank.fluid_empty=Empty
+gui.teslacorelib.fluid_tank.fluid_amount=%s mb of %s mb
+gui.teslacorelib.fluid_tank.hovering_with=Hovering with: %s
+gui.teslacorelib.fluid_tank.accepting_fluid=Accepting fluid
+gui.teslacorelib.fluid_tank.not_accepting_fluid=Not accepting fluid
+gui.teslacorelib.fluid_tank.can_fill_from_container=Can fill from container
+
+
+#lockable inventory lock piece
+gui.teslacorelib.lockable_inventory.unlock_inventory=Unlock Inventory
+gui.teslacorelib.lockable_inventory.lock_inventory=Lock Inventory
