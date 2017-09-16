@@ -4,7 +4,7 @@ import net.minecraft.util.EnumFacing
 import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.TeslaCoreLib
 import net.ndrei.teslacorelib.capabilities.inventory.SidedItemHandlerConfig
-import net.ndrei.teslacorelib.localization.GuiPieceType
+import net.ndrei.teslacorelib.localization.GUI_SIDE_CONFIG
 import net.ndrei.teslacorelib.localization.localizeModString
 import net.ndrei.teslacorelib.netsync.SimpleNBTMessage
 import net.ndrei.teslacorelib.tileentities.SidedTileEntity
@@ -70,11 +70,11 @@ class SideConfigurator(left: Int, top: Int, width: Int, height: Int, private val
         val facing = this.getSide(container, mouseX, mouseY)
         if (facing != null) {
             container.drawTooltip(listOf(when (facing) {
-                EnumFacing.NORTH -> localizeModString(MOD_ID, GuiPieceType.SIDE_CONFIG.key, "back").formattedText
-                EnumFacing.SOUTH -> localizeModString(MOD_ID, GuiPieceType.SIDE_CONFIG.key, "front").formattedText
-                EnumFacing.EAST -> localizeModString(MOD_ID, GuiPieceType.SIDE_CONFIG.key, "right").formattedText
-                EnumFacing.WEST -> localizeModString(MOD_ID, GuiPieceType.SIDE_CONFIG.key, "left").formattedText
-                else -> localizeModString(MOD_ID, GuiPieceType.SIDE_CONFIG.key, facing.toString()).formattedText
+                EnumFacing.NORTH -> localizeModString(MOD_ID, GUI_SIDE_CONFIG, "back").formattedText
+                EnumFacing.SOUTH -> localizeModString(MOD_ID, GUI_SIDE_CONFIG, "front").formattedText
+                EnumFacing.EAST -> localizeModString(MOD_ID, GUI_SIDE_CONFIG, "right").formattedText
+                EnumFacing.WEST -> localizeModString(MOD_ID, GUI_SIDE_CONFIG, "left").formattedText
+                else -> localizeModString(MOD_ID, GUI_SIDE_CONFIG, facing.toString()).formattedText
             }.capitalize()),
                     (mouseX - guiX) - (mouseX - guiX - this.left) % 18 + 9,
                     (mouseY - guiY) - (mouseY - guiY - this.top) % 18 + 9)

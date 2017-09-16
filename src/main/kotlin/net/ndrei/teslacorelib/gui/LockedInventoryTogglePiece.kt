@@ -4,7 +4,7 @@ import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.item.EnumDyeColor
 import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.inventory.BoundingRectangle
-import net.ndrei.teslacorelib.localization.GuiPieceType
+import net.ndrei.teslacorelib.localization.GUI_LOCKABLE_INVENTORY
 import net.ndrei.teslacorelib.localization.localizeModString
 import net.ndrei.teslacorelib.tileentities.SidedTileEntity
 
@@ -36,8 +36,8 @@ class LockedInventoryTogglePiece(left: Int, top: Int, val entity: SidedTileEntit
 
     override fun getStateToolTip(state: Int)
             = listOf(when (state) {
-        0 -> localizeModString(MOD_ID, GuiPieceType.LOCKABLE_INVENTORY.key, "Unlock Inventory").formattedText
-        1 -> localizeModString(MOD_ID, GuiPieceType.LOCKABLE_INVENTORY.key, "Lock Inventory").formattedText
+        0 -> localizeModString(MOD_ID, GUI_LOCKABLE_INVENTORY, "Unlock Inventory").formattedText
+        1 -> localizeModString(MOD_ID, GUI_LOCKABLE_INVENTORY, "Lock Inventory").formattedText
         else -> "???"
     }, *super.getStateToolTip(state).toTypedArray())
 

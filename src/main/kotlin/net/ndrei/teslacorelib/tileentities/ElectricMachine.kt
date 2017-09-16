@@ -5,6 +5,7 @@ import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagInt
 import net.minecraftforge.items.ItemStackHandler
+import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer
 import net.ndrei.teslacorelib.containers.FilteredSlot
 import net.ndrei.teslacorelib.energy.EnergySystemFactory
@@ -42,7 +43,7 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
                 this@ElectricMachine.partialSync(SYNC_ENERGY_ITEMS)
             }
         }
-        super.addInventory(object : ColoredItemHandler(this.energyItems, EnumDyeColor.CYAN, "Energy Items", -10, BoundingRectangle(25, 25, 18, 54)) {
+        super.addInventory(object : ColoredItemHandler(this.energyItems, EnumDyeColor.CYAN, "$MOD_ID:Energy Items", -10, BoundingRectangle(25, 25, 18, 54)) {
             override fun canInsertItem(slot: Int, stack: ItemStack)
                     = (slot == 0) && (EnergySystemFactory.wrapItemStack(stack)?.tryTake() ?: false)
 

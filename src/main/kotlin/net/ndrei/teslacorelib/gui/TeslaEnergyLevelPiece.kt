@@ -1,8 +1,10 @@
 package net.ndrei.teslacorelib.gui
 
-import com.google.common.collect.Lists
-import com.mojang.realmsclient.gui.ChatFormatting
+import net.minecraft.util.text.TextFormatting
+import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.inventory.EnergyStorage
+import net.ndrei.teslacorelib.localization.GUI_ENERGY
+import net.ndrei.teslacorelib.localization.localizeModString
 
 /**
  * Created by CF on 2017-06-28.
@@ -23,20 +25,38 @@ class TeslaEnergyLevelPiece(left: Int, top: Int, private val energyStorage: Ener
     }
 
     override fun drawForegroundTopLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, mouseX: Int, mouseY: Int) {
-        if (super.isInside(container, mouseX, mouseY) && this.energyStorage != null) {
-            val lines = Lists.newArrayList<String>()
-            lines.add(String.format("%sStored Energy", ChatFormatting.DARK_PURPLE))
-            lines.add(String.format("%s%,d T %sof", ChatFormatting.AQUA, this.energyStorage.stored, ChatFormatting.DARK_GRAY))
-            lines.add(String.format("%s%,d T", ChatFormatting.RESET, this.energyStorage.capacity))
-
+        if (super.isInside(container, mouseX, mouseY) && (this.energyStorage != null)) {
             val tick = this.energyStorage.lastTickEnergy
             val average = this.energyStorage.averageEnergyPerTick
-            lines.add(String.format("%s%,d T %s(%s%,d T%s)",
-                    if (average < 0) ChatFormatting.RED else ChatFormatting.BLUE, average,
-                    ChatFormatting.RESET,
-                    if (tick < 0) ChatFormatting.RED else ChatFormatting.BLUE, tick,
-                    ChatFormatting.RESET
-            ))
+
+            val energySystem = EnergyDisplayType.TESLA
+            val lines = mutableListOf(
+                localizeModString(MOD_ID, GUI_ENERGY, "stored energy") {
+                    +TextFormatting.DARK_PURPLE
+                },
+                localizeModString(MOD_ID, GUI_ENERGY, "stored line 1") {
+                    +TextFormatting.GRAY
+                    +energySystem.makeLightTextComponent(this@TeslaEnergyLevelPiece.energyStorage.stored)
+                },
+                localizeModString(MOD_ID, GUI_ENERGY, "stored line 2") {
+                    +TextFormatting.GRAY
+                    +energySystem.makeDarkTextComponent(this@TeslaEnergyLevelPiece.energyStorage.capacity)
+                },
+                localizeModString(MOD_ID, GUI_ENERGY, "statistic") {
+                    +energySystem.makeTextComponent(average, if (average < 0) TextFormatting.RED else TextFormatting.BLUE)
+                    +energySystem.makeTextComponent(tick, if (tick < 0) TextFormatting.RED else TextFormatting.BLUE)
+                }
+            ).map { it.formattedText }
+//            lines.add(String.format("%sStored Energy", ChatFormatting.DARK_PURPLE))
+//            lines.add(String.format("%s%,d T %sof", ChatFormatting.AQUA, this.energyStorage.stored, ChatFormatting.DARK_GRAY))
+//            lines.add(String.format("%s%,d T", ChatFormatting.RESET, this.energyStorage.capacity))
+
+//            lines.add(String.format("%s%,d T %s(%s%,d T%s)",
+//                    if (average < 0) ChatFormatting.RED else ChatFormatting.BLUE, average,
+//                    ChatFormatting.RESET,
+//                    if (tick < 0) ChatFormatting.RED else ChatFormatting.BLUE, tick,
+//                    ChatFormatting.RESET
+//            ))
             container.drawTooltip(lines, mouseX - guiX, mouseY - guiY)
         }
     }

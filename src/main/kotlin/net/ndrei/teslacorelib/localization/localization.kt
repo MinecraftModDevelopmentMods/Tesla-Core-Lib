@@ -89,3 +89,11 @@ fun Int.makeTextComponent(format: TextFormatting? = null) : ITextComponent {
     }
     return result
 }
+
+fun Long.makeTextComponent(format: TextFormatting? = null) : ITextComponent {
+    val result = TextComponentString(String.format("%,d", this))
+    if (format != null) {
+        result.style.color = format
+    }
+    return result
+}

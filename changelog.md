@@ -7,7 +7,7 @@
 
 #1.0.9
 - completely changed how tile entities sync stuff from server to client (should be like 99.9% less network traffic now)
-
+- localize all the things!
 
 # 1.0.8
 - added more helper functions around fluid tanks (SidedTileEntity.addSimpleFluidTank)

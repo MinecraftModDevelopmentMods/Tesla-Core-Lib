@@ -43,9 +43,29 @@ tile.teslacorelib.creative_generator.name=Creative Generator
 #* GUI STUFF *
 #*************
 
+#core lib energy display
+gui.teslacorelib.energy.stored_energy=Stored Energy
+gui.teslacorelib.energy.stored_line_1=%s of
+gui.teslacorelib.energy.stored_line_2=%s
+gui.teslacorelib.energy.statistic=%s (%s)
+
+gui.teslacorelib.energy.tesla=T
+gui.teslacorelib.energy.redstone_flux=RF
+gui.teslacorelib.energy.buildcraft_mj=MJ
+gui.teslacorelib.energy.tesla_format=%s T
+gui.teslacorelib.energy.redstone_flux_format=%s RF
+gui.teslacorelib.energy.buildcraft_mj_format=%s MJ
+
+gui.teslacorelib.work_energy.work_energy_buffer=Work Energy Buffer
+gui.teslacorelib.work_energy.work_energy_line_1=%s of %s
+gui.teslacorelib.work_energy.work_energy_line_2=max: %s / tick
+gui.teslacorelib.work_energy.work_energy_line_3=~ every %s ticks
+
+
 #core lib side config buttons
 gui.teslacorelib.side_config.energy=Energy
 gui.teslacorelib.side_config.energy_items=Energy Items
+gui.teslacorelib.side_config.charge_pad=Charge Pad
 gui.teslacorelib.side_config.fluid_containers=Fluid Containers
 
 gui.teslacorelib.side_config.back=Back
@@ -65,7 +85,8 @@ gui.teslacorelib.redstone.active_without_redstone_signal=Active without Redstone
 #fluid tank display piece
 gui.teslacorelib.fluid_tank.fluid=Fluid: %s
 gui.teslacorelib.fluid_tank.fluid_empty=Empty
-gui.teslacorelib.fluid_tank.fluid_amount=%s mb of %s mb
+gui.teslacorelib.fluid_tank.fluid_amount_format=%s mb
+gui.teslacorelib.fluid_tank.fluid_amount=%s of %s
 gui.teslacorelib.fluid_tank.hovering_with=Hovering with: %s
 gui.teslacorelib.fluid_tank.accepting_fluid=Accepting fluid
 gui.teslacorelib.fluid_tank.not_accepting_fluid=Not accepting fluid

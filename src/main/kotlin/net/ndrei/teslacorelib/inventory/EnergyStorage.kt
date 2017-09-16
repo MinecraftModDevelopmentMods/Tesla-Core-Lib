@@ -6,6 +6,7 @@ import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.common.util.INBTSerializable
+import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.capabilities.inventory.ISidedItemHandlerConfig
 import net.ndrei.teslacorelib.energy.EnergySystemFactory
 import net.ndrei.teslacorelib.energy.GenericEnergyStorage
@@ -195,7 +196,7 @@ open class EnergyStorage(maxStoredEnergy: Long, inputRate: Long, outputRate: Lon
         this.sidedConfig = sidedConfig
         this.color = color
         if ((this.sidedConfig != null) && (this.color != null)) {
-            this.sidedConfig!!.addColoredInfo("Energy", this.color!!, highlight, -20)
+            this.sidedConfig!!.addColoredInfo("$MOD_ID:Energy", this.color!!, highlight, -20)
         }
     }
 

@@ -10,7 +10,7 @@ import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.inventory.FluidTankType
 import net.ndrei.teslacorelib.inventory.IFluidTankWrapper
 import net.ndrei.teslacorelib.inventory.ITypedFluidTank
-import net.ndrei.teslacorelib.localization.GuiPieceType
+import net.ndrei.teslacorelib.localization.GUI_FLUID_TANK
 import net.ndrei.teslacorelib.localization.localizeModString
 import net.ndrei.teslacorelib.localization.makeTextComponent
 import net.ndrei.teslacorelib.tileentities.SidedTileEntity
@@ -66,17 +66,25 @@ class FluidTankPiece(private val tile: SidedTileEntity, private val color: EnumD
         if (super.isInside(container, mouseX, mouseY)) {
             val fluid = this.tank.fluid
 
+            fun makeFluidAmountComponent(amount: Int, format: TextFormatting? = null) =
+                localizeModString(MOD_ID, GUI_FLUID_TANK, "fluid_amount_format") {
+                    if (format != null) {
+                        +format
+                    }
+                    +String.format("%,d", amount).makeTextComponent(format)
+                }
+
             val lines = mutableListOf(
-                localizeModString(MOD_ID, GuiPieceType.FLUID_TANK.key, "fluid") {
+                localizeModString(MOD_ID, GUI_FLUID_TANK, "fluid") {
                     +TextFormatting.DARK_PURPLE
-                    +localizeModString(fluid?.unlocalizedName, MOD_ID, GuiPieceType.FLUID_TANK.key, "fluid_empty") {
+                    +localizeModString(fluid?.unlocalizedName, MOD_ID, GUI_FLUID_TANK, "fluid_empty") {
                         +TextFormatting.LIGHT_PURPLE
                     }
                 }.formattedText,
-                localizeModString(MOD_ID, GuiPieceType.FLUID_TANK.key, "fluid_amount") {
+                localizeModString(MOD_ID, GUI_FLUID_TANK, "fluid_amount") {
                     +TextFormatting.DARK_GRAY
-                    +this@FluidTankPiece.tank.fluidAmount.makeTextComponent(TextFormatting.AQUA)
-                    +this@FluidTankPiece.tank.capacity.makeTextComponent(TextFormatting.DARK_AQUA)
+                    +makeFluidAmountComponent(this@FluidTankPiece.tank.fluidAmount, TextFormatting.AQUA)
+                    +makeFluidAmountComponent(this@FluidTankPiece.tank.capacity, TextFormatting.DARK_AQUA)
                 }.formattedText
             )
 
@@ -84,7 +92,7 @@ class FluidTankPiece(private val tile: SidedTileEntity, private val color: EnumD
             if (!stack.isEmpty) {
                 val bucket = stack.getContainedFluid()
                 lines.add(
-                    localizeModString(MOD_ID, GuiPieceType.FLUID_TANK.key, "hovering with") {
+                    localizeModString(MOD_ID, GUI_FLUID_TANK, "hovering with") {
                         +TextFormatting.BLUE
                         +localizeModString(bucket?.fluid?.unlocalizedName.let {
                             when {
@@ -101,11 +109,11 @@ class FluidTankPiece(private val tile: SidedTileEntity, private val color: EnumD
                 )
                 if (bucket != null) {
                     if (this.tank.canFillFrom(stack)) {
-                        lines.add(localizeModString(MOD_ID, GuiPieceType.FLUID_TANK.key, "accepting fluid") {
+                        lines.add(localizeModString(MOD_ID, GUI_FLUID_TANK, "accepting fluid") {
                             +TextFormatting.GREEN
                         }.formattedText)
                     } else {
-                        lines.add(localizeModString(MOD_ID, GuiPieceType.FLUID_TANK.key, "not accepting fluid") {
+                        lines.add(localizeModString(MOD_ID, GUI_FLUID_TANK, "not accepting fluid") {
                             +TextFormatting.RED
                         }.formattedText)
                     }
@@ -116,7 +124,7 @@ class FluidTankPiece(private val tile: SidedTileEntity, private val color: EnumD
                     else
                         it
                 })) {
-                    lines.add(localizeModString(MOD_ID, GuiPieceType.FLUID_TANK.key, "can fill from container") {
+                    lines.add(localizeModString(MOD_ID, GUI_FLUID_TANK, "can fill from container") {
                         +TextFormatting.GREEN
                     }.formattedText)
 //                } else {

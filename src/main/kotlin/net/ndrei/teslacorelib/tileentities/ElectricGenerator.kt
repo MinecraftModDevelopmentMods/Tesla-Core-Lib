@@ -5,6 +5,7 @@ import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.items.ItemStackHandler
+import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer
 import net.ndrei.teslacorelib.containers.FilteredSlot
 import net.ndrei.teslacorelib.energy.EnergySystemFactory
@@ -41,7 +42,7 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
                 return 1
             }
         }
-        super.addInventory(object : ColoredItemHandler(this.chargePadItems, EnumDyeColor.BROWN, "Charge Pad", -10, BoundingRectangle(34, 34, 18, 36)) {
+        super.addInventory(object : ColoredItemHandler(this.chargePadItems, EnumDyeColor.BROWN, "$MOD_ID:Charge Pad", -10, BoundingRectangle(34, 34, 18, 36)) {
             override fun canInsertItem(slot: Int, stack: ItemStack)
                     = EnergySystemFactory.wrapItemStack(stack)?.canGive ?: false
 

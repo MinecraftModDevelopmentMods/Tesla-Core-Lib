@@ -33,6 +33,7 @@ import net.minecraftforge.items.CapabilityItemHandler
 import net.minecraftforge.items.IItemHandler
 import net.minecraftforge.items.IItemHandlerModifiable
 import net.minecraftforge.items.ItemStackHandler
+import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.TeslaCoreLib
 import net.ndrei.teslacorelib.blocks.OrientedBlock
 import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities
@@ -461,7 +462,7 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
                         this@SidedTileEntity.partialSync(SYNC_FLUID_ITEMS)
                     }
                 }
-                this.addInventory(object : ColoredItemHandler(this.fluidItems!!, color, "Fluid Containers", this.fluidItemsColorIndex, box) {
+                this.addInventory(object : ColoredItemHandler(this.fluidItems!!, color, "$MOD_ID:Fluid Containers", this.fluidItemsColorIndex, box) {
                     override fun canInsertItem(slot: Int, stack: ItemStack): Boolean {
                         return slot == 0 && this@SidedTileEntity.acceptsFluidItem(stack)
                     }
