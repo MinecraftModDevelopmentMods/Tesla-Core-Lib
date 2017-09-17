@@ -11,6 +11,7 @@ import net.ndrei.teslacorelib.inventory.FluidTankType
 import net.ndrei.teslacorelib.inventory.IFluidTankWrapper
 import net.ndrei.teslacorelib.inventory.ITypedFluidTank
 import net.ndrei.teslacorelib.localization.GUI_FLUID_TANK
+import net.ndrei.teslacorelib.localization.localizeFluidAmount
 import net.ndrei.teslacorelib.localization.localizeModString
 import net.ndrei.teslacorelib.localization.makeTextComponent
 import net.ndrei.teslacorelib.tileentities.SidedTileEntity
@@ -66,25 +67,17 @@ class FluidTankPiece(private val tile: SidedTileEntity, private val color: EnumD
         if (super.isInside(container, mouseX, mouseY)) {
             val fluid = this.tank.fluid
 
-            fun makeFluidAmountComponent(amount: Int, format: TextFormatting? = null) =
-                localizeModString(MOD_ID, GUI_FLUID_TANK, "fluid_amount_format") {
-                    if (format != null) {
-                        +format
-                    }
-                    +String.format("%,d", amount).makeTextComponent(format)
-                }
-
             val lines = mutableListOf(
                 localizeModString(MOD_ID, GUI_FLUID_TANK, "fluid") {
                     +TextFormatting.DARK_PURPLE
-                    +localizeModString(fluid?.unlocalizedName, MOD_ID, GUI_FLUID_TANK, "fluid_empty") {
+                    + if (fluid == null) localizeModString(MOD_ID, GUI_FLUID_TANK, "fluid_empty") {
                         +TextFormatting.LIGHT_PURPLE
-                    }
+                    } else fluid.localizedName.makeTextComponent(TextFormatting.LIGHT_PURPLE)
                 }.formattedText,
                 localizeModString(MOD_ID, GUI_FLUID_TANK, "fluid_amount") {
                     +TextFormatting.DARK_GRAY
-                    +makeFluidAmountComponent(this@FluidTankPiece.tank.fluidAmount, TextFormatting.AQUA)
-                    +makeFluidAmountComponent(this@FluidTankPiece.tank.capacity, TextFormatting.DARK_AQUA)
+                    +localizeFluidAmount(this@FluidTankPiece.tank.fluidAmount, TextFormatting.AQUA)
+                    +localizeFluidAmount(this@FluidTankPiece.tank.capacity, TextFormatting.DARK_AQUA)
                 }.formattedText
             )
 
@@ -94,17 +87,11 @@ class FluidTankPiece(private val tile: SidedTileEntity, private val color: EnumD
                 lines.add(
                     localizeModString(MOD_ID, GUI_FLUID_TANK, "hovering with") {
                         +TextFormatting.BLUE
-                        +localizeModString(bucket?.fluid?.unlocalizedName.let {
-                            when {
-                                it.isNullOrEmpty() -> stack.unlocalizedName.let {
-                                    when {
-                                        it.endsWith(".name") -> it
-                                        else -> it + ".name"
-                                    }
-                                }
-                                else -> it!!
+                        +(if (bucket?.fluid == null)
+                            localizeModString(stack.unlocalizedName + ".name") {
+                                +TextFormatting.AQUA
                             }
-                        }) { +TextFormatting.GRAY }
+                        else bucket.localizedName.makeTextComponent(TextFormatting.AQUA))
                     }.formattedText
                 )
                 if (bucket != null) {

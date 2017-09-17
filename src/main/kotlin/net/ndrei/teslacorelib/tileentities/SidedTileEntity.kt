@@ -571,9 +571,9 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
 
     override fun readFromNBT(compound: NBTTagCompound) {
         super.readFromNBT(compound)
-        if ((this.getWorld() != null) && this.getWorld().isRemote) {
-            TeslaCoreLib.logger.info("Full Sync received for: ${this.javaClass.name} at ${this.pos}.")
-        }
+//        if ((this.getWorld() != null) && this.getWorld().isRemote) {
+//            TeslaCoreLib.logger.info("Full Sync received for: ${this.javaClass.name} at ${this.pos}.")
+//        }
         compound.readSyncParts()
     }
 
@@ -674,7 +674,7 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
 
     protected open fun processServerMessage(messageType: String, compound: NBTTagCompound): SimpleNBTMessage? {
         if (messageType == "PARTIAL_SYNC") {
-            TeslaCoreLib.logger.info("Partial Sync [${compound.keySet.joinToString(", ")}] received for: ${this.javaClass.name} at ${this.pos}.")
+//            TeslaCoreLib.logger.info("Partial Sync [${compound.keySet.joinToString(", ")}] received for: ${this.javaClass.name} at ${this.pos}.")
             compound.readSyncParts()
         }
         return null

@@ -5,6 +5,7 @@ import net.minecraft.util.text.ITextComponent
 import net.minecraft.util.text.TextComponentString
 import net.minecraft.util.text.TextComponentTranslation
 import net.minecraft.util.text.TextFormatting
+import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer
 
 class LocalizedModText(private val key: String, private vararg val params: Any) {
@@ -97,3 +98,11 @@ fun Long.makeTextComponent(format: TextFormatting? = null) : ITextComponent {
     }
     return result
 }
+
+fun localizeFluidAmount(amount: Int, format: TextFormatting? = null) =
+    localizeModString(MOD_ID, GUI_FLUID_TANK, "fluid_amount_format") {
+        if (format != null) {
+            +format
+        }
+        +String.format("%,d", amount).makeTextComponent(format)
+    }
