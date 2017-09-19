@@ -7,6 +7,8 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.Vec3d
 import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad
 import net.minecraftforge.common.model.TRSRTransformation
+import javax.vecmath.Matrix4d
+import javax.vecmath.Vector4d
 
 class RawQuad(
         val p1: Vec3d, val u1: Float, val v1: Float,
@@ -20,16 +22,30 @@ class RawQuad(
     fun Float.v() = sprite.getInterpolatedV(this.toDouble()/* / 16.0 * sprite.iconHeight*/)
 
     fun bake(format: VertexFormat): BakedQuad {
-        // val normal = this.p3.subtract(this.p2).crossProduct(this.p1.subtract(this.p2)).normalize()
-
         val normal = Vec3d(side.frontOffsetX.toDouble(), side.frontOffsetY.toDouble(), side.frontOffsetZ.toDouble())
 
         val builder = UnpackedBakedQuad.Builder(format)
         builder.setTexture(this.sprite)
+        builder.setQuadOrientation(this.side)
         builder.putVertex(this.sprite, normal, this.p1.x / 32.0, this.p1.y / 32.0, this.p1.z / 32.0, this.u1.u(), this.v1.v(), this.color, this.transform)
         builder.putVertex(this.sprite, normal, this.p2.x / 32.0, this.p2.y / 32.0, this.p2.z / 32.0, this.u2.u(), this.v2.v(), this.color, this.transform)
         builder.putVertex(this.sprite, normal, this.p3.x / 32.0, this.p3.y / 32.0, this.p3.z / 32.0, this.u3.u(), this.v3.v(), this.color, this.transform)
         builder.putVertex(this.sprite, normal, this.p4.x / 32.0, this.p4.y / 32.0, this.p4.z / 32.0, this.u4.u(), this.v4.v(), this.color, this.transform)
         return builder.build()
+    }
+
+    private fun Vec3d.toVector4d() = Vector4d(this.x, this.y, this.z, 1.0)
+    private fun Vector4d.toVec3d() = Vec3d(this.x, this.y, this.z)
+
+    fun applyMatrix(matrix: Matrix4d): RawQuad {
+        val p1 = this.p1.toVector4d().also { matrix.transform(it) }.toVec3d()
+        val p2 = this.p2.toVector4d().also { matrix.transform(it) }.toVec3d()
+        val p3 = this.p3.toVector4d().also { matrix.transform(it) }.toVec3d()
+        val p4 = this.p4.toVector4d().also { matrix.transform(it) }.toVec3d()
+        return RawQuad(p1, this.u1, this.v1,
+            p2, this.u2, this.v2,
+            p3, this.u3, this.v3,
+            p4, this.u4, this.v4,
+            this.side, this.sprite, this.color, this.transform)
     }
 }

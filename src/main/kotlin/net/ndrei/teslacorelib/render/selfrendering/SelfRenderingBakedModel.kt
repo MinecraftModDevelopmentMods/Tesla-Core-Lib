@@ -38,7 +38,7 @@ open class SelfRenderingBakedModel(val renderer: ISelfRenderingBlock, val format
             return this.cache.get(key, {
                 // TeslaThingiesMod.logger.info("Getting bakeries for '$key'.")
                 this.renderer.getBakeries(layer, state, stack, side, rand, this.transform ?: TRSRTransformation.identity())
-            }).fold(mutableListOf<BakedQuad>()) { list, bakery -> list.also { it.addAll(bakery.getQuads(state, stack, side, this.format, this.transform ?: TRSRTransformation.identity())) } }
+            }).fold(mutableListOf()) { list, bakery -> list.also { it.addAll(bakery.getQuads(state, stack, side, this.format, this.transform ?: TRSRTransformation.identity())) } }
         } finally {
             Minecraft.getMinecraft().mcProfiler.endSection()
         }

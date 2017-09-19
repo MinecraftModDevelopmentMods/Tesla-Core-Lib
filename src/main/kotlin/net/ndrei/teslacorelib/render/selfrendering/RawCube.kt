@@ -10,6 +10,7 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.Vec2f
 import net.minecraft.util.math.Vec3d
 import net.minecraftforge.common.model.TRSRTransformation
+import javax.vecmath.Matrix4d
 import javax.vecmath.Vector3f
 
 class RawCube(val p1: Vec3d, val p2: Vec3d, val sprite: TextureAtlasSprite? = null)
@@ -28,7 +29,7 @@ class RawCube(val p1: Vec3d, val p2: Vec3d, val sprite: TextureAtlasSprite? = nu
 
         this.getLastSideInfo().also {
             if (this.autoUVFlag) {
-                it.autoUV(this)
+                it.autoUV(this, face)
             }
             it.bothSides = this.dualSideFlag
         }
@@ -44,10 +45,12 @@ class RawCube(val p1: Vec3d, val p2: Vec3d, val sprite: TextureAtlasSprite? = nu
 
     fun autoUV(flag: Boolean = true) = this.also {
         if (this.lastSide != null) {
-            this.getLastSideInfo().autoUV(if (flag) this else null)
-        } else {
-            this.autoUVFlag = flag
+            throw Exception("You can only set this before creating any sides!")
+            // this.getLastSideInfo().autoUV(if (flag) this else null)
         }
+//        else {
+        this.autoUVFlag = flag
+//        }
     }
 
     fun uv(u1: Float, v1: Float, u2: Float, v2: Float) = this.uv(Vec2f(u1, v1), Vec2f(u2, v2))
@@ -77,7 +80,7 @@ class RawCube(val p1: Vec3d, val p2: Vec3d, val sprite: TextureAtlasSprite? = nu
 //        return this
 //    }
 
-    fun bake(quads: MutableList<BakedQuad>, format: VertexFormat, transform: TRSRTransformation) {
+    fun bake(quads: MutableList<BakedQuad>, format: VertexFormat, transform: TRSRTransformation, matrix: Matrix4d? = null) {
         val rawrs = mutableListOf<RawQuad>()
 
         val p1 = Vector3f(this.p1.x.toFloat(), this.p1.y.toFloat(), this.p1.z.toFloat())
@@ -112,6 +115,6 @@ class RawCube(val p1: Vec3d, val p2: Vec3d, val sprite: TextureAtlasSprite? = nu
             }
         }
 
-        rawrs.mapTo(quads) { it.bake(format) }
+        rawrs.mapTo(quads) { it.applyMatrix(matrix ?: Matrix4d().also { it.setIdentity() }).bake(format) }
     }
 }
