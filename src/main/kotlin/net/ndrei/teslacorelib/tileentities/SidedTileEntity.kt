@@ -599,7 +599,10 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
     private fun NBTTagCompound.writeSyncParts(parts: Map<String, SyncPartInfo>) =
         this.also { nbt ->
             parts.forEach { key, part ->
-                nbt.setTag(key, part.writer())
+                val tag = part.writer()
+                if (tag != null) {
+                    nbt.setTag(key, part.writer())
+                }
             }
         }
 
