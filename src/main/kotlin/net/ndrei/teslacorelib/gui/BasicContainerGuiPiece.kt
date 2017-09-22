@@ -3,8 +3,10 @@ package net.ndrei.teslacorelib.gui
 /**
  * Created by CF on 2017-06-28.
  */
-abstract class BasicContainerGuiPiece protected constructor(override val left: Int, override val top: Int, override val width: Int, override val height: Int) : IGuiContainerPiece {
+abstract class BasicContainerGuiPiece protected constructor(override val left: Int, top: Int, override val width: Int, override val height: Int) : IGuiContainerPiece {
     private var visible = true
+    override var top: Int = top
+        protected set
 
     override val isVisible get() = this.visible
 

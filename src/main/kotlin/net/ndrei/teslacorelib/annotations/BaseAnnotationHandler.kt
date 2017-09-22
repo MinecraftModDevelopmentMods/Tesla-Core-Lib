@@ -24,7 +24,7 @@ abstract class BaseAnnotationHandler<in T> protected constructor(val handler: (t
             .filter {
                 if ((container != null) && (it.annotationInfo != null) && it.annotationInfo.containsKey("configFlags")) {
                     val flags = it.annotationInfo["configFlags"] as? ArrayList<*> ?: return@filter true
-                    val config = container.mod as? IModConfigFlagsProvider ?: return@filter flags.isEmpty()
+                    val config = container.mod as? IModConfigFlagsProvider
                     flags.forEach {
                         val flag = it as? String
                         if ((flag != null) && !flag.isBlank()) {
@@ -32,7 +32,7 @@ abstract class BaseAnnotationHandler<in T> protected constructor(val handler: (t
                                 flag.startsWith("mod-exists:") ->
                                     if (!Loader.isModLoaded(flag.substring("mod-exists:".length))) return@filter false
                                 else ->
-                                    if (!config.getFlag(flag)) return@filter false
+                                    if ((config == null) || !config.getFlag(flag)) return@filter false
                             }
                         }
                     }

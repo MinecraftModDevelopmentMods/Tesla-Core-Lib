@@ -52,25 +52,28 @@ open class BasicTeslaGuiContainer<out T : SidedTileEntity>(val guiId: Int, conta
         super.renderHoveredToolTip(mouseX, mouseY)
     }
 
+    private fun drawPieces(callback: (IGuiContainerPiece) -> Unit) {
+        this.pieces
+            .filter { it.isVisible && (it !is SideDrawerPiece) }
+            .forEach { callback(it) }
+        var top = 5
+        this.pieces
+            .filterIsInstance<SideDrawerPiece>()
+            .filter { it.isVisible }
+            .sortedBy { it.topIndex }
+            .forEach { it.updateTop(top); top += 14; callback(it) }
+    }
+
     override fun drawGuiContainerBackgroundLayer(partialTicks: Float, mouseX: Int, mouseY: Int) {
         this.drawGuiContainerBackground()
 
-        this.pieces.filter { it.isVisible }.let {
-            it.forEach { it.drawBackgroundLayer(this, super.guiLeft, super.guiTop, partialTicks, mouseX, mouseY) }
-            it.forEach { it.drawMiddleLayer(this, super.guiLeft, super.guiTop, partialTicks, mouseX, mouseY) }
-        }
-    }
-
-    open fun drawGuiContainerBackground() {
-        this.bindDefaultTexture()
-        this.drawTexturedModalRect(super.guiLeft, super.guiTop, 0, 0, super.getXSize(), super.getYSize())
+        this.drawPieces { it.drawBackgroundLayer(this, super.guiLeft, super.guiTop, partialTicks, mouseX, mouseY) }
+        this.drawPieces { it.drawMiddleLayer(this, super.guiLeft, super.guiTop, partialTicks, mouseX, mouseY) }
     }
 
     override fun drawGuiContainerForegroundLayer(mouseX: Int, mouseY: Int) {
-        this.pieces.filter { it.isVisible }.let {
-            it.forEach { it.drawForegroundLayer(this, super.guiLeft, super.guiTop, mouseX, mouseY) }
-            it.forEach { it.drawForegroundTopLayer(this, super.guiLeft, super.guiTop, mouseX, mouseY) }
-        }
+        this.drawPieces { it.drawForegroundLayer(this, super.guiLeft, super.guiTop, mouseX, mouseY) }
+        this.drawPieces { it.drawForegroundTopLayer(this, super.guiLeft, super.guiTop, mouseX, mouseY) }
     }
 
     @Throws(IOException::class)
@@ -78,8 +81,13 @@ open class BasicTeslaGuiContainer<out T : SidedTileEntity>(val guiId: Int, conta
         super.mouseClicked(mouseX, mouseY, mouseButton)
 
         this.pieces
-                .filter { it.isVisible && BasicContainerGuiPiece.isInside(this, it, mouseX, mouseY) }
-                .forEach { it.mouseClicked(this, mouseX, mouseY, mouseButton) }
+            .filter { it.isVisible && BasicContainerGuiPiece.isInside(this, it, mouseX, mouseY) }
+            .forEach { it.mouseClicked(this, mouseX, mouseY, mouseButton) }
+    }
+
+    open fun drawGuiContainerBackground() {
+        this.bindDefaultTexture()
+        this.drawTexturedModalRect(super.guiLeft, super.guiTop, 0, 0, super.getXSize(), super.getYSize())
     }
 
     fun drawTexturedRect(x: Int, y: Int, textureX: Int, textureY: Int, width: Int, height: Int) {
