@@ -215,6 +215,12 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
         }
     }
 
+    protected fun getInventory(color: EnumDyeColor) =
+        (0 until this.itemHandler.inventories)
+            .map { this.itemHandler.getInventory(it) }
+            .filterIsInstance<ColoredItemHandler>()
+            .firstOrNull { it.color == color }
+
     //endregion
 
     //region inventory addons  methods

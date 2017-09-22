@@ -14,7 +14,7 @@ import net.ndrei.teslacorelib.render.selfrendering.ISelfRenderingBlock
 import net.ndrei.teslacorelib.render.selfrendering.TESRProxy
 
 object SelfRenderingTESR : TileEntitySpecialRenderer<TileEntity>() {
-    val proxy = object: TESRProxy {
+    private val proxy = object: TESRProxy {
         override val rendererDispatcher: TileEntityRendererDispatcher?
             get() = this@SelfRenderingTESR.rendererDispatcher
         override val world: World

@@ -68,7 +68,7 @@ for (set in sourceSets) {
     compileTask.source = dir
     compileTask.dependsOn taskName
     def dirPath = dir.toPath()
-    compileKotlin.include {
+    compileTask.include {
         return it.file.toPath().startsWith(dirPath)
     }
 }
@@ -95,9 +95,9 @@ dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jre8:${project.kotlin_version}"
     compile "net.shadowfacts:Forgelin:${project.forgelin_version}"
 
-    compileOnly "net.darkhax.tesla:Tesla-${project.minecraft_version}:${project.tesla_version}:deobf"
+    compileOnly "net.darkhax.tesla:Tesla-${project.tesla_mcversion}:${project.tesla_version}:deobf"
     compileOnly "com.mod-buildcraft:buildcraft-api:${project.bc_version}"
-    compile "cofh:RedstoneFlux:${project.minecraft_version}-${project.redstoneflux_version}:universal"
+    compile "cofh:RedstoneFlux:${project.redstoneflux_mcversion}-${project.redstoneflux_version}:universal"
 }
 
 processResources {
