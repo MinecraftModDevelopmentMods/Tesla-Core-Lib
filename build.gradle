@@ -97,7 +97,7 @@ dependencies {
 
     compileOnly "net.darkhax.tesla:Tesla-${project.minecraft_version}:${project.tesla_version}:deobf"
     compileOnly "com.mod-buildcraft:buildcraft-api:${project.bc_version}"
-    compile "cofh:RedstoneFlux:${project.minecraft_version}-${project.redstoneflux_version}:universal"
+    compileOnly "cofh:RedstoneFlux:${project.minecraft_version}-${project.redstoneflux_version}:universal"
 }
 
 processResources {
