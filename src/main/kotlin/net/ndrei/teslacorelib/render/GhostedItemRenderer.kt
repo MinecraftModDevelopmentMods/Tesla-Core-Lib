@@ -167,7 +167,7 @@ class GhostedItemRenderer(private val render: RenderItem) {
             var k = color
 
             if (flag && bakedquad.hasTintIndex()) {
-                k = this.itemColors.getColorFromItemstack(stack, bakedquad.tintIndex)
+                k = this.itemColors.colorMultiplier(stack, bakedquad.tintIndex)
 
                 if (EntityRenderer.anaglyphEnable) {
                     k = TextureUtil.anaglyphColor(k)
