@@ -2,6 +2,7 @@ package net.ndrei.teslacorelib.tileentities
 
 import com.google.common.collect.Lists
 import net.minecraft.client.Minecraft
+import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
@@ -227,8 +228,8 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
 
     private fun createAddonsInventory() {
         if (this.supportsAddons()) {
-            this.addonItems = object : ItemStackHandler(4) {
-                private val items = arrayOf<ItemStack?>(null, null, null, null)
+            this.addonItems = object : ItemStackHandler(this.supportedAddonColumns * 4) {
+                private val items = (0 until this.slots).map<Int, ItemStack?> { null }.toTypedArray()
 
                 override fun onContentsChanged(slot: Int) {
                     this.testSlot(slot)
@@ -280,15 +281,21 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
 
                 override fun getSlots(container: BasicTeslaContainer<*>): MutableList<Slot> {
                     val slots = super.getSlots(container)
-                    (0..3).mapTo(slots) { FilteredSlot(this.itemHandlerForContainer, it, 174, 8 + it * 18) }
+                    (0 until this.slots).mapTo(slots) {
+                        val column = it / 4
+                        val row = it % 4
+                        FilteredSlot(this.itemHandlerForContainer, it, 174 - column * 18, 8 + row * 18)
+                    }
                     return slots
                 }
 
                 override fun getGuiContainerPieces(container: BasicTeslaGuiContainer<*>): MutableList<IGuiContainerPiece> {
                     val pieces = super.getGuiContainerPieces(container)
 
-                    pieces.add(TiledRenderedGuiPiece(173, 7, 18, 18, 1, 4,
+                    (0 until this@SidedTileEntity.supportedAddonColumns).forEach {
+                        pieces.add(TiledRenderedGuiPiece(173 - it * 18, 7, 18, 18, 1, 4,
                             BasicTeslaGuiContainer.MACHINE_BACKGROUND, 144, 190, null))
+                    }
 
                     return pieces
                 }
@@ -298,6 +305,8 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
     }
 
     protected open fun supportsAddons() = true
+
+    protected open val supportedAddonColumns get() = 1
 
     protected fun <T : BaseAddon> getAddon(addonClass: Class<T>?): T? {
         if (this.addonItems != null && addonClass != null) {
@@ -1008,10 +1017,15 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
 
                 override fun renderState(container: BasicTeslaGuiContainer<*>, state: Int, box: BoundingRectangle) {
                     container.bindDefaultTexture()
+
+                    GlStateManager.enableBlend()
+                    GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA)
+                    GlStateManager.color(1f, 1f, 1f, 1f)
                     container.drawTexturedModalRect(box.left, box.top, 218, when(state % 2) {
                         0 -> 196
                         else -> 210
                     }, 14, 14)
+                    GlStateManager.disableBlend()
                 }
 
                 override fun clicked() {
