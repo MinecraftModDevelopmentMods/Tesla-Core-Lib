@@ -9,6 +9,7 @@ import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.ResourceLocation
 import net.minecraft.world.World
+import net.ndrei.teslacorelib.blocks.AxisAlignedBlock
 import net.ndrei.teslacorelib.blocks.OrientedBlock
 import net.ndrei.teslacorelib.render.selfrendering.ISelfRenderingBlock
 import net.ndrei.teslacorelib.render.selfrendering.TESRProxy
@@ -39,7 +40,7 @@ object SelfRenderingTESR : TileEntitySpecialRenderer<TileEntity>() {
                 try {
                     val state = te.world?.getBlockState(te.pos)
                     val facing = if ((state != null) && (state.block is OrientedBlock<*>)) {
-                        state.getValue(OrientedBlock.FACING)
+                        state.getValue(AxisAlignedBlock.FACING)
                     } else null
 
                     GlStateManager.pushMatrix()

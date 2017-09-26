@@ -36,6 +36,7 @@ import net.minecraftforge.items.IItemHandlerModifiable
 import net.minecraftforge.items.ItemStackHandler
 import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.TeslaCoreLib
+import net.ndrei.teslacorelib.blocks.AxisAlignedBlock
 import net.ndrei.teslacorelib.blocks.OrientedBlock
 import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities
 import net.ndrei.teslacorelib.capabilities.container.IGuiContainerProvider
@@ -579,7 +580,7 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
         get() {
             val state = this.getWorld().getBlockState(this.getPos())
             if (state.block is OrientedBlock<*>) {
-                return state.getValue(OrientedBlock.FACING)
+                return state.getValue(AxisAlignedBlock.FACING)
             }
             return EnumFacing.NORTH
         }

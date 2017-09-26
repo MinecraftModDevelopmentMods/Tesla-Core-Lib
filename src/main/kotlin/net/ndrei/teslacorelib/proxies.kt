@@ -8,6 +8,7 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.discovery.ASMDataTable
+import net.minecraftforge.fml.common.event.FMLConstructionEvent
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
@@ -50,9 +51,16 @@ abstract class BaseProxy(val side: Side) {
     }
 
     @SuppressWarnings("unused")
-    open fun preInit(ev: FMLPreInitializationEvent) {
-        this.asm = ev.asmData
+    open fun construction(ev: FMLConstructionEvent) {
+        this.loadLevel = ProxyLoadLevel.CONSTRUCTION
+        this.asm = ev.asmHarvestedData
         MinecraftForge.EVENT_BUS.register(this)
+
+        InitializeDuringConstructionHandler.process(this.asm, this.container)
+    }
+
+    @SuppressWarnings("unused")
+    open fun preInit(ev: FMLPreInitializationEvent) {
         this.loadLevel = ProxyLoadLevel.PRE_INIT
 
         processPreInitAnnotations(ev.asmData, this.container)
@@ -127,6 +135,7 @@ class ServerProxy: CommonProxy(Side.SERVER)
 
 enum class ProxyLoadLevel(val info: String) {
     INITIAL("[n/a]"),
+    CONSTRUCTION("mod construction"),
     PRE_INIT("mod pre initialization"),
     BLOCKS("blocks registry event"),
     ITEMS("items registry event"),

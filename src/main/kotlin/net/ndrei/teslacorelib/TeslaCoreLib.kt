@@ -5,6 +5,7 @@ import net.minecraft.item.ItemStack
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.SidedProxy
+import net.minecraftforge.fml.common.event.FMLConstructionEvent
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
@@ -17,6 +18,7 @@ import net.ndrei.teslacorelib.energy.systems.TeslaSystem
 import net.ndrei.teslacorelib.items.TeslaWrench
 import net.ndrei.teslacorelib.netsync.ITeslaCorePackets
 import net.ndrei.teslacorelib.netsync.TeslaCorePackets
+import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
 /**
@@ -35,7 +37,8 @@ object TeslaCoreLib : IModConfigFlagsProvider {
     override val modConfigFlags = this.config
 
     // just as a 'proxy' for old code
-    const val MODID = MOD_ID
+    @Deprecated("Use the global constant MOD_ID instead.")
+    const val MODID = MOD_ID // TODO: remove this
 
     val network: ITeslaCorePackets = TeslaCorePackets(MOD_ID)
 
@@ -47,10 +50,15 @@ object TeslaCoreLib : IModConfigFlagsProvider {
         get() = net.minecraftforge.fml.common.FMLCommonHandler.instance().effectiveSide?.isClient ?: false
 
     @Mod.EventHandler
-    fun preInit(event: FMLPreInitializationEvent) {
-        this.logger = event.modLog
-        this.config.init(event.suggestedConfigurationFile)
+    fun construct(event: FMLConstructionEvent) {
+        this.logger = LogManager.getLogger(Loader.instance().activeModContainer()!!.modId)
 
+        this.proxy.construction(event)
+    }
+
+    @Mod.EventHandler
+    fun preInit(event: FMLPreInitializationEvent) {
+        this.config.init(event.suggestedConfigurationFile)
         RFPowerProxy.isRFAvailable = Loader.isModLoaded(RFPowerProxy.MODID)
 
         this.proxy.preInit(event)
