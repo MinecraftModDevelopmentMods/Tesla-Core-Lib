@@ -32,7 +32,7 @@ import net.ndrei.teslacorelib.tileentities.SidedTileEntity
  */
 abstract class OrientedBlock<T : SidedTileEntity>
     protected constructor(modId: String, tab: CreativeTabs?, registryName: String, private val teClass: Class<T>, material: Material)
-        : RegisteredBlock(modId, tab, registryName, material), ITileEntityProvider {
+        : AxisAlignedBlock(modId, tab, registryName, material), ITileEntityProvider {
     protected constructor(modId: String, tab: CreativeTabs, registryName: String, teClass: Class<T>)
         : this(modId, tab, registryName, teClass, Material.ROCK)
 
