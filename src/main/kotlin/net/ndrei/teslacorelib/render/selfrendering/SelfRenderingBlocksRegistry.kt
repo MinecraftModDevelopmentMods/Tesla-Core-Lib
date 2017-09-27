@@ -77,6 +77,15 @@ object SelfRenderingBlocksRegistry {
                         "facing=south" -> SelfRenderingModel(block, getTransform(0, 180)) // EnumFacing.SOUTH))
                         "facing=east" -> SelfRenderingModel(block, getTransform(0, 90)) // EnumFacing.EAST))
                         "facing=west" -> SelfRenderingModel(block, getTransform(0, 270)) // EnumFacing.WEST))
+                        // TODO: quick hack for nebb... should fix this with an interface
+                        "facing=north,flip_up_down=false" -> SelfRenderingModel(block, getTransform(0, 0)) // EnumFacing.NORTH))
+                        "facing=south,flip_up_down=false" -> SelfRenderingModel(block, getTransform(0, 180)) // EnumFacing.SOUTH))
+                        "facing=east,flip_up_down=false" -> SelfRenderingModel(block, getTransform(0, 90)) // EnumFacing.EAST))
+                        "facing=west,flip_up_down=false" -> SelfRenderingModel(block, getTransform(0, 270)) // EnumFacing.WEST))
+                        "facing=north,flip_up_down=true" -> SelfRenderingModel(block, getTransform(180, 0)) // EnumFacing.NORTH))
+                        "facing=south,flip_up_down=true" -> SelfRenderingModel(block, getTransform(180, 180)) // EnumFacing.SOUTH))
+                        "facing=east,flip_up_down=true" -> SelfRenderingModel(block, getTransform(180, 90)) // EnumFacing.EAST))
+                        "facing=west,flip_up_down=true" -> SelfRenderingModel(block, getTransform(180, 270)) // EnumFacing.WEST))
                         else -> SelfRenderingModel(block, TRSRTransformation.identity())
                     }
                 }
