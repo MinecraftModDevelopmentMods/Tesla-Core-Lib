@@ -1,5 +1,6 @@
 package net.ndrei.teslacorelib.render
 
+import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
@@ -143,7 +144,9 @@ object HudInfoRenderer : TileEntitySpecialRenderer<TileEntity>() {
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA)
         GlStateManager.disableLighting()
         GlStateManager.disableTexture2D()
+        GlStateManager.depthMask(false)
         tessellator.draw()
+        GlStateManager.depthMask(true)
         GlStateManager.enableTexture2D()
         GlStateManager.enableLighting()
         GlStateManager.disableBlend()

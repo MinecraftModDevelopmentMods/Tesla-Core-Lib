@@ -53,9 +53,11 @@ object WorkingAreaRenderer : TileEntitySpecialRenderer<TileEntity>() {
         GlStateManager.enableAlpha()
         GlStateManager.enableBlend()
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA)
+        GlStateManager.depthMask(false)
 
         this.renderCubeFaces(box)
 
+        GlStateManager.depthMask(true)
         GlStateManager.glLineWidth(1f)
         GlStateManager.color(1f, 1f, 1f, 1f)
         GlStateManager.enableLighting()
