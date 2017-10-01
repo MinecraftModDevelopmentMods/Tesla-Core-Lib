@@ -38,6 +38,8 @@ abstract class MultiPartBlock(modId: String, tab: CreativeTabs?, registryName: S
     override fun isFullCube(state: IBlockState?) = false
     override fun isFullBlock(state: IBlockState?) = false
 
+    override fun getUseNeighborBrightness(state: IBlockState?) = true
+
     override fun doesSideBlockRendering(state: IBlockState?, world: IBlockAccess?, pos: BlockPos?, face: EnumFacing?) = false
     override fun shouldSideBeRendered(blockState: IBlockState?, blockAccess: IBlockAccess?, pos: BlockPos?, side: EnumFacing?) = true
 
@@ -92,9 +94,9 @@ abstract class MultiPartBlock(modId: String, tab: CreativeTabs?, registryName: S
 
     @SideOnly(Side.CLIENT)
     override fun getSelectedBoundingBox(state: IBlockState, world: World, pos: BlockPos): AxisAlignedBB {
-        val player = Minecraft.getMinecraft().player
-        val trace = rayTrace(world, pos, player, player.getHeldItem())
-        // val trace = Minecraft.getMinecraft().objectMouseOver
+//        val player = Minecraft.getMinecraft().player
+//        val trace = rayTrace(world, pos, player, player.getHeldItem())
+        val trace = Minecraft.getMinecraft().objectMouseOver
         if (trace == null || trace.subHit < 0 || pos != trace.blockPos) {
             return FULL_BLOCK_AABB
         }

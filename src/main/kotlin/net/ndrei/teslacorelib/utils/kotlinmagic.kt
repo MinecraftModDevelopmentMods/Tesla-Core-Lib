@@ -9,7 +9,7 @@ fun<E> MutableList<E>.alsoAdd(vararg thing: E) = this.also { it.addAll(thing) }
 
 fun EntityPlayer.getHeldItem(): ItemStack =
     when (this.activeHand) {
-        EnumHand.MAIN_HAND -> this.heldItemMainhand
+        // EnumHand.MAIN_HAND -> this.heldItemMainhand
         EnumHand.OFF_HAND -> this.heldItemOffhand
-        else -> ItemStack.EMPTY
+        else -> this.heldItemMainhand
     }

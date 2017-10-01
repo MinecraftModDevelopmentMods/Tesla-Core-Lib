@@ -74,11 +74,13 @@ class RawCube(val p1: Vec3d, val p2: Vec3d, val sprite: TextureAtlasSprite? = nu
         }
     }
 
-//    fun setFace(face: EnumFacing, u1: Float, v1: Float, u2: Float, v2: Float, bothSides: Boolean = false, sprite: TextureAtlasSprite? = null, color: Int = -1): RawCube {
-//        this.map[face] = (sprite ?: this.sprite ?: throw Exception("Missing texture sprite for face $face."))
-//                .buildInfo(u1, v1, u2, v2, bothSides, color)
-//        return this
-//    }
+    fun addMissingFaces(): RawCube {
+        EnumFacing.VALUES.forEach {
+            if (!this.map.containsKey(it))
+                this.addFace(it)
+        }
+        return this
+    }
 
     fun bake(quads: MutableList<BakedQuad>, format: VertexFormat, transform: TRSRTransformation, matrix: Matrix4d? = null) {
         val rawrs = mutableListOf<RawQuad>()
