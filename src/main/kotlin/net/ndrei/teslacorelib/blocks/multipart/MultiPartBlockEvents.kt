@@ -1,9 +1,5 @@
 package net.ndrei.teslacorelib.blocks.multipart
 
-import net.minecraft.block.material.Material
-import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.client.renderer.RenderGlobal
-import net.minecraft.util.math.Vec3d
 import net.minecraftforge.client.event.DrawBlockHighlightEvent
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
