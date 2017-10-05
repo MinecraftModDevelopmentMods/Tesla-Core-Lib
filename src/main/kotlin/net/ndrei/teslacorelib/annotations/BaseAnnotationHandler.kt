@@ -44,7 +44,7 @@ abstract class BaseAnnotationHandler<in T> protected constructor(val handler: (t
                 val c = try {
                     Class.forName(it.className)
                 } catch (e: ClassNotFoundException) {
-                    TeslaCoreLib.logger.error("Annotated class '${it.className}' not found!", e)
+                    TeslaCoreLib.logger.warn("Annotated class '${it.className}' not found!")
                     null
                 }
 
