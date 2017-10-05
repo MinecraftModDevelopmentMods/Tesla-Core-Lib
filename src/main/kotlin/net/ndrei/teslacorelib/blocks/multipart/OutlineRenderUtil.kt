@@ -27,13 +27,13 @@ object OutlineRenderUtil {
             else part.getHoverOutlineColor(event.player.world, event.target.blockPos, targetState, event.player, stack)
                 , true)
 
-            RenderGlobal.drawSelectionBoundingBox(aabb.grow(1.0 / 32.0).offset(offset),
+            RenderGlobal.drawSelectionBoundingBox(aabb.grow(1.0 / 32.0), //.offset(offset),
                 color.red.toFloat() / 255f,
                 color.green.toFloat() / 255f,
                 color.blue.toFloat() / 255f,
                 color.alpha.toFloat() / 255f)
             return@renderOutline true
-        }, false, part)
+        }, true, part)
 
     fun renderOutline(event: DrawBlockHighlightEvent,
                       renderCallback: (offset: Vec3d) -> Boolean,
@@ -58,8 +58,16 @@ object OutlineRenderUtil {
             if (translateOffset) {
                 GlStateManager.pushMatrix()
                 GlStateManager.translate(offset.x, offset.y, offset.z)
+//                val state = event.player.world.getBlockState(event.target.blockPos)
+//                val block = state.block as? IProvideVariantTransform
+//                if (block != null) {
+//                    val transform = block.getTransform(state.getPropertyString()).matrix
+//                    GlStateManager.multMatrix(transform.toFloatBuffer())
+//                }
             }
+
             rendered = renderCallback(offset)
+
             if (translateOffset) {
                 GlStateManager.popMatrix()
             }

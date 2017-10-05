@@ -7,6 +7,7 @@
 - update forge version
 
 #1.0.10
+- improved self baked block support 
 
 #1.0.9
 - completely changed how tile entities sync stuff from server to client (should be like 99.9% less network traffic now)

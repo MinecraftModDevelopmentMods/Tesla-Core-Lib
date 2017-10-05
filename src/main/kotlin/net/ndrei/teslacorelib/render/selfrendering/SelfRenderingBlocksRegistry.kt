@@ -32,6 +32,12 @@ object SelfRenderingBlocksRegistry {
         }
     }
 
+    fun addBlock(block: ISelfRenderingBlock) {
+        if (TeslaCoreLib.isClientSide) {
+            SelfRenderingModelLoader.addBlock(block)
+        }
+    }
+
     @SideOnly(Side.CLIENT)
     object SelfRenderingModelLoader: ICustomModelLoader {
         private val blocks = mutableListOf<ISelfRenderingBlock>()
@@ -46,6 +52,10 @@ object SelfRenderingBlocksRegistry {
             object: BaseAnnotationHandler<ISelfRenderingBlock>({ it, _, _ ->
                 this.blocks.add(it)
             }, SelfRenderingBlock::class) {}.process(asm, container)
+        }
+
+        fun addBlock(block: ISelfRenderingBlock) {
+            this.blocks.add(block)
         }
 
         @SubscribeEvent
@@ -73,20 +83,18 @@ object SelfRenderingBlocksRegistry {
                 if (modelLocation is ModelResourceLocation) {
                     return when (modelLocation.variant) {
                         "inventory" -> SelfRenderingInventoryModel(block)
-                        "facing=north" -> SelfRenderingModel(block, getTransform(0, 0)) // EnumFacing.NORTH))
-                        "facing=south" -> SelfRenderingModel(block, getTransform(0, 180)) // EnumFacing.SOUTH))
-                        "facing=east" -> SelfRenderingModel(block, getTransform(0, 90)) // EnumFacing.EAST))
-                        "facing=west" -> SelfRenderingModel(block, getTransform(0, 270)) // EnumFacing.WEST))
-                        // TODO: quick hack for nebb... should fix this with an interface
-                        "facing=north,flip_up_down=false" -> SelfRenderingModel(block, getTransform(0, 0)) // EnumFacing.NORTH))
-                        "facing=south,flip_up_down=false" -> SelfRenderingModel(block, getTransform(0, 180)) // EnumFacing.SOUTH))
-                        "facing=east,flip_up_down=false" -> SelfRenderingModel(block, getTransform(0, 90)) // EnumFacing.EAST))
-                        "facing=west,flip_up_down=false" -> SelfRenderingModel(block, getTransform(0, 270)) // EnumFacing.WEST))
-                        "facing=north,flip_up_down=true" -> SelfRenderingModel(block, getTransform(180, 0)) // EnumFacing.NORTH))
-                        "facing=south,flip_up_down=true" -> SelfRenderingModel(block, getTransform(180, 180)) // EnumFacing.SOUTH))
-                        "facing=east,flip_up_down=true" -> SelfRenderingModel(block, getTransform(180, 90)) // EnumFacing.EAST))
-                        "facing=west,flip_up_down=true" -> SelfRenderingModel(block, getTransform(180, 270)) // EnumFacing.WEST))
-                        else -> SelfRenderingModel(block, TRSRTransformation.identity())
+                        else -> {
+                            if (block is IProvideVariantTransform) {
+                                return SelfRenderingModel(block, block.getTransform(modelLocation.variant))
+                            }
+                            return when (modelLocation.variant) {
+                                "facing=north" -> SelfRenderingModel(block, getTransform(0, 0)) // EnumFacing.NORTH))
+                                "facing=south" -> SelfRenderingModel(block, getTransform(0, 180)) // EnumFacing.SOUTH))
+                                "facing=east" -> SelfRenderingModel(block, getTransform(0, 90)) // EnumFacing.EAST))
+                                "facing=west" -> SelfRenderingModel(block, getTransform(0, 270)) // EnumFacing.WEST))
+                                else -> SelfRenderingModel(block, TRSRTransformation.identity())
+                            }
+                        }
                     }
                 }
                 else return SelfRenderingInventoryModel(block)

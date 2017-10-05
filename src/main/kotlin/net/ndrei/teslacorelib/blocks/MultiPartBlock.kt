@@ -25,7 +25,7 @@ import net.ndrei.teslacorelib.blocks.multipart.MultiPartRayTraceResult
 import net.ndrei.teslacorelib.utils.getHeldItem
 
 abstract class MultiPartBlock(modId: String, tab: CreativeTabs?, registryName: String, material: Material)
-    : AxisAlignedBlock(modId, tab, registryName, material) {
+    : RegisteredBlock(modId, tab, registryName, material) {
 
     protected open fun getParts(world: World, pos: BlockPos): List<IBlockPart> {
         val te = world.getTileEntity(pos)
