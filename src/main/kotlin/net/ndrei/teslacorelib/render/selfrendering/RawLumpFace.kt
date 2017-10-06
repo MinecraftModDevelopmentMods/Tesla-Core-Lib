@@ -16,7 +16,7 @@ class RawLumpFace(points: Array<Vec3d>, uvs: Array<Vec2f>, private val sprite: T
             throw IllegalArgumentException("Only accepting faces with 3 or 4 points.")
         }
 
-        if (points.size != uvs.size) {
+        if ((uvs.size != 3) && (uvs.size != 4)) { // (points.size != uvs.size) {
             throw IllegalArgumentException("Number of points must be the same as the number of texture points.")
         }
 
