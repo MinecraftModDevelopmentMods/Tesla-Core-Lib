@@ -10,6 +10,7 @@ import net.minecraftforge.common.model.TRSRTransformation
 import javax.vecmath.Matrix4d
 import javax.vecmath.Vector4d
 
+@Suppress("MemberVisibilityCanPrivate")
 class RawQuad(
         val p1: Vec3d, val u1: Float, val v1: Float,
         val p2: Vec3d, val u2: Float, val v2: Float,
@@ -18,8 +19,8 @@ class RawQuad(
         val side: EnumFacing, val sprite: TextureAtlasSprite, val color: Int,
         val transform: TRSRTransformation?) {
 
-    fun Float.u() = sprite.getInterpolatedU(this.toDouble()/* / 16.0 * sprite.iconWidth*/)
-    fun Float.v() = sprite.getInterpolatedV(this.toDouble()/* / 16.0 * sprite.iconHeight*/)
+    private fun Float.u() = this@RawQuad.sprite.getInterpolatedU(this.toDouble()/* / 16.0 * sprite.iconWidth*/)
+    private fun Float.v() = this@RawQuad.sprite.getInterpolatedV(this.toDouble()/* / 16.0 * sprite.iconHeight*/)
 
     fun bake(format: VertexFormat): BakedQuad {
         val normal = Vec3d(side.frontOffsetX.toDouble(), side.frontOffsetY.toDouble(), side.frontOffsetZ.toDouble())
