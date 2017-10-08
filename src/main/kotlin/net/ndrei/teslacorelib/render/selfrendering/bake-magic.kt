@@ -58,11 +58,18 @@ fun Pair<Vec3d, Vec3d>.chamfers(axis: EnumFacing.Axis, size: Double, chamfer: Fl
 
     val corners = this.corners(axis, size)
 
-    lumps.add(RawLump.chamfer(corners[0], axis, EnumFacing.AxisDirection.NEGATIVE, EnumFacing.AxisDirection.NEGATIVE, chamfer, sprite))
-    lumps.add(RawLump.chamfer(corners[3], axis, EnumFacing.AxisDirection.NEGATIVE, EnumFacing.AxisDirection.POSITIVE, chamfer, sprite))
-    lumps.add(RawLump.chamfer(corners[2], axis, EnumFacing.AxisDirection.POSITIVE, EnumFacing.AxisDirection.POSITIVE, chamfer, sprite))
-    lumps.add(RawLump.chamfer(corners[1], axis, EnumFacing.AxisDirection.POSITIVE, EnumFacing.AxisDirection.NEGATIVE, chamfer, sprite))
-
+    if (axis != EnumFacing.Axis.Y) {
+        lumps.add(RawLump.chamfer(corners[0], axis, EnumFacing.AxisDirection.NEGATIVE, EnumFacing.AxisDirection.NEGATIVE, chamfer, sprite))
+        lumps.add(RawLump.chamfer(corners[1], axis, EnumFacing.AxisDirection.POSITIVE, EnumFacing.AxisDirection.NEGATIVE, chamfer, sprite))
+        lumps.add(RawLump.chamfer(corners[2], axis, EnumFacing.AxisDirection.POSITIVE, EnumFacing.AxisDirection.POSITIVE, chamfer, sprite))
+        lumps.add(RawLump.chamfer(corners[3], axis, EnumFacing.AxisDirection.NEGATIVE, EnumFacing.AxisDirection.POSITIVE, chamfer, sprite))
+    }
+    else {
+        lumps.add(RawLump.chamfer(corners[0], axis, EnumFacing.AxisDirection.NEGATIVE, EnumFacing.AxisDirection.NEGATIVE, chamfer, sprite))
+        lumps.add(RawLump.chamfer(corners[1], axis, EnumFacing.AxisDirection.NEGATIVE, EnumFacing.AxisDirection.POSITIVE, chamfer, sprite))
+        lumps.add(RawLump.chamfer(corners[2], axis, EnumFacing.AxisDirection.POSITIVE, EnumFacing.AxisDirection.POSITIVE, chamfer, sprite))
+        lumps.add(RawLump.chamfer(corners[3], axis, EnumFacing.AxisDirection.POSITIVE, EnumFacing.AxisDirection.NEGATIVE, chamfer, sprite))
+    }
     return lumps
 }
 

@@ -157,33 +157,33 @@ class RawLump : IBakery, IBakeable, IDrawable {
                 }
                 EnumFacing.Axis.Y -> {
                     if (!c1.second.equals(c2.first)) {
-                        lump.addFace((c1 to c2).getYFace(from.y, to.y), uvs, sprite, EnumFacing.NORTH)
+                        lump.addFace((c1 to c2).getYFace(from.y, to.y), uvs, sprite, EnumFacing.WEST)
                     }
                     if (!c2.second.equals(c3.first)) {
-                        lump.addFace((c2 to c3).getYFace(from.y, to.y), uvs, sprite, EnumFacing.EAST)
+                        lump.addFace((c2 to c3).getYFace(from.y, to.y), uvs, sprite, EnumFacing.SOUTH)
                     }
                     if (!c3.second.equals(c4.first)) {
-                        lump.addFace((c3 to c4).getYFace(from.y, to.y), uvs, sprite, EnumFacing.SOUTH)
+                        lump.addFace((c3 to c4).getYFace(from.y, to.y), uvs, sprite, EnumFacing.EAST)
                     }
                     if (!c4.second.equals(c1.first)) {
-                        lump.addFace((c4 to c1).getYFace(from.y, to.y), uvs, sprite, EnumFacing.WEST)
+                        lump.addFace((c4 to c1).getYFace(from.y, to.y), uvs, sprite, EnumFacing.NORTH)
                     }
                     lump.addFace((chamfer to chamfer).getYFace(from.y, to.y).reversedArray(), uvs, sprite, EnumFacing.UP) // TODO: use correct face)
                 }
                 EnumFacing.Axis.Z -> {
                     if (!c1.second.equals(c2.first)) {
-                        lump.addFace((c1 to c2).getZFace(from.z, to.z), uvs, sprite, EnumFacing.WEST)
+                        lump.addFace((c1 to c2).getZFace(from.z, to.z).reversedArray(), uvs, sprite, EnumFacing.WEST)
                     }
                     if (!c2.second.equals(c3.first)) {
-                        lump.addFace((c2 to c3).getZFace(from.z, to.z), uvs, sprite, EnumFacing.UP)
+                        lump.addFace((c2 to c3).getZFace(from.z, to.z).reversedArray(), uvs, sprite, EnumFacing.UP)
                     }
                     if (!c3.second.equals(c4.first)) {
-                        lump.addFace((c3 to c4).getZFace(from.z, to.z), uvs, sprite, EnumFacing.EAST)
+                        lump.addFace((c3 to c4).getZFace(from.z, to.z).reversedArray(), uvs, sprite, EnumFacing.EAST)
                     }
                     if (!c4.second.equals(c1.first)) {
-                        lump.addFace((c4 to c1).getZFace(from.z, to.z), uvs, sprite, EnumFacing.DOWN)
+                        lump.addFace((c4 to c1).getZFace(from.z, to.z).reversedArray(), uvs, sprite, EnumFacing.DOWN)
                     }
-                    lump.addFace((chamfer to chamfer).getZFace(from.z, to.z).reversedArray(), uvs, sprite, EnumFacing.UP) // TODO: use correct face)
+                    lump.addFace((chamfer to chamfer).getZFace(from.z, to.z), uvs, sprite, EnumFacing.UP) // TODO: use correct face)
                 }
             }
 
