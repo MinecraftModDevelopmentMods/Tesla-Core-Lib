@@ -9,8 +9,10 @@ import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.ResourceLocation
 import net.minecraft.world.World
+import net.minecraftforge.fml.client.registry.ClientRegistry
+import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.relauncher.SideOnly
 import net.ndrei.teslacorelib.blocks.AxisAlignedBlock
-import net.ndrei.teslacorelib.blocks.OrientedBlock
 import net.ndrei.teslacorelib.render.selfrendering.ISelfRenderingBlock
 import net.ndrei.teslacorelib.render.selfrendering.TESRProxy
 
@@ -39,7 +41,7 @@ object SelfRenderingTESR : TileEntitySpecialRenderer<TileEntity>() {
                 Minecraft.getMinecraft().mcProfiler.startSection("SelfRenderingTESR")
                 try {
                     val state = te.world?.getBlockState(te.pos)
-                    val facing = if ((state != null) && (state.block is OrientedBlock<*>)) {
+                    val facing = if ((state != null) && (state.block is AxisAlignedBlock)) {
                         state.getValue(AxisAlignedBlock.FACING)
                     } else null
 
@@ -47,10 +49,10 @@ object SelfRenderingTESR : TileEntitySpecialRenderer<TileEntity>() {
 
                     GlStateManager.translate(x.toFloat() + 0.5f, y.toFloat() + 1.0f, z.toFloat() + 0.5f)
                     when (facing) {
-                        null -> {
-                            GlStateManager.rotate(120f, 0.0f, 1.0f, 0.0f)
-                            GlStateManager.rotate(30f, 0.0f, 0.0f, 1.0f)
-                        }
+//                        null -> {
+//                            GlStateManager.rotate(120f, 0.0f, 1.0f, 0.0f)
+//                            GlStateManager.rotate(30f, 0.0f, 0.0f, 1.0f)
+//                        }
                         EnumFacing.NORTH -> GlStateManager.rotate(180f, 0.0f, 1.0f, 0.0f)
                         EnumFacing.WEST -> GlStateManager.rotate(-90f, 0.0f, 1.0f, 0.0f)
                         EnumFacing.EAST -> GlStateManager.rotate(90f, 0.0f, 1.0f, 0.0f)
@@ -72,5 +74,10 @@ object SelfRenderingTESR : TileEntitySpecialRenderer<TileEntity>() {
         }
 
         super.render(te, x, y, z, partialTicks, destroyStage, alpha)
+    }
+
+    @SideOnly(Side.CLIENT)
+    fun registerFor(teClass: Class<out TileEntity>) {
+        ClientRegistry.bindTileEntitySpecialRenderer(teClass, this)
     }
 }
