@@ -57,6 +57,7 @@ abstract class BaseProxy(val side: Side) {
         MinecraftForge.EVENT_BUS.register(this)
 
         InitializeDuringConstructionHandler.process(this.asm, this.container)
+        this.processRegistryHandlers { it.construct(this.asm) }
     }
 
     @SuppressWarnings("unused")

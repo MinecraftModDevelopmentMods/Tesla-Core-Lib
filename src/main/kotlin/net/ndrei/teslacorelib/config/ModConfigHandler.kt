@@ -10,7 +10,7 @@ import java.io.File
 import java.io.FileWriter
 
 @Suppress("unused")
-class ModConfigHandler(private val modId: String, private val modClass: Class<*>, private val logger: Logger, modConfigurationDirectory: File) {
+class ModConfigHandler(private val modId: String, private val modClass: Class<*>, private val logger: Logger, modConfigurationDirectory: File, private val modVersion: String? = null) {
     val configFolder: File
 
     init {
@@ -21,6 +21,10 @@ class ModConfigHandler(private val modId: String, private val modClass: Class<*>
     fun readExtraRecipesFile(fileName: String, callback: (json: JsonObject) -> Unit) {
         val GSON = GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create()
         val config = File(this.configFolder, "$fileName-base.json")
+
+        if (config.exists() && (System.getProperty("teslaDev", "false").toLowerCase() == "true")) {
+            config.delete()
+        }
 
         if (!config.exists()) {
             val stream = this.modClass.getResourceAsStream("/assets/${this.modId}/extra-recipes/$fileName.json")

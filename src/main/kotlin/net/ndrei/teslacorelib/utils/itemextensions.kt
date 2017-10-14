@@ -16,7 +16,8 @@ fun ItemStack.equalsIgnoreSizeAndNBT(b: ItemStack) = ItemStackUtil.areEqualIgnor
 
 fun IItemHandler.getCombinedInventory() = ItemStackUtil.getCombinedInventory(this)
 
-fun IItemHandler.extractFromCombinedInventory(stack: ItemStack, amount: Int) = ItemStackUtil.extractFromCombinedInventory(this, stack, amount)
+fun IItemHandler.extractFromCombinedInventory(stack: ItemStack, amount: Int, simulate: Boolean = false) =
+    ItemStackUtil.extractFromCombinedInventory(this, stack, amount, simulate)
 
 fun IItemHandler.insertInExistingStacks(stack: ItemStack, simulate: Boolean) = ItemStackUtil.insertItemInExistingStacks(this, stack, simulate)
 
