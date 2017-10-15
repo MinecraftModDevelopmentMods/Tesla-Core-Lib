@@ -800,7 +800,11 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
         if (markDirty) {
             this.markDirty()
         }
+
+        this.onSyncPartUpdated(key)
     }
+
+    protected open fun onSyncPartUpdated(key: String) {}
 
     private fun testSync() {
         if (this.syncTick >= SYNC_ON_TICK) {

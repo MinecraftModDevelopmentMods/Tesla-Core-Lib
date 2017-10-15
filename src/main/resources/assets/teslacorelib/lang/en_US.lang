@@ -60,7 +60,7 @@ gui.teslacorelib.work_energy.work_energy_buffer=Work Energy Buffer
 gui.teslacorelib.work_energy.work_energy_line_1=%s of %s
 gui.teslacorelib.work_energy.work_energy_line_2=max: %s / tick
 gui.teslacorelib.work_energy.work_energy_line_3=~ every %s ticks
-
+gui.teslacorelib.work_energy.waiting_for_work=Waiting For Work
 
 #core lib side config buttons
 gui.teslacorelib.side_config.energy=Energy
