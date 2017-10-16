@@ -16,7 +16,7 @@ class RawQuad(
         val p3: Vec3d, val u3: Float, val v3: Float,
         val p4: Vec3d, val u4: Float, val v4: Float,
         val side: EnumFacing, val sprite: TextureAtlasSprite, val color: Int,
-        val transform: TRSRTransformation?) {
+        val transform: TRSRTransformation?, val tintIndex: Int = -1) {
 
     fun Float.u() = sprite.getInterpolatedU(this.toDouble()/* / 16.0 * sprite.iconWidth*/)
     fun Float.v() = sprite.getInterpolatedV(this.toDouble()/* / 16.0 * sprite.iconHeight*/)
@@ -27,6 +27,7 @@ class RawQuad(
         val builder = UnpackedBakedQuad.Builder(format)
         builder.setTexture(this.sprite)
         builder.setQuadOrientation(this.side)
+        builder.setQuadTint(this.tintIndex)
         builder.putVertex(this.sprite, normal, this.p1.x / 32.0, this.p1.y / 32.0, this.p1.z / 32.0, this.u1.u(), this.v1.v(), this.color, this.transform)
         builder.putVertex(this.sprite, normal, this.p2.x / 32.0, this.p2.y / 32.0, this.p2.z / 32.0, this.u2.u(), this.v2.v(), this.color, this.transform)
         builder.putVertex(this.sprite, normal, this.p3.x / 32.0, this.p3.y / 32.0, this.p3.z / 32.0, this.u3.u(), this.v3.v(), this.color, this.transform)
@@ -46,6 +47,6 @@ class RawQuad(
             p2, this.u2, this.v2,
             p3, this.u3, this.v3,
             p4, this.u4, this.v4,
-            this.side, this.sprite, this.color, this.transform)
+            this.side, this.sprite, this.color, this.transform, this.tintIndex)
     }
 }

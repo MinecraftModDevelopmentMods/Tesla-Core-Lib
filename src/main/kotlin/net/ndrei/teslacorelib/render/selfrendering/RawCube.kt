@@ -14,7 +14,7 @@ import javax.vecmath.Matrix4d
 import javax.vecmath.Vector3f
 
 class RawCube(val p1: Vec3d, val p2: Vec3d, val sprite: TextureAtlasSprite? = null)
-    : IBakery {
+    : IBakery, IRawFigure {
     override fun getQuads(state: IBlockState?, stack: ItemStack?, side: EnumFacing?, vertexFormat: VertexFormat, transform: TRSRTransformation)
             = mutableListOf<BakedQuad>().also { this.bake(it, vertexFormat, transform) }
 
@@ -22,6 +22,44 @@ class RawCube(val p1: Vec3d, val p2: Vec3d, val sprite: TextureAtlasSprite? = nu
     private var lastSide: EnumFacing? = null
     private var autoUVFlag = false
     private var dualSideFlag = false
+
+    override fun getFaces(): List<IRawFace> = this.map.map {
+        object : IRawFace {
+            private lateinit var facing: EnumFacing
+            private lateinit var side: RawCubeSideInfo
+
+            override val face: EnumFacing
+                get() = this.facing
+
+            override var tintIndex: Int
+                get() = this.side.tint
+                set(value) {
+                    this.side.tint = value
+                }
+
+            override var sprite: TextureAtlasSprite?
+                get() = this.side.sprite ?: Minecraft.getMinecraft().textureMapBlocks.missingSprite
+                set(value) {
+                    this.side.sprite = value
+                }
+
+            override fun clone() = TODO("this should never happen!")
+
+            fun initialize(facing: EnumFacing, side: RawCubeSideInfo) = this.also {
+                this.facing = facing
+                this.side = side
+            }
+        }.initialize(it.key, it.value)
+    }
+
+    override fun clone(sprite: TextureAtlasSprite?, reTexture: Boolean) = RawCube(this.p1, this.p2, this.sprite).also {
+        this.map.forEach { pair ->
+            it.map[pair.key] = pair.value.clone()
+            if (reTexture || (sprite != null)) {
+                it.map[pair.key]!!.sprite = sprite
+            }
+        }
+    }
 
     fun addFace(face: EnumFacing) = this.also {
         this.map[face] = RawCubeSideInfo()
@@ -66,6 +104,10 @@ class RawCube(val p1: Vec3d, val p2: Vec3d, val sprite: TextureAtlasSprite? = nu
         this.getLastSideInfo().color = color
     }
 
+    fun tint(tint: Int) = this.also {
+        this.getLastSideInfo().tint = tint
+    }
+
     fun dualSide(flag: Boolean = true) = this.also {
         if (this.lastSide != null) {
             this.getLastSideInfo().bothSides = flag
@@ -82,7 +124,7 @@ class RawCube(val p1: Vec3d, val p2: Vec3d, val sprite: TextureAtlasSprite? = nu
         return this
     }
 
-    fun bake(quads: MutableList<BakedQuad>, format: VertexFormat, transform: TRSRTransformation, matrix: Matrix4d? = null) {
+    override fun bake(quads: MutableList<BakedQuad>, format: VertexFormat, transform: TRSRTransformation, matrix: Matrix4d?) {
         val rawrs = mutableListOf<RawQuad>()
 
         val p1 = Vector3f(this.p1.x.toFloat(), this.p1.y.toFloat(), this.p1.z.toFloat())
@@ -107,13 +149,13 @@ class RawCube(val p1: Vec3d, val p2: Vec3d, val sprite: TextureAtlasSprite? = nu
                 rawrs.addDoubleFace(tface, sprite, info.color,
                         Vec3d(v1.x.toDouble(), v1.y.toDouble(), v1.z.toDouble()),
                         Vec3d(v2.x.toDouble(), v2.y.toDouble(), v2.z.toDouble()),
-                        info.from, info.to, transform)
+                        info.from, info.to, transform, info.tint)
             }
             else {
                 rawrs.addSingleFace(tface, sprite, info.color,
                         Vec3d(v1.x.toDouble(), v1.y.toDouble(), v1.z.toDouble()),
                         Vec3d(v2.x.toDouble(), v2.y.toDouble(), v2.z.toDouble()),
-                        info.from, info.to, transform)
+                        info.from, info.to, transform, info.tint)
             }
         }
 

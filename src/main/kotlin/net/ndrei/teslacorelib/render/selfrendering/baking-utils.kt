@@ -44,13 +44,13 @@ fun MutableList<RawQuad>.addQuad(side: EnumFacing, sprite: TextureAtlasSprite, c
                                  x2: Double, y2: Double, z2: Double, u2: Float, v2: Float,
                                  x3: Double, y3: Double, z3: Double, u3: Float, v3: Float,
                                  x4: Double, y4: Double, z4: Double, u4: Float, v4: Float,
-                                 transform: TRSRTransformation?) {
+                                 transform: TRSRTransformation?, tintIndex: Int = -1) {
     this.add(RawQuad(
             Vec3d(x1, y1, z1), u1, v1,
             Vec3d(x2, y2, z2), u2, v2,
             Vec3d(x3, y3, z3), u3, v3,
             Vec3d(x4, y4, z4), u4, v4,
-            side, sprite, color, transform))
+            side, sprite, color, transform, tintIndex))
 }
 
 fun MutableList<RawQuad>.addDoubleQuad(side: EnumFacing, sprite: TextureAtlasSprite, color: Int,
@@ -58,19 +58,19 @@ fun MutableList<RawQuad>.addDoubleQuad(side: EnumFacing, sprite: TextureAtlasSpr
                                        x2: Double, y2: Double, z2: Double, u2: Float, v2: Float,
                                        x3: Double, y3: Double, z3: Double, u3: Float, v3: Float,
                                        x4: Double, y4: Double, z4: Double, u4: Float, v4: Float,
-                                       transform: TRSRTransformation?) {
+                                       transform: TRSRTransformation?, tintIndex: Int = -1) {
     this.addQuad(side, sprite, color,
             x1, y1, z1, u1, v1,
             x2, y2, z2, u2, v2,
             x3, y3, z3, u3, v3,
             x4, y4, z4, u4, v4,
-            transform)
+            transform, tintIndex)
     this.addQuad(side, sprite, color,
             x4, y4, z4, u4, v4,
             x3, y3, z3, u3, v3,
             x2, y2, z2, u2, v2,
             x1, y1, z1, u1, v1,
-            transform)
+            transform, tintIndex)
 }
 
 fun MutableList<RawQuad>.addFullQuad(side: EnumFacing, sprite: TextureAtlasSprite, color: Int,
@@ -107,7 +107,7 @@ fun MutableList<RawQuad>.addDoubleFace(facing: EnumFacing, sprite: TextureAtlasS
             transform)
 }
 
-fun MutableList<RawQuad>.addDoubleFace(facing: EnumFacing, sprite: TextureAtlasSprite, color: Int, p1: Vec3d, p2: Vec3d, t1: Vec2f, t2: Vec2f, transform: TRSRTransformation?) {
+fun MutableList<RawQuad>.addDoubleFace(facing: EnumFacing, sprite: TextureAtlasSprite, color: Int, p1: Vec3d, p2: Vec3d, t1: Vec2f, t2: Vec2f, transform: TRSRTransformation?, tintIndex: Int = -1) {
     addFace(facing, sprite, color, p1, p2, t1, t2) {
         p1, t1,
         p2, t2,
@@ -119,11 +119,11 @@ fun MutableList<RawQuad>.addDoubleFace(facing: EnumFacing, sprite: TextureAtlasS
                 p2.x, p2.y, p2.z, t2.x, t2.y,
                 p3.x, p3.y, p3.z, t3.x, t3.y,
                 p4.x, p4.y, p4.z, t4.x, t4.y,
-                transform)
+                transform, tintIndex)
     }
 }
 
-fun MutableList<RawQuad>.addSingleFace(facing: EnumFacing, sprite: TextureAtlasSprite, color: Int, p1: Vec3d, p2: Vec3d, t1: Vec2f, t2: Vec2f, transform: TRSRTransformation) {
+fun MutableList<RawQuad>.addSingleFace(facing: EnumFacing, sprite: TextureAtlasSprite, color: Int, p1: Vec3d, p2: Vec3d, t1: Vec2f, t2: Vec2f, transform: TRSRTransformation, tintIndex: Int = -1) {
     addFace(facing, sprite, color, p1, p2, t1, t2) {
         p1, t1,
         p2, t2,
@@ -135,7 +135,7 @@ fun MutableList<RawQuad>.addSingleFace(facing: EnumFacing, sprite: TextureAtlasS
                 p2.x, p2.y, p2.z, t2.x, t2.y,
                 p3.x, p3.y, p3.z, t3.x, t3.y,
                 p4.x, p4.y, p4.z, t4.x, t4.y,
-                transform)
+                transform, tintIndex)
     }
 }
 
