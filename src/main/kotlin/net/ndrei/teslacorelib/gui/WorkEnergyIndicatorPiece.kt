@@ -30,7 +30,7 @@ class WorkEnergyIndicatorPiece(private val provider: IWorkEnergyProvider?, left:
     override fun drawForegroundTopLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, mouseX: Int, mouseY: Int) {
         if (super.isInside(container, mouseX, mouseY) && this.provider != null) {
             val energySystem = EnergyDisplayType.TESLA
-            val lines = mutableListOf(
+            val lines = (if (this@WorkEnergyIndicatorPiece.provider.hasWorkBuffer) mutableListOf(
                 localizeModString(MOD_ID, GUI_WORK_ENERGY, "work energy buffer") {
                     +TextFormatting.DARK_PURPLE
                 },
@@ -48,20 +48,11 @@ class WorkEnergyIndicatorPiece(private val provider: IWorkEnergyProvider?, left:
                     +(this@WorkEnergyIndicatorPiece.provider.workEnergyCapacity / this@WorkEnergyIndicatorPiece.provider.workEnergyTick)
                         .makeTextComponent(TextFormatting.WHITE)
                 }
-            ).map { it.formattedText }
-//            lines.add(String.format("%sWork Energy Buffer", ChatFormatting.DARK_PURPLE))
-//            lines.add(String.format("%s%,d T %sof %s%,d T",
-//                    ChatFormatting.AQUA, this.provider.workEnergyStored,
-//                    ChatFormatting.DARK_GRAY,
-//                    ChatFormatting.RESET, this.provider.workEnergyCapacity))
-//            lines.add(String.format("%smax: %s+%,d T %s/ tick",
-//                    ChatFormatting.GRAY,
-//                    ChatFormatting.AQUA, this.provider.workEnergyTick,
-//                    ChatFormatting.GRAY))
-//            lines.add(String.format("%s~ every %s%,d %sticks",
-//                    ChatFormatting.GRAY,
-//                    ChatFormatting.WHITE, ticks,
-//                    ChatFormatting.GRAY))
+            ) else mutableListOf(
+                localizeModString(MOD_ID, GUI_WORK_ENERGY, "waiting for work") {
+                    +TextFormatting.DARK_RED
+                }
+            )).map { it.formattedText }
 
             container.drawTooltip(lines, mouseX - guiX, mouseY - guiY)
         }

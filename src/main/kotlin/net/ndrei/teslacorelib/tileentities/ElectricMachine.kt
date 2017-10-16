@@ -3,6 +3,7 @@ package net.ndrei.teslacorelib.tileentities
 import net.minecraft.inventory.Slot
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
+import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagInt
 import net.minecraftforge.items.ItemStackHandler
 import net.ndrei.teslacorelib.MOD_ID
@@ -70,15 +71,20 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
         super.addInventoryToStorage(this.energyItems, SYNC_ENERGY_ITEMS)
 
         this.registerSyncTagPart(SYNC_WORK_ENERGY, Consumer {
-            if (this.workEnergy == null) {
-                this.resetWorkEnergyBuffer()
+            if (it.hasKey("is_missing") && it.getBoolean("is_missing")) {
+                this.workEnergy = null
             }
-            this.workEnergy!!.deserializeNBT(it)
+            else {
+                if (this.workEnergy == null) {
+                    this.resetWorkEnergyBuffer(true)
+                }
+                this.workEnergy!!.deserializeNBT(it)
+            }
         }, Supplier {
             if (this.workEnergy != null) {
                 this.workEnergy!!.serializeNBT()
             } else {
-                null
+                NBTTagCompound().also { it.setBoolean("is_missing", true) }
             }
         }, SyncProviderLevel.GUI)
 
@@ -177,14 +183,17 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
         return true
     }
 
+    override val hasWorkBuffer: Boolean
+        get() = (this.workEnergy != null)
+
     override val workEnergyCapacity: Long
-        get() = if (this.workEnergy != null) this.workEnergy!!.capacity else 0
+        get() = this.workEnergy?.capacity ?: 0L
 
     override val workEnergyStored: Long
-        get() = (if (this.workEnergy != null) this.workEnergy!!.stored else 0).toLong()
+        get() = this.workEnergy?.stored ?: 0L
 
     override val workEnergyTick: Long
-        get() = if (this.workEnergy != null) this.workEnergy!!.getEnergyInputRate() else 0
+        get() = this.workEnergy?.getEnergyInputRate() ?: 0L
 
     private val finalEnergyForWork: Int
         get() = Math.round(
@@ -193,16 +202,29 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
                 .fold(this.energyForWork.toFloat()) { energy, it -> energy * it.workEnergyMultiplier }
         )
 
-    private fun resetWorkEnergyBuffer() {
-        this.workEnergy = object : EnergyStorage(this.finalEnergyForWork.toLong(),
+    private fun resetWorkEnergyBuffer(forDeserialization: Boolean = false) {
+        if (forDeserialization) {
+            this.workEnergy = object : EnergyStorage(0L, 0L, 0L) {
+                override fun onChanged(old: Long, current: Long) {
+                    super.onChanged(old, current)
+                    this@ElectricMachine.partialSync(SYNC_WORK_ENERGY)
+                }
+            }
+        }
+        else {
+            val energy = this.getEnergyRequiredForWork()
+            this.workEnergy = if (energy <= 0L) null else object : EnergyStorage(energy,
                 Math.round(this.energyForWorkRate * this.energyForWorkRateMultiplier).toLong(),
-            0) {
-            override fun onChanged(old: Long, current: Long) {
-                super.onChanged(old, current)
-                this@ElectricMachine.partialSync(SYNC_WORK_ENERGY)
+                0) {
+                override fun onChanged(old: Long, current: Long) {
+                    super.onChanged(old, current)
+                    this@ElectricMachine.partialSync(SYNC_WORK_ENERGY)
+                }
             }
         }
     }
+
+    protected open fun getEnergyRequiredForWork() = this.finalEnergyForWork.toLong()
 
     fun updateWorkEnergyRate() {
         if (this.workEnergy != null) {
@@ -235,6 +257,12 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
     public override fun protectedUpdate() {
         if (this.workEnergy == null) {
             this.resetWorkEnergyBuffer()
+            if (workEnergy != null)
+                this.partialSync(ElectricMachine.SYNC_WORK_ENERGY)
+        }
+
+        if (this.workEnergy == null) {
+            return
         }
 
         if (!this.workEnergy!!.isFull) {
@@ -253,13 +281,14 @@ abstract class ElectricMachine protected constructor(typeId: Int) : ElectricTile
             if (work > 0f) {
                 val oldCapacity = this.workEnergy!!.capacity
                 this.resetWorkEnergyBuffer()
-                this.workEnergy!!.givePower(Math.round(oldCapacity * (1 - Math.max(0f, Math.min(1f, work)))).toLong())
+                if ((oldCapacity > 0L) && (this.workEnergy != null)) {
+                    this.workEnergy!!.givePower(Math.round(oldCapacity * (1 - Math.max(0f, Math.min(1f, work)))).toLong())
+                } else {
+                    this.partialSync(ElectricMachine.SYNC_WORK_ENERGY)
+                }
             }
-            // this.workTick = 0
-            // this.lastWorkTicks = this.minimumWorkTicks
             this.setWorkTicks(0)
             this.setLastWorkTicks(this.minimumWorkTicks)
-            // this.forceSync()
         }
     }
 

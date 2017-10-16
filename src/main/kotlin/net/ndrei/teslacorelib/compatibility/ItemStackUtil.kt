@@ -55,7 +55,7 @@ object ItemStackUtil {
         return list
     }
 
-    fun extractFromCombinedInventory(handler: IItemHandler, stack: ItemStack, amount: Int): Int {
+    fun extractFromCombinedInventory(handler: IItemHandler, stack: ItemStack, amount: Int, simulate: Boolean = false): Int {
         if (stack.isEmpty) {
             return 0
         }
@@ -68,7 +68,7 @@ object ItemStackUtil {
                 continue
             }
 
-            val takenStack = handler.extractItem(i, Math.min(result.count, temp.count), false)
+            val takenStack = handler.extractItem(i, Math.min(result.count, temp.count), simulate)
             taken += takenStack.count
             result.shrink(takenStack.count)
             if (result.isEmpty) {

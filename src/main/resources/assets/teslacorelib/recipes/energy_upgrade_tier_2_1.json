@@ -13,6 +13,7 @@
     "g": { "type": "forge:ore_dict", "ore": "gearDiamond" }
   },
   "conditions": [
+    { "type": "minecraft:item_exists", "item": "teslacorelib:base_addon" },
     { "type": "teslacorelib:ore_dict", "ore": "gearDiamond" }
   ]
 }

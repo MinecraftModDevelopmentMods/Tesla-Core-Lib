@@ -23,7 +23,6 @@ class RawLumpFace(points: Array<Vec3d>, uvs: Array<Vec2f>, override var sprite: 
 
         if ((uvs.size != 3) && (uvs.size != 4)) {
             throw IllegalArgumentException("Only accepting faces with 3 or 4 texture points.")
-        }
 
         // TODO: add a test for points == 3 and uvs == 3
 

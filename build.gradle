@@ -84,7 +84,7 @@ repositories {
     jcenter()
     maven { name='forgelin'; url='http://maven.shadowfacts.net' }
 
-    maven { name='tesla'; url='http://maven.epoxide.xyz' }
+    maven { name='tesla'; url='http://maven.mcmoddev.com' }
     maven { name='redstone flux'; url='http://maven.covers1624.net' }
     maven { name='build craft'; url='https://www.mod-buildcraft.com/maven' }
     mavenLocal()

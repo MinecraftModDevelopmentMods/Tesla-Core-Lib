@@ -1,13 +1,18 @@
 #future (1.13)
 - rework how fluid tanks are handled, make similar to item handlers
+- change mod name / id to 'mclib' (Mod Crafters Lib)
 
 #future
 - add java doc stuff
 - add a wiki
 - update forge version
+- add 'recipe' framework + base 'recipe' machine
 
 #1.0.10
-- improved self baked block support 
+- improved self baked block support
+- added IGuiTexture and IGuiIcon helper interfaces
+- added GuiTexture and GuiIcon helper classes
+- added 'isEnabled' member to ButtonPiece and ToggleButtonPiece
 
 #1.0.9
 - completely changed how tile entities sync stuff from server to client (should be like 99.9% less network traffic now)

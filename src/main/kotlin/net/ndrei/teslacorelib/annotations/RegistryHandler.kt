@@ -13,7 +13,8 @@ import net.minecraftforge.registries.IForgeRegistry
 annotation class RegistryHandler(vararg val configFlags: String)
 
 interface IRegistryHandler {
-    fun preInit(asm : ASMDataTable) {}
+    fun construct(asm: ASMDataTable) {}
+    fun preInit(asm: ASMDataTable) {}
     fun init(asm: ASMDataTable) {}
     fun postInit(asm: ASMDataTable) {}
 

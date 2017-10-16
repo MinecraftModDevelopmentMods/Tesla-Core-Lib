@@ -10,7 +10,7 @@ import net.ndrei.teslacorelib.inventory.BoundingRectangle
  * Created by CF on 2017-06-28.
  */
 @Suppress("unused")
-abstract class ToggleButtonPiece(left: Int, top: Int, width: Int, height: Int)
+abstract class ToggleButtonPiece(left: Int, top: Int, width: Int, height: Int, private val hoverOffset: Int = 0)
     : BasicContainerGuiPiece(left, top, width, height) {
 
     protected open val currentState: Int = 0
@@ -18,12 +18,11 @@ abstract class ToggleButtonPiece(left: Int, top: Int, width: Int, height: Int)
     protected abstract fun renderState(container: BasicTeslaGuiContainer<*>, state: Int, box: BoundingRectangle)
     protected abstract fun clicked()
 
+    protected open val isEnabled: Boolean = true
+
     override fun drawBackgroundLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, partialTicks: Float, mouseX: Int, mouseY: Int) {
-//        val mx = mouseX - container.guiLeft
-//        val my = mouseY - container.guiTop
-//        if ((mx in this.left..(this.left + this.width)) && (my in this.top..(this.top + this.height))) {
-        if (super.isInside(container, mouseX, mouseY)) {
-            container.drawFilledRect(container.guiLeft + this.left, container.guiTop + this.top, this.width, this.height, 0x42FFFFFF)
+        if (super.isInside(container, mouseX, mouseY) && this.isEnabled) {
+            ButtonPiece.drawHoverArea(container, this, this.hoverOffset)
         }
     }
 
@@ -59,7 +58,7 @@ abstract class ToggleButtonPiece(left: Int, top: Int, width: Int, height: Int)
     }
 
     override fun mouseClicked(container: BasicTeslaGuiContainer<*>, mouseX: Int, mouseY: Int, mouseButton: Int) {
-        if (super.isInside(container, mouseX, mouseY)) {
+        if (super.isInside(container, mouseX, mouseY) && this.isEnabled) {
             this.clicked()
         }
     }

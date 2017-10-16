@@ -2,6 +2,7 @@ package net.ndrei.teslacorelib.render.selfrendering
 
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.Minecraft
+import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.block.model.BakedQuad
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.vertex.VertexFormat
@@ -14,7 +15,7 @@ import javax.vecmath.Matrix4d
 import javax.vecmath.Vector3f
 
 class RawCube(val p1: Vec3d, val p2: Vec3d, val sprite: TextureAtlasSprite? = null)
-    : IBakery, IRawFigure {
+    : IBakery, IRawFigure, IBakeable, IDrawable {
     override fun getQuads(state: IBlockState?, stack: ItemStack?, side: EnumFacing?, vertexFormat: VertexFormat, transform: TRSRTransformation)
             = mutableListOf<BakedQuad>().also { this.bake(it, vertexFormat, transform) }
 
@@ -124,7 +125,7 @@ class RawCube(val p1: Vec3d, val p2: Vec3d, val sprite: TextureAtlasSprite? = nu
         return this
     }
 
-    override fun bake(quads: MutableList<BakedQuad>, format: VertexFormat, transform: TRSRTransformation, matrix: Matrix4d?) {
+    fun getRawQuads(transform: TRSRTransformation): List<RawQuad> {
         val rawrs = mutableListOf<RawQuad>()
 
         val p1 = Vector3f(this.p1.x.toFloat(), this.p1.y.toFloat(), this.p1.z.toFloat())
@@ -159,6 +160,14 @@ class RawCube(val p1: Vec3d, val p2: Vec3d, val sprite: TextureAtlasSprite? = nu
             }
         }
 
-        rawrs.mapTo(quads) { it.applyMatrix(matrix ?: Matrix4d().also { it.setIdentity() }).bake(format) }
+        return rawrs
+    }
+
+    override fun bake(quads: MutableList<BakedQuad>, format: VertexFormat, transform: TRSRTransformation, matrix: Matrix4d?) {
+        this.getRawQuads(transform).mapTo(quads) { it.applyMatrix(matrix ?: Matrix4d().also { it.setIdentity() }).bake(format) }
+    }
+
+    override fun draw(buffer: BufferBuilder) {
+        this.getRawQuads(TRSRTransformation.identity()).forEach { it.draw(buffer) }
     }
 }
