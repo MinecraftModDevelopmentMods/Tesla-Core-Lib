@@ -8,6 +8,8 @@
 - update forge version
 - add 'recipe' framework + base 'recipe' machine
 
+#1.0.11
+
 #1.0.10
 - improved self baked block support
 - added IGuiTexture and IGuiIcon helper interfaces
