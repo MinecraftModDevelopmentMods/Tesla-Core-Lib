@@ -13,6 +13,7 @@
 - added IGuiTexture and IGuiIcon helper interfaces
 - added GuiTexture and GuiIcon helper classes
 - added 'isEnabled' member to ButtonPiece and ToggleButtonPiece
+- new textures for powders and gears
 
 #1.0.9
 - completely changed how tile entities sync stuff from server to client (should be like 99.9% less network traffic now)
