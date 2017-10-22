@@ -10,6 +10,8 @@ import net.minecraftforge.items.IItemHandlerModifiable
 /**
  * Created by CF on 2017-07-15.
  */
+val FluidStack?.isEmpty get() = (this == null) || (this.amount == 0)
+
 fun IFluidTank.canFillFrom(bucket: ItemStack) = FluidUtils.canFillFrom(this, bucket)
 fun IFluidTank.fillFrom(bucket: ItemStack) = FluidUtils.fillFluidFrom(this, bucket)
 
