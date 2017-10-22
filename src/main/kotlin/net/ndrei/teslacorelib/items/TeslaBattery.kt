@@ -33,17 +33,16 @@ object TeslaBattery
 
     init {
         super
-                .setHasSubtypes(true)
-                .addPropertyOverride(ResourceLocation("power"), { stack, _, _ ->
-                    val energy = stack?.getCapability(CapabilityEnergy.ENERGY, null)
-                    if (energy == null) {
-                        0.0f
-                    }
-                    else {
-                        val thing = Math.round(energy.energyStored.toDouble() / energy.maxEnergyStored.toDouble() * 5)
-                        Math.max(0, Math.min(5, thing)) * .2f
-                    }
-                })
+            .setHasSubtypes(true)
+            .addPropertyOverride(ResourceLocation("power"), { stack, _, _ ->
+                val energy = stack.getCapability(CapabilityEnergy.ENERGY, null)
+                if (energy == null) {
+                    0.0f
+                } else {
+                    val thing = Math.round(energy.energyStored.toDouble() / energy.maxEnergyStored.toDouble() * 6)
+                    Math.max(0, Math.min(6, thing)).toFloat()
+                }
+            })
     }
 
     override fun initCapabilities(stack: ItemStack?, nbt: NBTTagCompound?): ICapabilityProvider? {
