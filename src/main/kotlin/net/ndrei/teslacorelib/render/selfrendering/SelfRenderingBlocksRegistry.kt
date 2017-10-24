@@ -87,11 +87,11 @@ object SelfRenderingBlocksRegistry {
                             if (block is IProvideVariantTransform) {
                                 return SelfRenderingModel(block, block.getTransform(modelLocation.variant))
                             }
-                            return when (modelLocation.variant) {
-                                "facing=north" -> SelfRenderingModel(block, getTransform(0, 0)) // EnumFacing.NORTH))
-                                "facing=south" -> SelfRenderingModel(block, getTransform(0, 180)) // EnumFacing.SOUTH))
-                                "facing=east" -> SelfRenderingModel(block, getTransform(0, 90)) // EnumFacing.EAST))
-                                "facing=west" -> SelfRenderingModel(block, getTransform(0, 270)) // EnumFacing.WEST))
+                            return when {
+                                modelLocation.variant.contains("facing=north") -> SelfRenderingModel(block, getTransform(0, 0)) // EnumFacing.NORTH))
+                                modelLocation.variant.contains("facing=south") -> SelfRenderingModel(block, getTransform(0, 180)) // EnumFacing.SOUTH))
+                                modelLocation.variant.contains("facing=east") -> SelfRenderingModel(block, getTransform(0, 90)) // EnumFacing.EAST))
+                                modelLocation.variant.contains("facing=west") -> SelfRenderingModel(block, getTransform(0, 270)) // EnumFacing.WEST))
                                 else -> SelfRenderingModel(block, TRSRTransformation.identity())
                             }
                         }
