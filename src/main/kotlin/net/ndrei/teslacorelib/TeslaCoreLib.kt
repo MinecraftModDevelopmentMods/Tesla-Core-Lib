@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.ndrei.teslacorelib.compatibility.RFPowerProxy
 import net.ndrei.teslacorelib.config.IModConfigFlagsProvider
 import net.ndrei.teslacorelib.config.TeslaCoreLibConfig
+import net.ndrei.teslacorelib.config.TheGuiFactory
 import net.ndrei.teslacorelib.energy.systems.MJSystem
 import net.ndrei.teslacorelib.energy.systems.MekanismSystem
 import net.ndrei.teslacorelib.energy.systems.TeslaSystem
@@ -25,9 +26,11 @@ import org.apache.logging.log4j.Logger
  * Created by CF on 2017-06-28.
  */
 @Mod(modid = MOD_ID, version = MOD_VERSION, name = MOD_NAME,
-        acceptedMinecraftVersions = MOD_MC_VERSION,
-        dependencies = "${MOD_DEPENDENCIES}after:${TeslaSystem.MODID};after:${RFPowerProxy.MODID};after:${MJSystem.MODID};after:${MekanismSystem.MODID}",
-        useMetadata = true, modLanguage = "kotlin", modLanguageAdapter = "net.shadowfacts.forgelin.KotlinAdapter")
+    acceptedMinecraftVersions = MOD_MC_VERSION,
+    dependencies = "${MOD_DEPENDENCIES}after:${TeslaSystem.MODID};after:${RFPowerProxy.MODID};after:${MJSystem.MODID};after:${MekanismSystem.MODID}",
+    useMetadata = true, modLanguage = "kotlin", modLanguageAdapter = "net.shadowfacts.forgelin.KotlinAdapter",
+    guiFactory = TheGuiFactory.CLASS_NAME
+    )
 object TeslaCoreLib : IModConfigFlagsProvider {
     @SidedProxy(clientSide = "net.ndrei.teslacorelib.ClientProxy", serverSide = "net.ndrei.teslacorelib.ServerProxy")
     lateinit var proxy: CommonProxy

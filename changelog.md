@@ -1,14 +1,18 @@
 #future (1.13)
 - rework how fluid tanks are handled, make similar to item handlers
-- change mod name / id to 'mclib' (Mod Crafters Lib)
+- change mod name / id / packages to 'mclib' (Mod Crafters Lib)
+- remove 'tesla' from all the names
 
 #future
+- update forge version
 - add java doc stuff
 - add a wiki
-- update forge version
 - add 'recipe' framework + base 'recipe' machine
+- add config annotations for config files + building config gui
 
 #1.0.11
+- added generic config gui handler
+- improve config file handling
 
 #1.0.10
 - improved self baked block support

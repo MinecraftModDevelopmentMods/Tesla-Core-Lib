@@ -2,6 +2,8 @@ package net.ndrei.teslacorelib.config
 
 import net.minecraftforge.common.config.Configuration
 import java.io.File
+import kotlin.reflect.KParameter
+import kotlin.reflect.KProperty
 
 abstract class GenericModConfigFlags: IModConfigFlags {
     private val defaults = mutableMapOf<String, Boolean>()
@@ -13,6 +15,8 @@ abstract class GenericModConfigFlags: IModConfigFlags {
         this.config = Configuration(configurationFile)
         this.update()
     }
+
+    override val configuration get() = this.config
 
     override fun setDefaultFlag(key: String, value: Boolean): Boolean {
         val k = key.normalize()
@@ -42,17 +46,16 @@ abstract class GenericModConfigFlags: IModConfigFlags {
         val defaults = mutableListOf(*defaultValues)
         this.defaults
             .filterKeys { it.startsWith("$k#") }
-            .mapKeys { (it, _) ->  it.substring("$k#".length) }
+            .mapKeys { (it, _) -> it.substring("$k#".length) }
             .filterValues { it }
             .mapTo(defaults) { it.key }
-        val list = this.config.getStringList(key, category, defaults.toTypedArray(), description + "\n")
+        val list = this.config.getStringList(key, category, defaults.distinct().toTypedArray(), description + "\n")
         list.forEach { this.setFlag("$key#$it".normalize(), true) }
     }
 
     private fun update() {
         try {
             this.config.load()
-
             this.loadConfig(config)
         } finally {
             if (this.config.hasChanged()) {
@@ -61,5 +64,25 @@ abstract class GenericModConfigFlags: IModConfigFlags {
         }
     }
 
-    abstract protected fun loadConfig(config: Configuration)
+    override fun checkIfConfigChanged() {
+        if (this.config.hasChanged()) {
+            this.loadConfig(config) // reload settings
+
+            this.config.save()
+        }
+    }
+
+    protected open fun loadConfig(config: Configuration) {
+        this::class.members.filterIsInstance<KProperty<String>>().forEach { thing ->
+            if (thing.parameters.none { it.kind != KParameter.Kind.INSTANCE }) {
+                thing.annotations.forEach {
+                    when (it) {
+                        is ConfigFlag -> {
+                            this.readFlag(thing.getter.call(), it.description, it.category, it.default)
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
