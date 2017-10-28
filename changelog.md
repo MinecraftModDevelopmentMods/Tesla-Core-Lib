@@ -9,10 +9,12 @@
 - add a wiki
 - add 'recipe' framework + base 'recipe' machine
 - add config annotations for config files + building config gui
+- seal capability methods on tile entities and make "better" open ones
 
 #1.0.11
 - added generic config gui handler
 - improve config file handling
+- added support for addons that provide/override tile entity capabilities
 
 #1.0.10
 - improved self baked block support
