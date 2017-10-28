@@ -13,7 +13,7 @@ class SimpleNBTHandler : IMessageHandler<SimpleNBTMessage, SimpleNBTMessage> {
         if (ctx.side.isClient) {
             // process client side message
             if ((message != null) && (message.pos != null) && (Minecraft.getMinecraft().world != null)) {
-                val entity = Minecraft.getMinecraft().world.getTileEntity(message.pos)
+                val entity = Minecraft.getMinecraft().world.getTileEntity(message.pos!!)
                 if (entity != null && entity is ISimpleNBTMessageHandler) {
                     return (entity as ISimpleNBTMessageHandler).handleServerMessage(message)
                 }
@@ -23,11 +23,15 @@ class SimpleNBTHandler : IMessageHandler<SimpleNBTMessage, SimpleNBTMessage> {
             if ((message != null) && (message.dimension != null) && (message.pos != null)) {
                 val world = DimensionManager.getWorld(message.dimension!!)
                 if (world != null) {
-                    val entity = world.getTileEntity(message.pos!!)
-                    if ((entity != null) && (entity is ISimpleNBTMessageHandler)) {
-                        return (entity as ISimpleNBTMessageHandler).handleClientMessage(ctx.serverHandler.player, message)
+                    world.addScheduledTask {
+                        val entity = world.getTileEntity(message.pos!!)
+                        if ((entity != null) && (entity is ISimpleNBTMessageHandler)) {
+                            /*val response =*/ (entity as ISimpleNBTMessageHandler).handleClientMessage(ctx.serverHandler.player, message)
+                            // TODO: something with response if not null
+                        }
                     }
                 }
+                return null
             }
         }
         return null
