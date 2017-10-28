@@ -38,6 +38,7 @@ import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.TeslaCoreLib
 import net.ndrei.teslacorelib.blocks.AxisAlignedBlock
 import net.ndrei.teslacorelib.blocks.OrientedBlock
+import net.ndrei.teslacorelib.capabilities.ICapabilityAddon
 import net.ndrei.teslacorelib.capabilities.TeslaCoreCapabilities
 import net.ndrei.teslacorelib.capabilities.container.IGuiContainerProvider
 import net.ndrei.teslacorelib.capabilities.inventory.SidedItemHandlerConfig
@@ -605,11 +606,13 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
         this.setupSpecialNBTMessage().also { this.writeToNBT(it) }
 
     override fun writeToNBT(compound: NBTTagCompound): NBTTagCompound =
-        super.writeToNBT(compound).writeSyncParts(this.syncParts)
+        super.writeToNBT(compound).writeSyncParts(this.syncParts.filter {
+            it.value.level.shouldSync(false, false, true)
+        })
 
     private fun writePartialNBT(keys: Set<String>): NBTTagCompound =
         this.setupSpecialNBTMessage("PARTIAL_SYNC").writeSyncParts(this.syncParts.filter {
-            keys.contains(it.key) && it.value.level.shouldSync(this.containerRefCount > 0)
+            keys.contains(it.key) && it.value.level.shouldSync(this.containerRefCount > 0, true, false)
         })
 
     private fun NBTTagCompound.writeSyncParts(parts: Map<String, SyncPartInfo>) =
@@ -919,6 +922,19 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
         }
 
         if (!this.isPaused()) {
+            if (this.supportsAddons() && !this.isProcessingCapAddons) {
+                try {
+                    this.isProcessingCapAddons = true
+                    this.addons.filterIsInstance<ICapabilityAddon>().forEach {
+                        val hasCap = it.hasCapability(this, capability, facing, oriented)
+                        if (hasCap != null) {
+                            return hasCap
+                        }
+                    }
+                }
+                finally { this.isProcessingCapAddons = false }
+            }
+
             if (capability === CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
                 val slots = this.itemHandler.getSlotsForFace(oriented)
                 return slots.isNotEmpty()
@@ -930,9 +946,24 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
         return super.hasCapability(capability, facing)
     }
 
+    private var isProcessingCapAddons = false
+
     @Suppress("UNCHECKED_CAST")
     override fun <T> getCapability(capability: Capability<T>, facing: EnumFacing?): T? {
         val oriented = this.orientFacing(facing)
+
+        if (this.supportsAddons() && !this.isProcessingCapAddons) {
+            try {
+                this.isProcessingCapAddons = true
+                this.addons.filterIsInstance<ICapabilityAddon>().forEach {
+                    val cap = it.getCapability(this, capability, facing, oriented)
+                    if (cap != null) {
+                        return cap
+                    }
+                }
+            }
+            finally { this.isProcessingCapAddons = false }
+        }
 
         return when {
             capability === CapabilityItemHandler.ITEM_HANDLER_CAPABILITY -> this.itemHandler.getSideWrapper(oriented) as T
@@ -957,13 +988,13 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
         else -> "[error]"
     }
 
-    protected open val hudLines: List<HudInfoLine>
+    protected open val hudLines: MutableList<HudInfoLine>
         get() = if (this.isPaused())
-            listOf(
+            mutableListOf(
                 HudInfoLine(Color.RED, Color.RED.withAlpha(.24f), SYNC_IS_PAUSED).setTextAlignment(HudInfoLine.TextAlignment.CENTER)
             )
         else
-            listOf()
+            mutableListOf()
 
     override fun onWrenchUse(wrench: TeslaWrench,
                              player: EntityPlayer, world: World, pos: BlockPos, hand: EnumHand,
@@ -1117,14 +1148,16 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
         }
         this.paused = !this.isPaused()
 
-        if (TeslaCoreLib.isClientSide) {
-            val nbt = this.setupSpecialNBTMessage("PAUSE_MACHINE")
-            nbt.setBoolean("pause", this.isPaused())
-            this.sendToServer(nbt)
-        }
-        else {
-            this.notifyNeighbours()
-            this.partialSync(SYNC_IS_PAUSED)
+        @Suppress("SENSELESS_COMPARISON")
+        if (this.getWorld() != null) {
+            if (TeslaCoreLib.isClientSide) {
+                val nbt = this.setupSpecialNBTMessage("PAUSE_MACHINE")
+                nbt.setBoolean("pause", this.isPaused())
+                this.sendToServer(nbt)
+            } else {
+                this.notifyNeighbours()
+                this.partialSync(SYNC_IS_PAUSED)
+            }
         }
     }
 
