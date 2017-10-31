@@ -91,7 +91,7 @@ repositories {
 }
 
 dependencies {
-    deployerJars 'org.apache.maven.wagon:wagon-ftp:2.2'
+    deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jre8:${project.kotlin_version}"
     compile "net.shadowfacts:Forgelin:${project.forgelin_version}"
 
