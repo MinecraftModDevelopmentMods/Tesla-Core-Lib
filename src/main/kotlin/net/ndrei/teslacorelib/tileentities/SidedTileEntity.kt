@@ -12,18 +12,18 @@ import net.minecraft.inventory.Slot
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.*
+import net.minecraft.nbt.NBTTagByte
+import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.NBTTagString
 import net.minecraft.network.play.server.SPacketSetSlot
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.EnumHand
-import net.minecraft.util.ITickable
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.util.Constants
-import net.minecraftforge.common.util.INBTSerializable
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.IFluidTank
@@ -50,7 +50,6 @@ import net.ndrei.teslacorelib.gui.*
 import net.ndrei.teslacorelib.inventory.*
 import net.ndrei.teslacorelib.items.BaseAddon
 import net.ndrei.teslacorelib.items.TeslaWrench
-import net.ndrei.teslacorelib.netsync.ISimpleNBTMessageHandler
 import net.ndrei.teslacorelib.netsync.SimpleNBTMessage
 import net.ndrei.teslacorelib.render.HudInfoLine
 import net.ndrei.teslacorelib.render.HudInfoRenderer
@@ -66,21 +65,8 @@ import java.util.function.Supplier
  * Created by CF on 2017-06-27.
  */
 @Suppress("MemberVisibilityCanPrivate")
-abstract class SidedTileEntity protected constructor(private val entityTypeId: Int)
-    : TileEntity(), ITickable, IHudInfoProvider, ISimpleNBTMessageHandler, IGuiContainerProvider, ITeslaWrenchHandler, IRedstoneControlledMachine {
-    private var syncTick = SYNC_ON_TICK
-    private val syncKeys = mutableSetOf<String>()
-    private val syncParts = mutableMapOf<String, SyncPartInfo>()
-    private val fakeSyncTarget = object: ISyncTarget {
-        override fun partialSync(key: String) {
-            this@SidedTileEntity.partialSync(key)
-        }
-
-        override fun forceSync() {
-            this@SidedTileEntity.forceSync()
-        }
-    }
-
+abstract class SidedTileEntity protected constructor(entityTypeId: Int)
+    : SyncTileEntity(entityTypeId), IHudInfoProvider, IGuiContainerProvider, ITeslaWrenchHandler, IRedstoneControlledMachine {
     protected val sideConfig: SidedItemHandlerConfig
 
     private val itemHandler: SidedItemHandler
@@ -94,7 +80,15 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
     private var paused = false
     private var redstoneSetting = IRedstoneControlledMachine.RedstoneControl.AlwaysActive
 
-    private var containerRefCount = 0
+    private val fakeSyncTarget = object : ISyncTarget {
+        override fun partialSync(key: String) {
+            this@SidedTileEntity.partialSync(key)
+        }
+
+        override fun forceSync() {
+            this@SidedTileEntity.forceSync()
+        }
+    }
 
     init {
         this.sideConfig = object : SidedItemHandlerConfig() {
@@ -586,123 +580,11 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
             return EnumFacing.NORTH
         }
 
-    override fun readFromNBT(compound: NBTTagCompound) {
-        super.readFromNBT(compound)
-//        if ((this.getWorld() != null) && this.getWorld().isRemote) {
-//            TeslaCoreLib.logger.info("Full Sync received for: ${this.javaClass.name} at ${this.pos}.")
-//        }
-        compound.readSyncParts()
-    }
-
-    private fun NBTTagCompound.readSyncParts() {
-        this@SidedTileEntity.syncParts.forEach { key, part ->
-            if (this.hasKey(key, part.nbtType)) {
-                part.reader(this.getTag(key))
-            }
-        }
-    }
-
-    private fun writeToNBT(): NBTTagCompound =
-        this.setupSpecialNBTMessage().also { this.writeToNBT(it) }
-
-    override fun writeToNBT(compound: NBTTagCompound): NBTTagCompound =
-        super.writeToNBT(compound).writeSyncParts(this.syncParts.filter {
-            it.value.level.shouldSync(false, false, true)
-        })
-
-    private fun writePartialNBT(keys: Set<String>): NBTTagCompound =
-        this.setupSpecialNBTMessage("PARTIAL_SYNC").writeSyncParts(this.syncParts.filter {
-            keys.contains(it.key) && it.value.level.shouldSync(this.containerRefCount > 0, true, false)
-        })
-
-    private fun NBTTagCompound.writeSyncParts(parts: Map<String, SyncPartInfo>) =
-        this.also { nbt ->
-            parts.forEach { key, part ->
-                val tag = part.writer()
-                if (tag != null) {
-                    nbt.setTag(key, part.writer())
-                }
-            }
-        }
-
-    override fun getUpdateTag(): NBTTagCompound = super.getUpdateTag().also {
-        this.writeToNBT(it)
-    }
-
     //#endregion
 
     //#region sync & network    methods
 
-    @Suppress("UNUSED_PARAMETER")
-    fun containerOpened(container: BasicTeslaContainer<*>, player: EntityPlayerMP) {
-        this.containerRefCount++
-        this.forceSync() // force full sync
-        this.testSync() // sync now, don't wait for next tick
-    }
-
-    @Suppress("UNUSED_PARAMETER")
-    fun containerClosed(container: BasicTeslaContainer<*>, player: EntityPlayerMP) {
-        this.containerRefCount--
-    }
-
-    private class SyncPartInfo(val level: SyncProviderLevel, val nbtType: Int, val reader: (NBTBase) -> Unit, val writer: () -> NBTBase?)
-
-    fun setupSpecialNBTMessage(messageType: String? = null): NBTTagCompound {
-        val compound = NBTTagCompound()
-        compound.setInteger("__tetId", this.entityTypeId)
-        if ((messageType != null) && messageType.isNotEmpty()) {
-            compound.setString("__messageType", messageType)
-        }
-        return compound
-    }
-
-    override final fun handleServerMessage(message: SimpleNBTMessage): SimpleNBTMessage? {
-        val compound = message.compound
-        if (compound != null) {
-            val tetId = compound.getInteger("__tetId")
-            if (tetId == this.entityTypeId) {
-                if (compound.hasKey("__messageType", Constants.NBT.TAG_STRING)) {
-                    val messageType = compound.getString("__messageType")
-                    return this.processServerMessage(messageType, compound)
-                } else /*if (this.getWorld().isRemote)*/ {
-                    this.processServerMessage(compound)
-                }
-            } else {
-                TeslaCoreLib.logger.info("Unknown message for __tetId: " + tetId + " : " + compound.toString())
-            }
-        }
-        return null
-    }
-
-    override final fun handleClientMessage(player: EntityPlayerMP?, message: SimpleNBTMessage): SimpleNBTMessage? {
-        val compound = message.compound
-        if (compound != null) {
-            val tetId = compound.getInteger("__tetId")
-            if (tetId == this.entityTypeId) {
-                if (compound.hasKey("__messageType", Constants.NBT.TAG_STRING)) {
-                    val messageType = compound.getString("__messageType")
-                    return this.processClientMessage(messageType, player, compound)
-                }
-            } else {
-                TeslaCoreLib.logger.info("Unknown message for __tetId: " + tetId + " : " + compound.toString())
-            }
-        }
-        return null
-    }
-
-    protected fun processServerMessage(compound: NBTTagCompound) {
-        this.readFromNBT(compound)
-    }
-
-    protected open fun processServerMessage(messageType: String, compound: NBTTagCompound): SimpleNBTMessage? {
-        if (messageType == "PARTIAL_SYNC") {
-//            TeslaCoreLib.logger.info("Partial Sync [${compound.keySet.joinToString(", ")}] received for: ${this.javaClass.name} at ${this.pos}.")
-            compound.readSyncParts()
-        }
-        return null
-    }
-
-    protected open fun processClientMessage(messageType: String?, player: EntityPlayerMP?, compound: NBTTagCompound): SimpleNBTMessage? {
+    override fun processClientMessage(messageType: String?, player: EntityPlayerMP?, compound: NBTTagCompound): SimpleNBTMessage? {
         when(messageType) {
             "FILL_TANK" -> {
                 if (player != null) {
@@ -757,10 +639,10 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
                 return null
             }
         }
-        return this.processClientMessage(messageType, compound)
+        return super.processClientMessage(messageType, player, compound)
     }
 
-    protected open fun processClientMessage(messageType: String?, compound: NBTTagCompound): SimpleNBTMessage? {
+    override fun processClientMessage(messageType: String?, compound: NBTTagCompound): SimpleNBTMessage? {
         if (messageType == "TOGGLE_SIDE") {
             val color = EnumDyeColor.byMetadata(compound.getInteger("color"))
             val facing = EnumFacing.getFront(compound.getInteger("side"))
@@ -782,108 +664,7 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
             this.redstoneSetting = IRedstoneControlledMachine.RedstoneControl.valueOf(compound.getString("setting"))
         }
 
-        return null
-    }
-
-    fun sendToServer(compound: NBTTagCompound) {
-        TeslaCoreLib.network.sendToServer(SimpleNBTMessage(this, compound))
-    }
-
-    protected fun forceSync() {
-        if (this.getWorld() != null && !this.getWorld().isRemote) {
-            this.syncTick = SYNC_ON_TICK
-        }
-    }
-
-    protected fun partialSync(key: String, markDirty: Boolean = true) {
-        if ((this.getWorld()?.isRemote == false) && !key.isEmpty()) {
-            this.syncKeys.add(key)
-        }
-
-        if (markDirty) {
-            this.markDirty()
-        }
-
-        this.onSyncPartUpdated(key)
-    }
-
-    protected open fun onSyncPartUpdated(key: String) {}
-
-    private fun testSync() {
-        if (this.syncTick >= SYNC_ON_TICK) {
-//            TeslaCoreLib.logger.info("Full TileEntity Sync at: ${this.pos}")
-            TeslaCoreLib.network.send(SimpleNBTMessage(this, this.writeToNBT()))
-            this.syncTick = 0
-            this.syncKeys.clear() // don't care about partial sync anymore
-        }
-
-        if (this.syncKeys.count() > 0) {
-            val set = this.syncKeys.toSet()
-//            TeslaCoreLib.logger.info("Partial TileEntity Sync [${set.joinToString(", ")}] at: ${this.pos}")
-            val nbt = this.writePartialNBT(set)
-            if (nbt.keySet.any { !it.startsWith("__") }) {
-                TeslaCoreLib.network.send(SimpleNBTMessage(this, nbt))
-            }
-            this.syncKeys.clear()
-        }
-    }
-
-    private inline fun <reified TT : NBTBase> Consumer<TT>.makeReader(key: String? = null): (NBTBase) -> Unit = { it ->
-        if (it is TT) {
-            this.accept(it)
-        } else if (!key.isNullOrBlank()) {
-            TeslaCoreLib.logger.warn("Wrong sync message received for '$key'. Expected '${TT::class.java.name}' but found '${it.javaClass.name}'.")
-        }
-    }
-
-    private inline fun <reified TT : NBTBase> Supplier<TT?>.makeWriter(): () -> NBTBase? = { this.get() }
-
-    protected fun registerSyncPart(key: String, nbtType: Int, reader: (NBTBase) -> Unit, writer: () -> NBTBase?, level: SyncProviderLevel = SyncProviderLevel.TICK) {
-        this.syncParts.putIfAbsent(key, SyncPartInfo(level, nbtType, reader, writer))
-    }
-
-    protected fun registerSyncIntPart(key: String, reader: Consumer<NBTTagInt>, writer: Supplier<NBTTagInt?>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
-        this.registerSyncPart(key, Constants.NBT.TAG_INT, reader.makeReader(key), writer.makeWriter(), level)
-    }
-
-    protected fun registerSyncBytePart(key: String, reader: Consumer<NBTTagByte>, writer: Supplier<NBTTagByte?>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
-        this.registerSyncPart(key, Constants.NBT.TAG_BYTE, reader.makeReader(key), writer.makeWriter(), level)
-    }
-
-    protected fun registerSyncStringPart(key: String, reader: Consumer<NBTTagString>, writer: Supplier<NBTTagString?>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
-        this.registerSyncPart(key, Constants.NBT.TAG_STRING, reader.makeReader(key), writer.makeWriter(), level)
-    }
-
-    protected fun registerSyncFloatPart(key: String, reader: Consumer<NBTTagFloat>, writer: Supplier<NBTTagFloat?>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
-        this.registerSyncPart(key, Constants.NBT.TAG_FLOAT, reader.makeReader(key), writer.makeWriter(), level)
-    }
-
-    protected fun registerSyncTagPart(key: String, reader: Consumer<NBTTagCompound>, writer: Supplier<NBTTagCompound?>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
-        this.registerSyncPart(key, Constants.NBT.TAG_COMPOUND, reader.makeReader(key), writer.makeWriter(), level)
-    }
-
-    protected fun registerSyncTagPart(key: String, thing: INBTSerializable<NBTTagCompound>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
-        this.registerSyncPart(key, Constants.NBT.TAG_COMPOUND,
-            (Consumer<NBTTagCompound> { thing.deserializeNBT(it) }).makeReader(key),
-            (Supplier<NBTTagCompound?> { thing.serializeNBT() }).makeWriter(),
-            level)
-    }
-
-    protected fun registerSyncListPart(key: String, reader: Consumer<NBTTagList>, writer: Supplier<NBTTagList?>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
-        this.registerSyncPart(key, Constants.NBT.TAG_LIST, reader.makeReader(key), writer.makeWriter(), level)
-    }
-
-    protected fun registerSyncListPart(key: String, thing: INBTSerializable<NBTTagList>, level: SyncProviderLevel = SyncProviderLevel.TICK) {
-        this.registerSyncPart(key, Constants.NBT.TAG_LIST,
-            (Consumer<NBTTagList> { thing.deserializeNBT(it) }).makeReader(key),
-            (Supplier<NBTTagList?> { thing.serializeNBT() }).makeWriter(),
-            level)
-    }
-
-    private fun notifyNeighbours() {
-        if (this.getWorld() != null) {
-            this.getWorld().notifyNeighborsOfStateChange(this.getPos(), this.getBlockType(), true)
-        }
+        return super.processClientMessage(messageType, compound)
     }
 
     //endregion
@@ -1203,18 +984,12 @@ abstract class SidedTileEntity protected constructor(private val entityTypeId: I
             this.innerUpdate()
             this.processImmediateInventories()
         }
-
-        if (!this.getWorld().isRemote) {
-            // this.syncTick++ // <-- hopefully this will reduce lag and not create additional problems
-            this.testSync()
-        }
+        super.update()
     }
 
     protected abstract fun innerUpdate()
 
     companion object {
-        private const val SYNC_ON_TICK = 20
-
         protected const val SYNC_SIDE_CONFIG = "side_config"
         protected const val SYNC_FLUIDS = "fluids"
         protected const val SYNC_FLUID_ITEMS = "fluidItems"
