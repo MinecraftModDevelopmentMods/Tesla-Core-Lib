@@ -15,6 +15,7 @@
 - added generic config gui handler
 - improve config file handling
 - added support for addons that provide/override tile entity capabilities
+- added new SyncTileEntity base class that handles all of the sync magic between server and client
 
 #1.0.10
 - improved self baked block support
