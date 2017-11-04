@@ -19,6 +19,8 @@ if (entry != null) {
 }
 </pre>
 
+#1.0.12
+
 #1.0.11
 - added generic config gui handler
 - improve config file handling
