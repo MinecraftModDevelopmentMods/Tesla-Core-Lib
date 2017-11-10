@@ -109,3 +109,18 @@ fun Vec3d.toVector3f() =
 
 fun Vector3f.toVec3d() =
     Vec3d(this.x.toDouble(), this.y.toDouble(), this.z.toDouble())
+
+operator fun Vector3f.unaryMinus() =
+    Vector3f(-this.x, -this.y, -this.z)
+
+operator fun Vector3f.minus(other: Vector3f) =
+    Vector3f(this.x - other.x, this.y - other.y, this.z - other.z)
+
+operator fun Vector3f.plus(other: Vector3f) =
+    Vector3f(this.x + other.x, this.y + other.y, this.z + other.z)
+
+operator fun Vector3f.times(scale: Float) =
+    Vector3f(this.x * scale, this.y * scale, this.z * scale)
+
+operator fun Vector3f.div(scale: Float) =
+    Vector3f(this.x / scale, this.y / scale, this.z / scale)

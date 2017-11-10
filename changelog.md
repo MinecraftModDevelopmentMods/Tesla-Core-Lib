@@ -10,11 +10,22 @@
 - add 'recipe' framework + base 'recipe' machine
 - add config annotations for config files + building config gui
 - seal capability methods on tile entities and make "better" open ones
+- look at this method for sending sync packets to client:
+<pre>
+ChunkPos cp = this.world.getChunkFromBlockCoords(getPos()).getPos();
+PlayerChunkMapEntry entry = ((WorldServer)this.world).getPlayerChunkMap().getEntry(cp.x, cp.z);
+if (entry != null) {
+    entry.sendPacket(this.getUpdatePacket());
+}
+</pre>
+
+#1.0.12
 
 #1.0.11
 - added generic config gui handler
 - improve config file handling
 - added support for addons that provide/override tile entity capabilities
+- added new SyncTileEntity base class that handles all of the sync magic between server and client
 
 #1.0.10
 - improved self baked block support

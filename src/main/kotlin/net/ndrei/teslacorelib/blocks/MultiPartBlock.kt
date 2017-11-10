@@ -45,11 +45,15 @@ abstract class MultiPartBlock(modId: String, tab: CreativeTabs?, registryName: S
 
     //#region RAY TRACE
 
+    protected open fun transformCollisionAABB(aabb: AxisAlignedBB, state: IBlockState): AxisAlignedBB = aabb
+
+    private fun AxisAlignedBB.transform(state: IBlockState) = this@MultiPartBlock.transformCollisionAABB(this, state)
+
     override fun addCollisionBoxToList(state: IBlockState, worldIn: World, pos: BlockPos, entityBox: AxisAlignedBB, collidingBoxes: MutableList<AxisAlignedBB>, entityIn: Entity?, isActualState: Boolean) {
         this.getParts(worldIn, pos).forEach {
             if (it.canBeHitWith(worldIn, pos, state, null, ItemStack.EMPTY)) {
                 it.hitBoxes.forEach {
-                    Block.addCollisionBoxToList(pos, entityBox, collidingBoxes, it.aabb)
+                    Block.addCollisionBoxToList(pos, entityBox, collidingBoxes, it.aabb.transform(state))
                 }
             }
         }
@@ -75,7 +79,7 @@ abstract class MultiPartBlock(modId: String, tab: CreativeTabs?, registryName: S
             .filter { it.canBeHitWith(world, pos, world.getBlockState(pos), player, stack) }
             .fold<IBlockPart, RayTraceResult?>(null) { b1, part ->
                 part.hitBoxes.fold(b1) { b2, hitBox ->
-                    this.computeTrace(b2, pos, start, end, hitBox.aabb, MultiPartRayTraceResult(part, hitBox))
+                    this.computeTrace(b2, pos, start, end, hitBox.aabb.transform(world.getBlockState(pos)), MultiPartRayTraceResult(part, hitBox))
                 }
             }
 
@@ -103,7 +107,7 @@ abstract class MultiPartBlock(modId: String, tab: CreativeTabs?, registryName: S
         val mainId = trace.subHit
         val info = trace.hitInfo as? MultiPartRayTraceResult
         val aabb = if ((mainId == 1) && (info != null)) {
-            info.hitBox.aabb
+            info.hitBox.aabb.transform(state)
         } else FULL_BLOCK_AABB
         return aabb.grow(1 / 32.0).offset(pos)
     }
