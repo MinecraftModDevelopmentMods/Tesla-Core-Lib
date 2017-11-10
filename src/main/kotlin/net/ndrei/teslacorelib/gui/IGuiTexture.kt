@@ -14,4 +14,8 @@ interface IGuiTexture {
     fun bind(container: BasicTeslaGuiContainer<*>?) {
         (container?.mc ?: Minecraft.getMinecraft()).textureManager.bindTexture(this.resource)
     }
+
+    fun bind() {
+        Minecraft.getMinecraft().textureManager.bindTexture(this.resource)
+    }
 }
