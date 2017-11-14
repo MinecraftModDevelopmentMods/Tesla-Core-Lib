@@ -38,7 +38,6 @@ abstract class SyncTileEntity(private val entityTypeId: Int = 0): TileEntity(), 
 
     private class SyncPartInfo(val level: SyncProviderLevel, val nbtType: Int, val reader: (NBTBase) -> Unit, val writer: () -> NBTBase?)
 
-
     override fun readFromNBT(compound: NBTTagCompound) {
         super.readFromNBT(compound)
 //        if ((this.getWorld() != null) && this.getWorld().isRemote) {
