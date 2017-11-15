@@ -11,7 +11,7 @@ open class ItemInventory(override val key: String, private val handler: IItemHan
         val source = this.getSlotContent(fromSlot)
         when (ingredient) {
             is IItemIngredient -> {
-                val stack = ingredient.itemStack
+//                val stack = ingredient.itemStack
 
             }
             is IFluidIngredient -> {
