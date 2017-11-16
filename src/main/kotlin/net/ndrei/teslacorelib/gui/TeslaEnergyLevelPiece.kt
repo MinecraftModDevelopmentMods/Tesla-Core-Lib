@@ -10,6 +10,7 @@ import net.ndrei.teslacorelib.localization.localizeModString
  * Created by CF on 2017-06-28.
  */
 class TeslaEnergyLevelPiece(left: Int, top: Int, private val energyStorage: EnergyStorage?) : BasicContainerGuiPiece(left, top, 18, 54) {
+    private var displayType = EnergyDisplayType.TESLA
 
     override fun drawBackgroundLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, partialTicks: Float, mouseX: Int, mouseY: Int) {
         BasicTeslaGuiContainer.bindDefaultTexture(container)
@@ -47,16 +48,6 @@ class TeslaEnergyLevelPiece(left: Int, top: Int, private val energyStorage: Ener
                     +energySystem.makeTextComponent(tick, if (tick < 0) TextFormatting.RED else TextFormatting.BLUE)
                 }
             ).map { it.formattedText }
-//            lines.add(String.format("%sStored Energy", ChatFormatting.DARK_PURPLE))
-//            lines.add(String.format("%s%,d T %sof", ChatFormatting.AQUA, this.energyStorage.stored, ChatFormatting.DARK_GRAY))
-//            lines.add(String.format("%s%,d T", ChatFormatting.RESET, this.energyStorage.capacity))
-
-//            lines.add(String.format("%s%,d T %s(%s%,d T%s)",
-//                    if (average < 0) ChatFormatting.RED else ChatFormatting.BLUE, average,
-//                    ChatFormatting.RESET,
-//                    if (tick < 0) ChatFormatting.RED else ChatFormatting.BLUE, tick,
-//                    ChatFormatting.RESET
-//            ))
             container.drawTooltip(lines, mouseX - guiX, mouseY - guiY)
         }
     }
