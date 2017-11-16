@@ -8,7 +8,7 @@ class ClassItemIngredient(classNameMask: String, val quantity: Int, val meta: In
         Item.REGISTRY.filter {
             this.isMatch(it!!::class.java.simpleName!!)
         }.mapNotNull {
-            ItemStack(it!!, this.quantity, this.meta)
+            ItemStack((it as Item), this.quantity, this.meta)
         }
     }
 
