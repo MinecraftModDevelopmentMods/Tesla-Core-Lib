@@ -6,9 +6,9 @@ import net.minecraft.item.ItemStack
 class ClassItemIngredient(classNameMask: String, val quantity: Int, val meta: Int): BaseFilterItemIngredient(classNameMask) {
     private val lazyItemStacks: List<ItemStack> by lazy {
         Item.REGISTRY.filter {
-            this.isMatch(it::class.java.simpleName)
-        }.map {
-            ItemStack(it, this.quantity, this.meta)
+            this.isMatch(it!!::class.java.simpleName!!)
+        }.mapNotNull {
+            ItemStack(it!!, this.quantity, this.meta)
         }
     }
 
