@@ -898,6 +898,7 @@ abstract class SidedTileEntity protected constructor(entityTypeId: Int)
 
     override val allowRedstoneControl: Boolean
         get() = true
+
     override final var redstoneControl: IRedstoneControlledMachine.RedstoneControl
         get() = this.redstoneSetting
         set(value) {
@@ -980,10 +981,13 @@ abstract class SidedTileEntity protected constructor(entityTypeId: Int)
     //#endregion
 
     override final fun update() {
-        if (!this.isPaused() && (!this.allowRedstoneControl || this.redstoneSetting.canRun { this.world.getRedstonePower(this.pos, this.facing) })) {
+        if (!this.isPaused() && (!this.allowRedstoneControl || this.redstoneSetting.canRun {
+            Math.max(this.world.getRedstonePower(this.pos, this.facing), this.world.isBlockIndirectlyGettingPowered(this.pos))
+        })) {
             this.innerUpdate()
             this.processImmediateInventories()
         }
+
         super.update()
     }
 

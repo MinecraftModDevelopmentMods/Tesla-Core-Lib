@@ -27,4 +27,4 @@ fun IItemHandler.insertItems(stack: ItemStack, simulate: Boolean) = ItemStackUti
 fun Item?.stack(size: Int = 1, meta: Int = 0): ItemStack = if (this != null) ItemStack(this, size, meta) else ItemStack.EMPTY
 
 fun ItemStack.isEnough(other: ItemStack, ignoreSize: Boolean = false)
-    = this.equalsIgnoreSize (other) && (ignoreSize || (this.count <= other.count))
+    = this.equalsIgnoreSize(other) && (ignoreSize || (this.count <= other.count))
