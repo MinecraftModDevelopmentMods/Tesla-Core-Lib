@@ -1,0 +1,35 @@
+#!/bin/groovy
+catchError() {
+    milestone label: 'Start'
+
+    node() {
+        stage("Checkout") {
+            checkout scm
+        }
+        milestone label: 'Checkout complete'
+
+        stage("Clean & Setup") {
+            sh """set -x
+                  ./gradlew clean setupCIWorkspace
+               """
+
+        }
+        milestone label: 'Setup complete'
+
+        stage("Build") {
+            sh """set -x
+                  ./gradlew build
+               """
+
+            archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true, onlyIfSuccessful: true
+        }
+        milestone label: 'Build complete'
+
+        stage("Maven") {
+            sh """set -x
+                  ./gradlew uploadArchives
+               """
+        }
+        milestone label: "Maven Upload complete"
+    }
+}
