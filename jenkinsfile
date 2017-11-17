@@ -1,36 +1,39 @@
 #!/bin/groovy
-catchError() {
-    milestone label: 'Start'
+pipeline {
+    agent any
 
-    node() {
+    stages() {
         stage("Checkout") {
-            checkout scm
+            steps {
+                checkout scm
+            }
         }
-        milestone label: 'Checkout complete'
 
         stage("Clean & Setup") {
-            sh """set -x
-                  chmod 755 gradlew
-                  ./gradlew clean setupCIWorkspace
-               """
-
+            steps {
+                sh """set -x
+                      chmod 755 gradlew
+                      ./gradlew clean setupCIWorkspace
+                   """
+            }
         }
-        milestone label: 'Setup complete'
 
         stage("Build") {
-            sh """set -x
-                  ./gradlew build
-               """
+            steps {
+                sh """set -x
+                      ./gradlew build
+                   """
 
-            archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true, onlyIfSuccessful: true
+                archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true, onlyIfSuccessful: true
+            }
         }
-        milestone label: 'Build complete'
 
         stage("Maven") {
-            sh """set -x
-                  ./gradlew uploadArchives
-               """
+            steps {
+                sh """set -x
+                      ./gradlew uploadArchives
+                   """
+            }
         }
-        milestone label: "Maven Upload complete"
     }
 }
