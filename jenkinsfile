@@ -10,6 +10,7 @@ catchError() {
 
         stage("Clean & Setup") {
             sh """set -x
+                  chmod 755 gradlew
                   ./gradlew clean setupCIWorkspace
                """
 
