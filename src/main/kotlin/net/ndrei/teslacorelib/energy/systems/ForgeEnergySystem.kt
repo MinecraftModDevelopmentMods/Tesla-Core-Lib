@@ -6,8 +6,8 @@ import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.energy.CapabilityEnergy
 import net.minecraftforge.energy.IEnergyStorage
+import net.modcrafters.mclib.energy.IGenericEnergyStorage
 import net.ndrei.teslacorelib.energy.IEnergySystem
-import net.ndrei.teslacorelib.energy.IGenericEnergyStorage
 
 object ForgeEnergySystem : IEnergySystem {
     const val MODID = "minecraft"

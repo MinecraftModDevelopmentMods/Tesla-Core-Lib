@@ -4,6 +4,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.capabilities.Capability
+import net.modcrafters.mclib.energy.IGenericEnergyStorage
 
 object EnergySystemFactory {
     private fun<T, R> Array<T>.firstNonNull(predicate: (element: T) -> R?): R? {

@@ -5,11 +5,11 @@ import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.items.ItemStackHandler
+import net.modcrafters.mclib.energy.IGenericEnergyStorage
 import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.containers.BasicTeslaContainer
 import net.ndrei.teslacorelib.containers.FilteredSlot
 import net.ndrei.teslacorelib.energy.EnergySystemFactory
-import net.ndrei.teslacorelib.energy.IGenericEnergyStorage
 import net.ndrei.teslacorelib.gui.BasicRenderedGuiPiece
 import net.ndrei.teslacorelib.gui.BasicTeslaGuiContainer
 import net.ndrei.teslacorelib.gui.IGeneratorInfoProvider

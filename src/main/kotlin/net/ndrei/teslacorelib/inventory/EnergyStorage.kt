@@ -6,10 +6,10 @@ import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.common.util.INBTSerializable
+import net.modcrafters.mclib.energy.implementations.GenericEnergyStorage
 import net.ndrei.teslacorelib.MOD_ID
 import net.ndrei.teslacorelib.capabilities.inventory.ISidedItemHandlerConfig
 import net.ndrei.teslacorelib.energy.EnergySystemFactory
-import net.ndrei.teslacorelib.energy.GenericEnergyStorage
 
 /**
  * Created by CF on 2017-06-28.

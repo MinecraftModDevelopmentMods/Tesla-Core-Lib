@@ -1,0 +1,5 @@
+package net.modcrafters.mclib.ingredients.implementations
+
+import net.modcrafters.mclib.ingredients.IDelegatedIngredient
+
+abstract class BaseDelegatedIngredient: IDelegatedIngredient

@@ -6,8 +6,8 @@ import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fml.common.Optional
+import net.modcrafters.mclib.energy.IGenericEnergyStorage
 import net.ndrei.teslacorelib.energy.IEnergySystem
-import net.ndrei.teslacorelib.energy.IGenericEnergyStorage
 
 object MekanismSystem : IEnergySystem {
     const val MODID = "mekanism"
