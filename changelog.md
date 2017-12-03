@@ -20,6 +20,8 @@ if (entry != null) {
 </pre>
 
 #1.0.12
+- updated forgelin
+- added customizable energy display mode for energy storage gui pieces
 
 #1.0.11
 - added generic config gui handler
