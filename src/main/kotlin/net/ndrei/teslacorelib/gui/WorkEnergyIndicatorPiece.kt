@@ -2,6 +2,7 @@ package net.ndrei.teslacorelib.gui
 
 import net.minecraft.util.text.TextFormatting
 import net.ndrei.teslacorelib.MOD_ID
+import net.ndrei.teslacorelib.config.TeslaCoreLibConfig
 import net.ndrei.teslacorelib.localization.GUI_WORK_ENERGY
 import net.ndrei.teslacorelib.localization.localizeModString
 import net.ndrei.teslacorelib.localization.makeTextComponent
@@ -11,6 +12,7 @@ import net.ndrei.teslacorelib.localization.makeTextComponent
  */
 class WorkEnergyIndicatorPiece(private val provider: IWorkEnergyProvider?, left: Int, top: Int)
     : BasicContainerGuiPiece(left, top, 36, 4) {
+    private val displayType get() = TeslaCoreLibConfig.energyDisplay
 
     override fun drawBackgroundLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, partialTicks: Float, mouseX: Int, mouseY: Int) {
         container.bindDefaultTexture()
@@ -22,14 +24,14 @@ class WorkEnergyIndicatorPiece(private val provider: IWorkEnergyProvider?, left:
             if (width > 0) {
                 container.drawTexturedModalRect(
                         guiX + this.left + 1, guiY + this.top + 1,
-                        2, 251, width, this.height - 2)
+                        this.displayType.workIcon.left, this.displayType.workIcon.top, width, this.height - 2)
             }
         }
     }
 
     override fun drawForegroundTopLayer(container: BasicTeslaGuiContainer<*>, guiX: Int, guiY: Int, mouseX: Int, mouseY: Int) {
         if (super.isInside(container, mouseX, mouseY) && this.provider != null) {
-            val energySystem = EnergyDisplayType.TESLA
+            val energySystem = this.displayType
             val lines = (if (this@WorkEnergyIndicatorPiece.provider.hasWorkBuffer) mutableListOf(
                 localizeModString(MOD_ID, GUI_WORK_ENERGY, "work energy buffer") {
                     +TextFormatting.DARK_PURPLE

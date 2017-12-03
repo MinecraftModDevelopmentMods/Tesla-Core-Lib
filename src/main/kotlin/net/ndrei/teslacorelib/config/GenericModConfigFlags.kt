@@ -8,6 +8,7 @@ import kotlin.reflect.KProperty
 abstract class GenericModConfigFlags: IModConfigFlags {
     private val defaults = mutableMapOf<String, Boolean>()
     private val map = mutableMapOf<String, Boolean>()
+    private val options = mutableMapOf<String, String>()
 
     private lateinit var config: Configuration
 
@@ -30,6 +31,10 @@ abstract class GenericModConfigFlags: IModConfigFlags {
 
     protected fun setFlag(key: String, value: Boolean) {
         this.map[key.normalize()] = value
+    }
+
+    protected fun setOption(key: String, value: String) {
+        this.options[key.normalize()] = value
     }
 
     override fun getFlag(key: String) = this.map.getOrDefault(key.normalize(), false)

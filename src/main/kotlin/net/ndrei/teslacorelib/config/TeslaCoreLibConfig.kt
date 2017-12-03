@@ -1,6 +1,7 @@
 package net.ndrei.teslacorelib.config
 
 import net.minecraftforge.common.config.Configuration
+import net.ndrei.teslacorelib.gui.EnergyDisplayType
 import net.ndrei.teslacorelib.items.gears.CoreGearType
 
 @Retention(AnnotationRetention.RUNTIME)
@@ -47,6 +48,22 @@ object TeslaCoreLibConfig : GenericModConfigFlags() {
     const val REGISTER_BATTERY = "registerBattery"
     @ConfigFlag("Specifies if the machine case item will be registered or not.")
     const val REGISTER_MACHINE_CASE = "registerMachineCase"
+
+    var energyDisplay: EnergyDisplayType
+        get() = this.configuration.getString("energyDisplay", "gui", "Tesla",
+            "Specifies the energy display type for the energy GUI piece.")
+            .let {
+                EnergyDisplayType.values().forEach { edt ->
+                    if (edt.name.toLowerCase() == it.toLowerCase()) {
+                        return@let edt
+                    }
+                }
+                return EnergyDisplayType.TESLA
+            }
+        set(value) {
+            this.configuration["gui", "energyDisplay", "rf"].set(value.name)
+            this.checkIfConfigChanged()
+        }
 
     fun allowMachinesToSpawnItems(): Boolean {
         return this.getFlag(MACHINES_SPAWN_ITEMS)

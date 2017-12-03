@@ -6,10 +6,15 @@ import net.ndrei.teslacorelib.localization.GUI_ENERGY
 import net.ndrei.teslacorelib.localization.localizeModString
 import net.ndrei.teslacorelib.localization.makeTextComponent
 
-enum class EnergyDisplayType(val energySystem: String, val lightColor: TextFormatting, val darkColor: TextFormatting, val tesla: Float, val u: Int, val v: Int) {
-    TESLA("Tesla", TextFormatting.AQUA, TextFormatting.DARK_AQUA, 1.0f, 21, 192),
-    RF("Redstone Flux", TextFormatting.RED, TextFormatting.DARK_RED, 1.0f, 199, 134),
-    MJ("BuildCraft MJ", TextFormatting.AQUA, TextFormatting.DARK_AQUA, 10.0f, 227, 134);
+enum class EnergyDisplayType(val energySystem: String,
+                             val lightColor: TextFormatting, val darkColor: TextFormatting,
+                             val emptyIcon: IGuiIcon, val fullIcon: IGuiIcon,
+                             val workIcon: IGuiIcon,
+                             val tesla: Float) {
+    TESLA("Tesla", TextFormatting.AQUA, TextFormatting.DARK_AQUA, GuiIcon.ENERGY_EMPTY_TESLA, GuiIcon.ENERGY_FULL_TESLA, GuiIcon.ENERGY_WORK_TESLA, 1.0f)
+    , RF("Redstone Flux", TextFormatting.RED, TextFormatting.DARK_RED, GuiIcon.ENERGY_EMPTY_RF, GuiIcon.ENERGY_FULL_RF, GuiIcon.ENERGY_WORK_RF, 1.0f)
+    //,MJ("BuildCraft MJ", TextFormatting.AQUA, TextFormatting.DARK_AQUA, GuiIcon.ENERGY_EMPTY_MJ, GuiIcon.ENERGY_FULL_MJ, 10.0f, 227, 134)
+    ;
 
     fun fromTesla(tesla: Long) =
         (tesla.toFloat() / this.tesla).toLong()
