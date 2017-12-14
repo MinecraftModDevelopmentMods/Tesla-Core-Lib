@@ -19,6 +19,8 @@ if (entry != null) {
 }
 </pre>
 
+#1.0.13
+
 #1.0.12
 - updated forgelin
 - added customizable energy display mode for energy storage gui pieces
