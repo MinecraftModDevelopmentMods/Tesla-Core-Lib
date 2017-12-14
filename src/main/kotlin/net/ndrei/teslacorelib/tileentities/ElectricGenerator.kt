@@ -169,8 +169,7 @@ abstract class ElectricGenerator protected constructor(typeId: Int) : ElectricTi
 
         //#region distribute power
 
-        // TODO: research if this should be done only on server side or not
-        if (!this.energyStorage.isEmpty) {
+        if (!this.energyStorage.isEmpty && !this.world.isRemote) {
             val consumers = mutableListOf<IGenericEnergyStorage>()
 
             val powerSides = this.sideConfig.getSidesForColor(this.energyStorage.color!!)
