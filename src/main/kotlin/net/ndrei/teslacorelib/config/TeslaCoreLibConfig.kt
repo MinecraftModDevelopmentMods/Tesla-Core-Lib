@@ -49,8 +49,11 @@ object TeslaCoreLibConfig : GenericModConfigFlags() {
     @ConfigFlag("Specifies if the machine case item will be registered or not.")
     const val REGISTER_MACHINE_CASE = "registerMachineCase"
 
+    @ConfigFlag("Allows energy GUI to change the display energy system.", category = "gui", default = true)
+    const val ALLOW_ENERGY_DISPLAY_CHANGE = "allowChangeEnergyDisplay"
+
     var energyDisplay: EnergyDisplayType
-        get() = this.configuration.getString("energyDisplay", "gui", "Tesla",
+        get() = this.configuration.getString("energyDisplay", "gui", "RF",
             "Specifies the energy display type for the energy GUI piece.")
             .let {
                 EnergyDisplayType.values().forEach { edt ->

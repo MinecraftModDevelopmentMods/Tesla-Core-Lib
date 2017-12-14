@@ -63,7 +63,7 @@ class TeslaEnergyLevelPiece(left: Int, top: Int, private val energyStorage: Ener
     override fun mouseClicked(container: BasicTeslaGuiContainer<*>, mouseX: Int, mouseY: Int, mouseButton: Int) {
         super.mouseClicked(container, mouseX, mouseY, mouseButton)
 
-        if (this.isInside(container, mouseX, mouseY)) {
+        if (this.isInside(container, mouseX, mouseY) && TeslaCoreLibConfig.getFlag(TeslaCoreLibConfig.ALLOW_ENERGY_DISPLAY_CHANGE)) {
             TeslaCoreLibConfig.energyDisplay = EnergyDisplayType.values()[
                 (TeslaCoreLibConfig.energyDisplay.ordinal + 1) % EnergyDisplayType.values().size
                 ]
