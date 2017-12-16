@@ -1,0 +1,143 @@
+itemGroup.tesla_core_lib=Tesla Core Lib
+
+item.teslacorelib.gear_wood.name=Engrenagem de Madeira
+item.teslacorelib.gear_stone.name=Engrenagem de Pedra
+item.teslacorelib.gear_iron.name=Engrenagem de Ferro
+item.teslacorelib.gear_gold.name=Engrenagem de Ouro
+item.teslacorelib.gear_diamond.name=Engrenagem de Diamante
+item.teslacorelib.gear_emerald.name=Engrenagem de Esmeralda
+item.teslacorelib.gear_redstone.name=Engrenagem de Redstone
+item.teslacorelib.gear_lapis.name=Engrenagem de Lápis-Lazúlis
+
+item.teslacorelib.powder_coal.name=Pó de Carvão
+item.teslacorelib.powder_iron.name=Pó de Ferro
+item.teslacorelib.powder_gold.name=Pó de Ouro
+item.teslacorelib.powder_diamond.name=Pó de Diamante
+item.teslacorelib.powder_emerald.name=Pó de Esmeralda
+
+#Base Metals Powders
+item.teslacorelib.powder_adamantine.name=Pó de Adamantina
+item.teslacorelib.powder_antimony.name=Pó de Antimônio
+item.teslacorelib.powder_aquarium.name=Pó de Aquário
+item.teslacorelib.powder_bismuth.name=Pó de Bismuto
+item.teslacorelib.powder_brass.name=Pó de Bronze
+item.teslacorelib.powder_bronze.name=Pó de Bronze
+item.teslacorelib.powder_coldiron.name=Pó de Ferro Frio
+item.teslacorelib.powder_copper.name=Pó de Cobre
+item.teslacorelib.powder_cupronickel.name=Pó de Cobre e Níquel
+item.teslacorelib.powder_electrum.name=Pó de Electro
+item.teslacorelib.powder_invar.name=Pó de Invar
+item.teslacorelib.powder_lead.name=Pó de Chumbo
+item.teslacorelib.powder_mercury.name=Pó de Mercurio
+item.teslacorelib.powder_mithril.name=Pó de Mithril
+item.teslacorelib.powder_nickel.name=Pó de Níquel
+item.teslacorelib.powder_pewter.name=Pó de Peltre
+item.teslacorelib.powder_platinum.name=Pó de Platina
+item.teslacorelib.powder_silver.name=Pó de Prata
+item.teslacorelib.powder_starsteel.name=Pó de Aço Estrelar
+item.teslacorelib.powder_steel.name=Pó de Aço
+item.teslacorelib.powder_tin.name=Pó de Estanho
+item.teslacorelib.powder_zinc.name=Pó de Zinco
+
+#Modern Metals Powders
+item.teslacorelib.powder_aluminum.name=Pó de Alumínio
+item.teslacorelib.powder_aluminum_brass.name=Pó de Alumínio-bronze
+item.teslacorelib.powder_cadmium.name=Pó de Cádmio
+item.teslacorelib.powder_chromium.name=Pó de Crômio
+item.teslacorelib.powder_galvanized_steel.name=Pó de Aço Galvanizado
+item.teslacorelib.powder_iridium.name=Pó de Irídio
+item.teslacorelib.powder_magnesium.name=Pó de Magnésio
+item.teslacorelib.powder_manganese.name=Pó de Ferro Manganês
+item.teslacorelib.powder_nichrome.name=Pó de Níquel e Crômio
+item.teslacorelib.powder_osmium.name=Pó de Ósmio
+item.teslacorelib.powder_plutonium.name=Pó de Plutônio
+item.teslacorelib.powder_rutile.name=Pó de Rutilo
+item.teslacorelib.powder_stainless_steel.name=Pó de Aço Inoxidável
+item.teslacorelib.powder_tantalum.name=Pó de Tântalo
+item.teslacorelib.powder_titanium.name=Pó de Titânio
+item.teslacorelib.powder_tungsten.name=Pó de Tungstênio
+item.teslacorelib.powder_uranium.name=Pó de Urânio
+item.teslacorelib.powder_zirconium.name=Pó de Zircônio
+
+
+item.teslacorelib.sheet_iron.name=Chapa de Ferro
+item.teslacorelib.sheet_gold.name=Chapa de Ouro
+item.teslacorelib.sheet_diamond.name=Chapa de Diamante
+item.teslacorelib.sheet_emerald.name=Chapa de Esmeralda
+item.teslacorelib.sheet_redstone.name=Chapa de Redstone
+item.teslacorelib.sheet_lapis.name=Chapa de Lápis-Lazúlis
+
+item.teslacorelib.energy_tier1.name=Melhoria de Energia I
+item.teslacorelib.energy_tier2.name=Melhoria de Energia II
+item.teslacorelib.speed_tier1.name=Melhoria de Velocidade I
+item.teslacorelib.speed_tier2.name=Melhoria de Velocidade II
+
+item.teslacorelib.wrench.name=Chave Tesla
+item.teslacorelib.battery.name=Bateria de Tesla
+item.teslacorelib.base_addon.name=Base de Addon
+item.teslacorelib.machine_case.name=Case de Máquina
+
+tile.teslacorelib.test_machine.name=Máquina de Testes All-in-One
+tile.teslacorelib.test_machine2.name=Máquina de Teste de Fluidos
+tile.teslacorelib.creative_generator.name=Gerador Criativo
+
+
+
+
+#*************
+#* GUI STUFF *
+#*************
+
+#core lib energy display
+gui.teslacorelib.energy.stored_energy=Energia Armazenada
+gui.teslacorelib.energy.stored_line_1=%s de
+gui.teslacorelib.energy.stored_line_2=%s
+gui.teslacorelib.energy.statistic=%s (%s)
+
+gui.teslacorelib.energy.tesla=Tesla
+gui.teslacorelib.energy.redstone_flux=RF
+gui.teslacorelib.energy.buildcraft_mj=MJ
+gui.teslacorelib.energy.tesla_format=%s Tesla
+gui.teslacorelib.energy.redstone_flux_format=%s RF
+gui.teslacorelib.energy.buildcraft_mj_format=%s MJ
+
+gui.teslacorelib.work_energy.work_energy_buffer=Buffer de Energia de Trabalho
+gui.teslacorelib.work_energy.work_energy_line_1=%s de %s
+gui.teslacorelib.work_energy.work_energy_line_2=max: %s/tick
+gui.teslacorelib.work_energy.work_energy_line_3=+ou- a cada %s ticks
+gui.teslacorelib.work_energy.waiting_for_work=Esperando
+
+#core lib side config buttons
+gui.teslacorelib.side_config.energy=Energia
+gui.teslacorelib.side_config.energy_items=Itens de Energia
+gui.teslacorelib.side_config.charge_pad=Placa de Carga
+gui.teslacorelib.side_config.fluid_containers=Contêiners de Fluidos
+
+gui.teslacorelib.side_config.back=Parte de Trás
+gui.teslacorelib.side_config.front=Frente
+gui.teslacorelib.side_config.right=Direita
+gui.teslacorelib.side_config.left=Esquerda
+gui.teslacorelib.side_config.up=Parte de Cima
+gui.teslacorelib.side_config.down=Parte de Baixo
+
+
+#redstone control piece
+gui.teslacorelib.redstone.always_active=Sempre Ativo
+gui.teslacorelib.redstone.active_on_redstone_signal=Ativo com Sinal de Redstone
+gui.teslacorelib.redstone.active_without_redstone_signal=Ativo sem Sinal de Redstone
+
+
+#fluid tank display piece
+gui.teslacorelib.fluid_tank.fluid=Fluido: %s
+gui.teslacorelib.fluid_tank.fluid_empty=Vazio
+gui.teslacorelib.fluid_tank.fluid_amount_format=%s mb
+gui.teslacorelib.fluid_tank.fluid_amount=%s de %s
+gui.teslacorelib.fluid_tank.hovering_with=Flutuando com: %s
+gui.teslacorelib.fluid_tank.accepting_fluid=Aceitando flúidos
+gui.teslacorelib.fluid_tank.not_accepting_fluid=Não aceitando flúidos
+gui.teslacorelib.fluid_tank.can_fill_from_container=Pode ser cheio com a partir de um contêiner
+
+
+#lockable inventory lock piece
+gui.teslacorelib.lockable_inventory.unlock_inventory=Destravar Inventário
+gui.teslacorelib.lockable_inventory.lock_inventory=Travar Inventário
