@@ -133,9 +133,9 @@ gui.teslacorelib.fluid_tank.fluid_empty=Vazio
 gui.teslacorelib.fluid_tank.fluid_amount_format=%s mb
 gui.teslacorelib.fluid_tank.fluid_amount=%s de %s
 gui.teslacorelib.fluid_tank.hovering_with=Flutuando com: %s
-gui.teslacorelib.fluid_tank.accepting_fluid=Aceitando flúidos
-gui.teslacorelib.fluid_tank.not_accepting_fluid=Não aceitando flúidos
-gui.teslacorelib.fluid_tank.can_fill_from_container=Pode ser cheio com a partir de um contêiner
+gui.teslacorelib.fluid_tank.accepting_fluid=Aceitando fluidos
+gui.teslacorelib.fluid_tank.not_accepting_fluid=Não aceitando fluidos
+gui.teslacorelib.fluid_tank.can_fill_from_container=Pode ser cheio a partir de um contêiner
 
 
 #lockable inventory lock piece
