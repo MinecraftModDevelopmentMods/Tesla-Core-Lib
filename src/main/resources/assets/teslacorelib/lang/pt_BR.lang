@@ -75,7 +75,7 @@ item.teslacorelib.speed_tier2.name=Melhoria de Velocidade II
 item.teslacorelib.wrench.name=Chave Tesla
 item.teslacorelib.battery.name=Bateria de Tesla
 item.teslacorelib.base_addon.name=Base de Addon
-item.teslacorelib.machine_case.name=Case de Máquina
+item.teslacorelib.machine_case.name=Estrutura de Máquina
 
 tile.teslacorelib.test_machine.name=Máquina de Testes All-in-One
 tile.teslacorelib.test_machine2.name=Máquina de Teste de Fluidos
@@ -110,7 +110,7 @@ gui.teslacorelib.work_energy.waiting_for_work=Esperando
 #core lib side config buttons
 gui.teslacorelib.side_config.energy=Energia
 gui.teslacorelib.side_config.energy_items=Itens de Energia
-gui.teslacorelib.side_config.charge_pad=Placa de Carga
+gui.teslacorelib.side_config.charge_pad=Itens de Energia
 gui.teslacorelib.side_config.fluid_containers=Contêiners de Fluidos
 
 gui.teslacorelib.side_config.back=Parte de Trás
