@@ -29,7 +29,8 @@ import org.apache.logging.log4j.Logger
     acceptedMinecraftVersions = MOD_MC_VERSION,
     dependencies = "${MOD_DEPENDENCIES}after:${TeslaSystem.MODID};after:${RFPowerProxy.MODID};after:${MJSystem.MODID};after:${MekanismSystem.MODID}",
     useMetadata = true, modLanguage = "kotlin", modLanguageAdapter = "net.shadowfacts.forgelin.KotlinAdapter",
-    guiFactory = TheGuiFactory.CLASS_NAME
+    guiFactory = TheGuiFactory.CLASS_NAME,
+    certificateFingerprint = MOD_SIGN_FINGERPRINT
     )
 object TeslaCoreLib : IModConfigFlagsProvider {
     @SidedProxy(clientSide = "net.ndrei.teslacorelib.ClientProxy", serverSide = "net.ndrei.teslacorelib.ServerProxy")

@@ -789,7 +789,7 @@ abstract class SidedTileEntity protected constructor(entityTypeId: Int)
                 val spawnPos = this.getPos()
                 this.wasPickedUpInItemStack = true
                 this.getWorld().setBlockToAir(spawnPos)
-                this.spawnItem(stack, spawnPos)
+                this.spawnItem(stack, spawnPos, true)
                 // this.getWorld().notifyNeighborsOfStateChange(this.getPos(), this.getBlockType(), true);
             } else if (this.getBlockType() is OrientedBlock<*>) {
                 try {
@@ -965,8 +965,9 @@ abstract class SidedTileEntity protected constructor(entityTypeId: Int)
         return this.spawnItem(stack, spawnPos)
     }
 
-    fun spawnItem(stack: ItemStack, spawnPos: BlockPos): EntityItem? {
-        if (!TeslaCoreLib.config.allowMachinesToSpawnItems() || stack.isEmpty || this.getWorld().isRemote) {
+    @JvmOverloads
+    fun spawnItem(stack: ItemStack, spawnPos: BlockPos, forced: Boolean = false): EntityItem? {
+        if (!(forced || TeslaCoreLib.config.allowMachinesToSpawnItems()) || stack.isEmpty || this.getWorld().isRemote) {
             return null
         }
 

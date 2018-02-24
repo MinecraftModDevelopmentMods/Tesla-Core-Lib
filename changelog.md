@@ -20,6 +20,9 @@ if (entry != null) {
 </pre>
 
 #1.0.13
+- fixed problem with conflict between 'allowMachinesToSpawnItems' and tesla wrench picking up tile entities
+- moved to MMD servers
+- jar should now be signed
 
 #1.0.12
 - updated forgelin

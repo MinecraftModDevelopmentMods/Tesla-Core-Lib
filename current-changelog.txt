@@ -1,0 +1,4 @@
+- fixed problem with conflict between 'allowMachinesToSpawnItems' and tesla wrench picking up tile entities
+
+- moved to MMD servers
+- jar should now be signed

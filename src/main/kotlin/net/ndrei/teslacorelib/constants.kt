@@ -19,3 +19,5 @@ const val MOD_NAME = "@MOD-NAME@"
 const val MOD_VERSION = "@MOD-VERSION@"
 const val MOD_MC_VERSION = "@MOD-MC-VERSION@"
 const val MOD_DEPENDENCIES = "required-after:forgelin@[@FORGELIN-VERSION@,);required-after:forge@[@FORGE-VERSION@,);"
+
+const val MOD_SIGN_FINGERPRINT = "@FINGERPRINT@"

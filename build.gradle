@@ -4,17 +4,22 @@ buildscript {
         mavenCentral()
         maven { url = "http://files.minecraftforge.net/maven" }
         maven { url = "http://repo.maven.apache.org/maven2" }
+        maven { url = "https://plugins.gradle.org/m2/" }
         maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${project.kotlin_version}"
+        classpath 'gradle.plugin.com.matthewprenger:CurseGradle:1.0.10'
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.16"
     }
 }
 apply plugin: "net.minecraftforge.gradle.forge"
+apply plugin: 'com.matthewprenger.cursegradle'
 apply plugin: 'kotlin'
 apply plugin: "maven-publish"
 apply plugin: "maven"
+apply plugin: 'org.jetbrains.dokka'
 
 archivesBaseName = project.mod_name.replace(' ', '-').toLowerCase()
 group = "net.ndrei"
@@ -50,8 +55,33 @@ minecraft {
     replace '@MOD-MC-VERSION@', project.minecraft_version
     replace '@FORGELIN-VERSION@', project.forgelin_version
     replace '@FORGE-VERSION@', project.forge_version
+    replace '@FINGERPRINT@', project.findProperty('signSHA1')
 
     replaceIn 'constants.kt'
+}
+
+class Secrets {
+    def data = null
+
+    def getProperty(String key) {
+        return data ? data[key] : ''
+    }
+}
+
+import groovy.json.JsonSlurper
+
+def secretFile
+if (System.getenv().SECRET_FILE) {
+    secretFile = file System.getenv().SECRET_FILE
+} else {
+    secretFile = file 'secret.json'
+}
+
+project.ext.secret = new Secrets()
+if (secretFile.exists()) {
+    secretFile.withReader {
+        project.ext.secret.data = new JsonSlurper().parse it
+    }
 }
 
 // Mad hacks to make source replacements work for Kotlin
@@ -130,20 +160,85 @@ task deobfJar(type: Jar) {
     classifier = 'deobf'
 }
 
+task signJar(type: SignJar, dependsOn: reobfJar) {
+    // Skips if the keyStore property is missing.
+    onlyIf {
+        project.hasProperty('keyStore')
+    }
+
+    // findProperty allows us to reference the property without it existing.
+    // Using project.propName would cause the script to fail validation if
+    // the property did not exist.
+    keyStore = project.findProperty('keyStore')
+    alias = project.findProperty('keyStoreAlias')
+    storePass = project.findProperty('keyStorePass')
+    keyPass = project.findProperty('keyStoreKeyPass')
+    inputFile = jar.archivePath
+    outputFile = jar.archivePath
+}
+
+build.dependsOn signJar
+
 artifacts {
     archives sourceJar, deobfJar
 }
 
-if (project.hasProperty('mavenFTPServer') && project.hasProperty('mavenFTPUser') && project.hasProperty('mavenFTPPassword')) {
-    uploadArchives {
-        repositories.mavenDeployer {
-            dependsOn build, deobfJar, sourcesJar
-
-            configuration = configurations.deployerJars
-            repository(url: project.mavenFTPServer) {
-                authentication(userName: project.mavenFTPUser, password: mavenFTPPassword)
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId project.group
+            artifactId project.archivesBaseName
+            def versionForMaven = "$project.minecraft_version-$project.mod_version"
+            if (System.getenv().BUILD_NUMBER) {
+                versionForMaven += '.' + System.getenv().BUILD_NUMBER
+            }
+            version versionForMaven
+            from components.java
+            artifact sourceJar {
+                classifier 'sources'
+            }
+            artifact deobfJar {
+                classifier 'deobf'
             }
         }
     }
-    uploadArchives.dependsOn build, sourcesJar, deobfJar
+    repositories {
+        maven {
+            credentials {
+                username secret.username
+                password secret.password
+            }
+            url secret.url
+        }
+    }
+}
+
+curseforge {
+    if (project.hasProperty('cf_release_type') && (project.cf_release_type != "none")) {
+        apiKey = secret.curseforgeAPIKey
+        project {
+            id = "$project.cf_project_id"
+            changelog = file('current-changelog.txt')
+            releaseType = project.cf_release_type
+            addGameVersion(project.minecraft_version)
+            def projectName = project.mod_name
+            def displayVersion = project.mod_version
+            if (System.getenv().BUILD_NUMBER) {
+                displayVersion += '.' + System.getenv().BUILD_NUMBER
+            }
+            mainArtifact(jar) {
+                displayName = "$project.mod_name : $displayVersion"
+                relations {
+                    requiredLibrary 'shadowfacts-forgelin'
+                    optionalLibrary 'powered-thingies'
+                }
+            }
+            addArtifact(sourceJar) {
+                displayName = "$project.mod_name : $displayVersion : Sources"
+            }
+            addArtifact(deobfJar) {
+                displayName = "$project.mod_name : $displayVersion : Development"
+            }
+        }
+    }
 }

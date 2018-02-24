@@ -165,7 +165,8 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
     }
 
     override fun deserializeNBT(nbt: NBTTagCompound) {
-        val list = nbt.getTagList("tanks", Constants.NBT.TAG_COMPOUND)
+        val list: NBTTagList? = if (nbt.hasKey("tanks", Constants.NBT.TAG_LIST))
+            nbt.getTagList("tanks", Constants.NBT.TAG_COMPOUND) else null
         if (list != null) {
             var index = 0
             while (index < list.tagCount() && index < this.tanks.size) {
