@@ -22,6 +22,7 @@ if (entry != null) {
 #1.0.13
 - fixed problem with conflict between 'allowMachinesToSpawnItems' and tesla wrench picking up tile entities
 - added pt_BR translation
+- fixed issue #31: https://github.com/MinecraftModDevelopmentMods/Tesla-Core-Lib/issues/31
 - moved to MMD servers
 - jar should now be signed
 

@@ -41,7 +41,11 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
         return list.toTypedArray()
     }
 
-    override fun fill(resource: FluidStack, doFill: Boolean): Int {
+    override fun fill(resource: FluidStack?, doFill: Boolean): Int {
+        if (resource == null) {
+            return 0
+        }
+
         val source = resource.copy()
         var used = 0
 
@@ -64,7 +68,11 @@ open class FluidStorage : IFluidHandler, INBTSerializable<NBTTagCompound> {
         return used
     }
 
-    override fun drain(resource: FluidStack, doDrain: Boolean): FluidStack? {
+    override fun drain(resource: FluidStack?, doDrain: Boolean): FluidStack? {
+        if (resource == null) {
+            return null
+        }
+
         return this.drain(resource.amount, doDrain, resource)
     }
 
