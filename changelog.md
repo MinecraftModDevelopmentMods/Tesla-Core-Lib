@@ -21,6 +21,7 @@ if (entry != null) {
 
 #1.0.13
 - fixed problem with conflict between 'allowMachinesToSpawnItems' and tesla wrench picking up tile entities
+- added pt_BR translation
 - moved to MMD servers
 - jar should now be signed
 

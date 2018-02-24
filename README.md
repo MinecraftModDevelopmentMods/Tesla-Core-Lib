@@ -1,8 +1,7 @@
 # Tesla-Core-Lib
 [![](http://cf.way2muchnoise.eu/tesla-core-lib.svg)](https://minecraft.curseforge.com/projects/tesla-core-lib)
 [![](http://cf.way2muchnoise.eu/versions/tesla-core-lib.svg)](https://minecraft.curseforge.com/projects/tesla-core-lib)
-[![codebeat badge](https://codebeat.co/badges/1bab3be1-4830-4dea-88c8-c987dc536d17)](https://codebeat.co/projects/github-com-faceofcat-tesla-core-lib-1-12)
-[![](https://img.shields.io/badge/Discord-Mod%20Crafters-blue.svg)](https://discord.gg/wmseqAS)
+[![](https://img.shields.io/badge/Discord-MMD%20Cat%20Mods-blue.svg)](https://discord.gg/xDw3Vkj)
 
 Minecraft library useful in creating power hungry machines
 
@@ -10,7 +9,7 @@ Minecraft library useful in creating power hungry machines
 One must first add the maven repository to the list:
 ```gradle
 repositories {
-    maven { name='TCL'; url='https://maven.modcrafters.net' }
+    maven { name='TCL'; url='https://maven.mcmoddev.com' }
 }
 ``` 
 And then one must add the dependency:
@@ -20,7 +19,7 @@ compile("net.ndrei:tesla-core-lib:${project.teslacorelib_mc_version}-${project.t
 And I would also recommend having these in your `gradle.properties`:
 ```gradle
 teslacorelib_mc_version = 1.12
-teslacorelib_version = 1.0.12
+teslacorelib_version = 1.0.13
 ```
 For easier update later on.
 
