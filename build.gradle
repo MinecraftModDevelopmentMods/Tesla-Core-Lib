@@ -10,19 +10,19 @@ buildscript {
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${project.kotlin_version}"
-        classpath 'gradle.plugin.com.matthewprenger:CurseGradle:1.0.10'
-        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.16"
+        classpath "gradle.plugin.com.matthewprenger:CurseGradle:${project.cursegradle_version}"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:${project.dokka_version}"
     }
 }
+apply plugin: 'kotlin'
 apply plugin: "net.minecraftforge.gradle.forge"
 apply plugin: 'com.matthewprenger.cursegradle'
-apply plugin: 'kotlin'
 apply plugin: "maven-publish"
 apply plugin: "maven"
 apply plugin: 'org.jetbrains.dokka'
 
 archivesBaseName = project.mod_name.replace(' ', '-').toLowerCase()
-group = "net.ndrei"
+group = "${project.group_name}"
 
 version = "${project.minecraft_version}-${project.mod_version}"
 if (project.hasProperty('mod_suffix')) {
@@ -37,18 +37,6 @@ minecraft {
     mappings = "${project.mcp_version}"
     runDir = "run"
 
-    // "stolen" from: UpcraftLP
-    def username = "${mod_name}"
-    if (project.hasProperty('dev_mail')) {
-        username = "${project.dev_mail}"
-    }
-    clientRunArgs += "--username=${username}"
-//    if (project.hasProperty('dev_password')) {
-//        clientRunArgs += " --password=${project.dev_password}"
-//    }
-//     serverRunArgs += "nogui"
-    // end of "stolen" part :)
-
     replace '@MOD-ID@', project.mod_id
     replace '@MOD-NAME@', project.mod_name
     replace '@MOD-VERSION@', project.mod_version
@@ -58,7 +46,40 @@ minecraft {
     replace '@FINGERPRINT@', project.findProperty('signSHA1')
 
     replaceIn 'constants.kt'
+
+    if (project.hasProperty('mc_username')) {
+        clientRunArgs += ['--username', "${project.mc_username}"]
+        if (project.hasProperty('mc_password')) {
+            clientRunArgs += ['--password=', "${project.mc_password}"]
+        }
+    }
+    if (project.hasProperty('mc_uuid')) {
+        clientRunArgs += ['--uuid', "${project.mc_uuid}"]
+    }
+
+    // disable server gui
+    serverRunArgs += "nogui"
+
+    // skip the screen to confirm that you want to load a world with missing registry entries
+    serverJvmArgs += "-Dfml.doNotBackup=true"
+    clientJvmArgs += "-Dfml.doNotBackup=true"
+
+    // skip having to confirm on server
+    serverJvmArgs += "-Dfml.queryResult=confirm"
+
+    // skip jansi warnings in the log
+    serverJvmArgs += "-Dlog4j.skipJansi=true"
+    clientJvmArgs += "-Dlog4j.skipJansi=true"
+
+    if (project.hasProperty('client_args')) {
+        clientJvmArgs += "${project.client_args}"
+    }
+    if (project.hasProperty('server_args')) {
+        serverJvmArgs += "${project.server_args}"
+    }
 }
+
+import groovy.json.JsonSlurper
 
 class Secrets {
     def data = null
@@ -67,8 +88,6 @@ class Secrets {
         return data ? data[key] : ''
     }
 }
-
-import groovy.json.JsonSlurper
 
 def secretFile
 if (System.getenv().SECRET_FILE) {
@@ -84,46 +103,20 @@ if (secretFile.exists()) {
     }
 }
 
-// Mad hacks to make source replacements work for Kotlin
-// "stolen" from: https://github.com/PaleoCrafter/VanillaImmersion/blob/ee82ecafb76659cf7d7822a722c8f63f43f41d01/build.gradle#L119-L136
-import net.minecraftforge.gradle.user.TaskSourceCopy
-for (set in sourceSets) {
-    def taskName = "source${set.name.capitalize()}Kotlin"
-    def dir = new File(project.getBuildDir(), "sources/${set.name}/kotlin")
-    task(taskName, type: TaskSourceCopy) {
-        source = set.getKotlin()
-        output = dir
-    }
-    def compileTask = tasks[set.getCompileTaskName("kotlin")]
-    compileTask.source = dir
-    compileTask.dependsOn taskName
-    def dirPath = dir.toPath()
-    compileTask.include {
-        return it.file.toPath().startsWith(dirPath)
-    }
-}
-// end of "stolen" part :)
-
-configurations {
-    compile.extendsFrom exportedCompile
-    deployerJars
-}
-
 repositories {
     mavenCentral()
+    mavenLocal()
     jcenter()
-    maven { name='forgelin'; url='http://maven.shadowfacts.net' }
+    maven { name='mmd'; url='https://maven.mcmoddev.com' }
+    maven { name='forgelin'; url='http://maven.shadowfacts.net/' }
 
-    maven { name='tesla'; url='http://maven.mcmoddev.com' }
     maven { name='redstone flux'; url='http://maven.covers1624.net' }
     maven { name='build craft'; url='https://www.mod-buildcraft.com/maven' }
-    mavenLocal()
 }
 
 dependencies {
-    deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
-    compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${project.kotlin_version}"
-    compile "net.shadowfacts:Forgelin:${project.forgelin_version}"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${project.kotlin_version}"
+    compile "net.shadowfacts:Forgelin:${project.forgelin_version}+"
 
     compileOnly "net.darkhax.tesla:Tesla-${project.tesla_mcversion}:${project.tesla_version}:deobf"
     compileOnly "com.mod-buildcraft:buildcraft-api:${project.bc_version}"
@@ -148,6 +141,10 @@ processResources {
         exclude '**/*.info'
         exclude '**/*.properties'
     }
+}
+
+jar {
+    from sourceSets.main.output
 }
 
 task sourcesJar(type: Jar) {
@@ -214,7 +211,8 @@ publishing {
 }
 
 curseforge {
-    if (project.hasProperty('cf_release_type') && (project.cf_release_type != "none")) {
+    if (project.hasProperty('cf_project_id') && project.hasProperty('cf_release_type') &&
+            ((project.cf_release_type == "alpha") || (project.cf_release_type == "beta") || (project.cf_release_type == "release"))) {
         apiKey = secret.curseforgeAPIKey
         project {
             id = "$project.cf_project_id"
