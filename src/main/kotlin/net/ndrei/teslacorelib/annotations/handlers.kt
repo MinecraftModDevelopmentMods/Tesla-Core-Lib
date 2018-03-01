@@ -21,7 +21,7 @@ object AutoRegisterRecipesHandler: BaseAnnotationHandler<Any>({ it, _, _ ->
     when (it) {
         is RegisteredItem -> it.registerRecipe { AutoRegisterRecipesHandler.registerRecipe(registry, it) }
         is RegisteredBlock -> it.registerRecipe { AutoRegisterRecipesHandler.registerRecipe(registry, it) }
-        else -> TeslaCoreLib.logger.error("Annotated class '${it.javaClass.canonicalName}' does not provide a recipe.")
+        // else -> TeslaCoreLib.logger.error("Annotated class '${it.javaClass.canonicalName}' does not provide a recipe.")
     }
 }, AutoRegisterItem::class, AutoRegisterBlock::class) {
     @Deprecated("One should really use JSON resources for recipes.", ReplaceWith("A JSON File!"), DeprecationLevel.WARNING)
