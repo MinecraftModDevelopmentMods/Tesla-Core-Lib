@@ -228,6 +228,7 @@ curseforge {
                 displayName = "$project.mod_name : $displayVersion"
                 relations {
                     requiredLibrary 'shadowfacts-forgelin'
+                    requiredLibrary 'tesla'
                     optionalLibrary 'powered-thingies'
                 }
             }
