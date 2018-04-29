@@ -19,6 +19,8 @@ if (entry != null) {
 }
 </pre>
 
+#1.0.15
+
 #1.0.14
 - updated for latest recommended forge 1.12.2 version
 
