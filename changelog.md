@@ -20,6 +20,7 @@ if (entry != null) {
 </pre>
 
 #1.0.14
+- updated for latest recommended forge 1.12.2 version
 
 #1.0.13
 - fixed problem with conflict between 'allowMachinesToSpawnItems' and tesla wrench picking up tile entities
