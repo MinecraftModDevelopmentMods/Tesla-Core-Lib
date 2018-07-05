@@ -166,9 +166,9 @@ abstract class SyncTileEntity(private val entityTypeId: Int = 0): TileEntity(), 
 
         if (this.syncKeys.count() > 0) {
             val set = this.syncKeys.toSet()
-//            TeslaCoreLib.logger.info("Partial TileEntity Sync [${set.joinToString(", ")}] at: ${this.pos}")
             val nbt = this.writePartialNBT(set)
             if (nbt.keySet.any { !it.startsWith("__") }) {
+//                TeslaCoreLib.logger.info("Partial TileEntity Sync [${set.joinToString(", ")}] at: ${this.pos}")
                 TeslaCoreLib.network.send(SimpleNBTMessage(this, nbt))
             }
             this.syncKeys.clear()

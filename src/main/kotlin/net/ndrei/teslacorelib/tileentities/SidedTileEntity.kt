@@ -103,7 +103,7 @@ abstract class SidedTileEntity protected constructor(entityTypeId: Int)
 
         @Suppress("LeakingThis") // trust me, I know what I'm doing! :S
         this.fluidHandler = SidedFluidHandler(this.sideConfig, this)
-        this.registerSyncTagPart(SYNC_FLUIDS, this.fluidHandler)
+        this.registerSyncTagPart(SYNC_FLUIDS, this.fluidHandler, this.getDefaultFluidSyncLevel())
 
         this.registerSyncStringPart(SYNC_REDSTONE_CONTROL,
             Consumer { this.redstoneSetting = IRedstoneControlledMachine.RedstoneControl.valueOf(it.string) },
@@ -116,6 +116,9 @@ abstract class SidedTileEntity protected constructor(entityTypeId: Int)
         this.initializeInventories()
         this.ensureFluidItems()
     }
+
+    protected open fun getDefaultFluidSyncLevel() = SyncProviderLevel.GUI
+    protected open fun getDefaultItemsSyncLevel() = SyncProviderLevel.GUI
 
     //region inventory         methods
 
@@ -170,7 +173,7 @@ abstract class SidedTileEntity protected constructor(entityTypeId: Int)
         if (handler is ISyncProvider) {
             handler.setSyncTarget(this.fakeSyncTarget, storageKey)
         }
-        this.registerSyncTagPart(storageKey, handler)
+        this.registerSyncTagPart(storageKey, handler, this.getDefaultItemsSyncLevel())
     }
 
     open fun getInventoryLockState(color: EnumDyeColor): Boolean? {
@@ -296,7 +299,7 @@ abstract class SidedTileEntity protected constructor(entityTypeId: Int)
                     return pieces
                 }
             })
-            this.registerSyncTagPart("addonItems", this.addonItems!!)
+            this.registerSyncTagPart("addonItems", this.addonItems!!, this.getDefaultItemsSyncLevel())
         }
     }
 
