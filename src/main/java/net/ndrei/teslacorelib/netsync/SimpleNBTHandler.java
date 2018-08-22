@@ -15,8 +15,8 @@ public class SimpleNBTHandler implements IMessageHandler<SimpleNBTMessage, Simpl
     public SimpleNBTMessage onMessage(SimpleNBTMessage message, MessageContext ctx) {
         if (ctx.side.isClient()) {
             // process client side message
-            if ((message != null) && (message.getPos() != null) && (Minecraft.getMinecraft().theWorld != null)) {
-                TileEntity entity = Minecraft.getMinecraft().theWorld.getTileEntity(message.getPos());
+            if ((message != null) && (message.getPos() != null) && (Minecraft.getMinecraft().world != null)) {
+                TileEntity entity = Minecraft.getMinecraft().world.getTileEntity(message.getPos());
                 if ((entity != null) && (entity instanceof ISimpleNBTMessageHandler)) {
                     return ((ISimpleNBTMessageHandler)entity).handleMessage(message);
                 }

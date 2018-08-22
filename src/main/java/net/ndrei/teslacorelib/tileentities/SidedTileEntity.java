@@ -827,7 +827,7 @@ public abstract class SidedTileEntity extends TileEntity implements
                 spawnPos.getX() + .5,
                 spawnPos.getY() + .5,
                 spawnPos.getZ() + .5, stack);
-        this.getWorld().spawnEntityInWorld(entity);
+        this.getWorld().spawnEntity(entity);
         return entity;
     }
 }
