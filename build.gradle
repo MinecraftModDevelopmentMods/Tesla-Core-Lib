@@ -9,6 +9,7 @@ buildscript {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
     }
 }
+
 apply plugin: "net.minecraftforge.gradle.forge"
 apply plugin: "maven-publish"
 apply plugin: "maven"
@@ -44,7 +45,7 @@ configurations {
 
 repositories {
     mavenCentral()
-    maven { url 'http://maven.epoxide.xyz' }
+    maven { url 'http://maven.mcmoddev.com' }
     maven { url 'http://maven.ndrei.net' }
     mavenLocal()
 }
