@@ -37,7 +37,7 @@ fun localizeModString(container: BasicTeslaGuiContainer<*>, guiPieceType: String
 
 fun localizeModString(resource: ResourceLocation?, guiPieceType: String, key: String, init: (LocalizedModText.() -> Unit)? = null) = when {
     (resource == null) -> localizeModString(key, arrayOf(), init)
-    else -> localizeModString(resource.resourceDomain, guiPieceType, key, init)
+    else -> localizeModString(resource.namespace, guiPieceType, key, init)
 }
 
 fun localizeModString(modId: String, guiPieceType: String, key: String, init: (LocalizedModText.() -> Unit)? = null) =

@@ -88,7 +88,7 @@ class FluidTankPiece(private val tile: SidedTileEntity, private val color: EnumD
                     localizeModString(MOD_ID, GUI_FLUID_TANK, "hovering with") {
                         +TextFormatting.BLUE
                         +(if (bucket?.fluid == null)
-                            localizeModString(stack.unlocalizedName + ".name") {
+                            localizeModString(stack.translationKey + ".name") {
                                 +TextFormatting.AQUA
                             }
                         else bucket.localizedName.makeTextComponent(TextFormatting.AQUA))

@@ -60,7 +60,7 @@ abstract class MultiPartBlock(modId: String, tab: CreativeTabs?, registryName: S
     }
 
     fun rayTrace(world: World, pos: BlockPos, player: EntityPlayer, stack: ItemStack): RayTraceResult? {
-        val start = player.positionVector.addVector(0.0, player.getEyeHeight().toDouble(), 0.0)
+        val start = player.positionVector.add(0.0, player.getEyeHeight().toDouble(), 0.0)
         var reachDistance = 5.0
         if (player is EntityPlayerMP) {
             reachDistance = player.interactionManager.blockReachDistance

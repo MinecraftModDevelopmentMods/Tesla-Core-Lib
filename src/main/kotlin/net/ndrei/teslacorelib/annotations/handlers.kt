@@ -29,11 +29,11 @@ object AutoRegisterRecipesHandler: BaseAnnotationHandler<Any>({ it, _, _ ->
         if (recipe.registryName == null) {
             val output = recipe.recipeOutput
             val activeContainer = Loader.instance().activeModContainer()
-            val baseLoc = ResourceLocation(activeContainer?.modId, output.item.registryName?.resourcePath)
+            val baseLoc = ResourceLocation(activeContainer?.modId, output.item.registryName?.path)
             var recipeLoc = baseLoc
             var index = 0
             while (registry.containsKey(recipeLoc)) {
-                recipeLoc = ResourceLocation(activeContainer?.modId, "${baseLoc.resourcePath}_${++index}")
+                recipeLoc = ResourceLocation(activeContainer?.modId, "${baseLoc.path}_${++index}")
             }
             recipe.registryName = recipeLoc
         }

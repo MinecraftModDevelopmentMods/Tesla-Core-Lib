@@ -39,7 +39,7 @@ class RawQuad(
     }
 
     fun bake(format: VertexFormat): BakedQuad {
-        val normal = Vec3d(side.frontOffsetX.toDouble(), side.frontOffsetY.toDouble(), side.frontOffsetZ.toDouble())
+        val normal = Vec3d(side.xOffset.toDouble(), side.yOffset.toDouble(), side.zOffset.toDouble())
 
         val builder = UnpackedBakedQuad.Builder(format)
         builder.setTexture(this.sprite)

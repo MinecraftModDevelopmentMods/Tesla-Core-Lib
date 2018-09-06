@@ -38,7 +38,7 @@ object SelfRenderingTESR : TileEntitySpecialRenderer<TileEntity>() {
         if (te != null) {
             val block = te.blockType
             if (block is ISelfRenderingBlock) {
-                Minecraft.getMinecraft().mcProfiler.startSection("SelfRenderingTESR")
+                Minecraft.getMinecraft().profiler.startSection("SelfRenderingTESR")
                 try {
                     val state = te.world?.getBlockState(te.pos)
                     val facing = if ((state != null) && (state.block is AxisAlignedBlock)) {
@@ -68,7 +68,7 @@ object SelfRenderingTESR : TileEntitySpecialRenderer<TileEntity>() {
 
                     GlStateManager.popMatrix()
                 } finally {
-                    Minecraft.getMinecraft().mcProfiler.endSection()
+                    Minecraft.getMinecraft().profiler.endSection()
                 }
             }
         }

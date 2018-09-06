@@ -47,7 +47,7 @@ object TeslaCoreLib : IModConfigFlagsProvider {
     val network: ITeslaCorePackets = TeslaCorePackets(MOD_ID)
 
     val creativeTab: CreativeTabs = object : CreativeTabs("tesla_core_lib") {
-        override fun getTabIconItem() = ItemStack(TeslaWrench)
+        override fun createIcon() = ItemStack(TeslaWrench)
     }
 
     val isClientSide

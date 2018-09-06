@@ -29,22 +29,22 @@ fun Pair<Vec3d, Vec3d>.corners(axis: EnumFacing.Axis, size: Double): List<Pair<V
     val diff = pair.second.subtract(pair.first)
     when(axis) {
         EnumFacing.Axis.X -> {
-            list.add(pair.first to pair.first.addVector(diff.x, size, size))
-            list.add(pair.first.addVector(0.0, 0.0, diff.z - size) to pair.second.addVector(0.0, -diff.y + size, 0.0))
-            list.add(pair.second.addVector(-diff.x, -size, -size) to pair.second)
-            list.add(pair.first.addVector(0.0, diff.y - size, 0.0) to pair.second.addVector(0.0, 0.0, -diff.z + size))
+            list.add(pair.first to pair.first.add(diff.x, size, size))
+            list.add(pair.first.add(0.0, 0.0, diff.z - size) to pair.second.add(0.0, -diff.y + size, 0.0))
+            list.add(pair.second.add(-diff.x, -size, -size) to pair.second)
+            list.add(pair.first.add(0.0, diff.y - size, 0.0) to pair.second.add(0.0, 0.0, -diff.z + size))
         }
         EnumFacing.Axis.Y -> {
-            list.add(pair.first to pair.first.addVector(size, diff.y, size))
-            list.add(pair.first.addVector(0.0, 0.0,diff.z - size) to pair.second.addVector(-diff.x + size, 0.0, 0.0))
-            list.add(pair.second.addVector(-size, -diff.y, -size) to pair.second)
-            list.add(pair.first.addVector(diff.x - size, 0.0, 0.0) to pair.second.addVector(0.0, 0.0, -diff.z + size))
+            list.add(pair.first to pair.first.add(size, diff.y, size))
+            list.add(pair.first.add(0.0, 0.0,diff.z - size) to pair.second.add(-diff.x + size, 0.0, 0.0))
+            list.add(pair.second.add(-size, -diff.y, -size) to pair.second)
+            list.add(pair.first.add(diff.x - size, 0.0, 0.0) to pair.second.add(0.0, 0.0, -diff.z + size))
         }
         EnumFacing.Axis.Z -> {
-            list.add(pair.first to pair.first.addVector(size, size, diff.z))
-            list.add(pair.first.addVector(diff.x - size, 0.0, 0.0) to pair.second.addVector(0.0, -diff.y + size, 0.0))
-            list.add(pair.second.addVector(-size, -size, -diff.z) to pair.second)
-            list.add(pair.first.addVector(0.0, diff.y - size, 0.0) to pair.second.addVector(-diff.x + size, 0.0, 0.0))
+            list.add(pair.first to pair.first.add(size, size, diff.z))
+            list.add(pair.first.add(diff.x - size, 0.0, 0.0) to pair.second.add(0.0, -diff.y + size, 0.0))
+            list.add(pair.second.add(-size, -size, -diff.z) to pair.second)
+            list.add(pair.first.add(0.0, diff.y - size, 0.0) to pair.second.add(-diff.x + size, 0.0, 0.0))
         }
     }
 

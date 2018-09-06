@@ -31,7 +31,7 @@ abstract class FeaturesTickingMachine: FeaturesMachines(), ITickable {
             val nbt = getFeaturesUpdatePacket()
             this.dirtyFeatures.clear()
             if (nbt != null) {
-                val pos = this.getWorld().getChunkFromBlockCoords(this.getPos()).pos
+                val pos = this.getWorld().getChunk(this.getPos()).pos
                 val entry = world.playerChunkMap.getEntry(pos.x, pos.z)
                 entry?.sendPacket(SPacketUpdateTileEntity(this.pos, 42,  nbt.wrapInTag(SYNC_PACKAGE_KEY)))
                 return true

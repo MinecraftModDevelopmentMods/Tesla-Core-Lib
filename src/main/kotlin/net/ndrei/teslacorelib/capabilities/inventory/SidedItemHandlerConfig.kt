@@ -104,7 +104,7 @@ open class SidedItemHandlerConfig : ISidedItemHandlerConfig, INBTSerializable<NB
             val sides = Lists.newArrayList<EnumFacing>()
             val list = item.getTagList("sides", Constants.NBT.TAG_INT)
             (0 until list.tagCount())
-                .mapTo(sides) { EnumFacing.getFront(list.getIntAt(it)) }
+                .mapTo(sides) { EnumFacing.byIndex(list.getIntAt(it)) }
             this.facesConfig.put(color, sides)
         }
         this.updated()

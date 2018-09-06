@@ -18,7 +18,7 @@ abstract class RegisteredItem(modId: String, tab: CreativeTabs?, registryName: S
     : Item(), ISelfRegisteringItem, ISelfRegisteringRenderer {
     init {
         this.setRegistryName(modId, registryName)
-        this.unlocalizedName = modId + "." + registryName
+        this.translationKey = "$modId.$registryName"
         if (tab != null) {
             this.creativeTab = tab
         }

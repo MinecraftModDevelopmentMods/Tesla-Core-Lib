@@ -29,7 +29,7 @@ open class SelfRenderingBakedModel(val renderer: ISelfRenderingBlock, val format
     private val cache = CacheBuilder.newBuilder().expireAfterAccess(42, TimeUnit.SECONDS).build<String, List<IBakery>>()
 
     override fun getQuads(state: IBlockState?, side: EnumFacing?, rand: Long): MutableList<BakedQuad> {
-        Minecraft.getMinecraft().mcProfiler.startSection("SelfRenderingBakedModel")
+        Minecraft.getMinecraft().profiler.startSection("SelfRenderingBakedModel")
         try {
             val layer = MinecraftForgeClient.getRenderLayer()
             val stack = this.itemStack
@@ -40,7 +40,7 @@ open class SelfRenderingBakedModel(val renderer: ISelfRenderingBlock, val format
                 this.renderer.getBakeries(layer, state, stack, side, rand, this.transform ?: TRSRTransformation.identity())
             }).fold(mutableListOf()) { list, bakery -> list.also { it.addAll(bakery.getQuads(state, stack, side, this.format, this.transform ?: TRSRTransformation.identity())) } }
         } finally {
-            Minecraft.getMinecraft().mcProfiler.endSection()
+            Minecraft.getMinecraft().profiler.endSection()
         }
     }
 

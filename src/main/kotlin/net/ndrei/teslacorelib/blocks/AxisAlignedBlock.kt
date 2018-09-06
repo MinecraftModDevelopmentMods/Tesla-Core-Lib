@@ -44,7 +44,7 @@ open class AxisAlignedBlock(modId: String, tab: CreativeTabs?, registryName: Str
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        var enumfacing = EnumFacing.getFront(meta)
+        var enumfacing = EnumFacing.byIndex(meta)
         if (enumfacing.axis == EnumFacing.Axis.Y) {
             enumfacing = EnumFacing.NORTH
         }

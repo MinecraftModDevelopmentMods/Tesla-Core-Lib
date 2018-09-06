@@ -36,9 +36,9 @@ abstract class RegisteredBlock(modId: String, tab: CreativeTabs?, registryName: 
     : Block(material), ISelfRegisteringBlock, ISelfRegisteringRenderer {
     init {
         this.setRegistryName(modId, registryName)
-        this.unlocalizedName = modId + "." + registryName
+        this.translationKey = "$modId.$registryName"
         if (tab != null) {
-            this.setCreativeTab(tab)
+            this.creativeTab = tab
         }
     }
 

@@ -648,7 +648,7 @@ abstract class SidedTileEntity protected constructor(entityTypeId: Int)
     override fun processClientMessage(messageType: String?, compound: NBTTagCompound): SimpleNBTMessage? {
         if (messageType == "TOGGLE_SIDE") {
             val color = EnumDyeColor.byMetadata(compound.getInteger("color"))
-            val facing = EnumFacing.getFront(compound.getInteger("side"))
+            val facing = EnumFacing.byIndex(compound.getInteger("side"))
             this.sideConfig.toggleSide(color, facing)
 //            this.markDirty()
 //            this@SidedTileEntity.forceSync()
@@ -854,7 +854,7 @@ abstract class SidedTileEntity protected constructor(entityTypeId: Int)
             })
         }
 
-        pieces.add(MachineNameGuiPiece(this.getBlockType().unlocalizedName + ".name",
+        pieces.add(MachineNameGuiPiece(this.getBlockType().translationKey + ".name",
                 7, 7, 162, 12))
 
         pieces.add(PlayerInventoryBackground(7, 101, 162, 54))
@@ -986,7 +986,7 @@ abstract class SidedTileEntity protected constructor(entityTypeId: Int)
 
     override final fun update() {
         if (!this.isPaused() && (!this.allowRedstoneControl || this.redstoneSetting.canRun {
-            Math.max(this.world.getRedstonePower(this.pos, this.facing), this.world.isBlockIndirectlyGettingPowered(this.pos))
+            Math.max(this.world.getRedstonePower(this.pos, this.facing), this.world.getRedstonePowerFromNeighbors(this.pos))
         })) {
             this.innerUpdate()
             this.processImmediateInventories()
