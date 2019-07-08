@@ -14,6 +14,9 @@ buildscript {
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:${project.dokka_version}"
     }
 }
+plugins {
+    id 'com.matthewprenger.cursegradle' version "${project.cursegradle_version}"
+}
 apply plugin: 'kotlin'
 apply plugin: "net.minecraftforge.gradle.forge"
 apply plugin: 'com.matthewprenger.cursegradle'
