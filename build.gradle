@@ -8,7 +8,7 @@ buildscript {
         maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.0.2'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${project.kotlin_version}"
         classpath "gradle.plugin.com.matthewprenger:CurseGradle:${project.cursegradle_version}"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:${project.dokka_version}"
