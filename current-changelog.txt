@@ -1,1 +1,2 @@
-fixed performance issues with too many sync packages
+- fixed #28: Crash caused by emptying fluid containers
+- updated to latest recommended forge 1.12.2 version

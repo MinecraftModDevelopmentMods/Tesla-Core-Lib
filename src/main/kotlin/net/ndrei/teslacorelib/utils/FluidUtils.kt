@@ -42,7 +42,7 @@ object FluidUtils {
         if (!clone.isEmpty && clone.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
             val handler = clone.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null) ?: return bucket
             val result = handler.tankProperties.firstOrNull { this.canFillFrom(tank, it) }
-            if ((result != null) && (result.contents != null)) {
+            if ((null != result) && (null != result.contents)) {
                 val amount = Math.min(Fluid.BUCKET_VOLUME, result.contents!!.amount)
                 // see how much we can drain
                 var drained = handler.drain(FluidStack(result.contents!!, amount), false) ?: return bucket
@@ -56,8 +56,7 @@ object FluidUtils {
                         }
 
                         if (drained.amount == filled) {
-                            handler.drain(FluidStack(result.contents!!, filled), true)
-                            tank.fill(FluidStack(result.contents!!, filled), true)
+                            tank.fill(handler.drain(FluidStack(result.contents!!, filled), true), true)
                             return handler.container
                         }
                     }
@@ -92,7 +91,7 @@ object FluidUtils {
                 val filled = handler.fill(tank.fluid ?: return false, false)
                 if (filled > 0) {
                     val drained = tank.drain(filled, false)
-                    return (drained != null) && (drained.amount == filled)
+                    return (null != drained) && (drained.amount == filled)
                 }
             }
         }
