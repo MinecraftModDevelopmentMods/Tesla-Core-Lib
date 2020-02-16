@@ -19,6 +19,8 @@ if (entry != null) {
 }
 </pre>
 
+#1.0.17
+
 #1.0.16
 - fixed #28: Crash caused by emptying fluid containers
 - updated to latest recommended forge 1.12.2 version
