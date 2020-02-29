@@ -219,24 +219,24 @@ curseforge {
             id = "$project.cf_project_id"
             changelog = file('current-changelog.txt')
             releaseType = project.cf_release_type
-            addGameVersion(project.minecraft_version)
+            gameVersionStrings.add(0, project.minecraft_version)
             def projectName = project.mod_name
             def displayVersion = project.mod_version
             if (System.getenv().BUILD_NUMBER) {
                 displayVersion += '.' + System.getenv().BUILD_NUMBER
             }
             mainArtifact(jar) {
-                displayName = "$project.mod_name : $displayVersion"
+                displayName = "$projectName : $displayVersion"
                 relations {
-                    requiredLibrary 'shadowfacts-forgelin'
-                    optionalLibrary 'powered-thingies'
+                    requiredDependency 'shadowfacts-forgelin'
+                    optionalDependency 'powered-thingies'
                 }
             }
             addArtifact(sourceJar) {
-                displayName = "$project.mod_name : $displayVersion : Sources"
+                displayName = "$projectName : $displayVersion : Sources"
             }
             addArtifact(deobfJar) {
-                displayName = "$project.mod_name : $displayVersion : Development"
+                displayName = "$projectName : $displayVersion : Development"
             }
         }
     }
