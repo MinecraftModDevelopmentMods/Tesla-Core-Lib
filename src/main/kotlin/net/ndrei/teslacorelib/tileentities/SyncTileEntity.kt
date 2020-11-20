@@ -102,12 +102,15 @@ abstract class SyncTileEntity(private val entityTypeId: Int = 0): TileEntity(), 
     }
 
     protected fun partialSync(key: String, markDirty: Boolean = true) {
-        if ((this.getWorld()?.isRemote == false) && !key.isEmpty()) {
+        if ((this.getWorld()?.isRemote == false) && key.isNotEmpty()) {
             this.syncKeys.add(key)
         }
 
         if (markDirty) {
-            this.markDirty()
+            //copied from super method, avoid sending neighbor updates (they are too expensive and not needed)
+            if (this.getWorld() != null) {
+                this.getWorld().markChunkDirty(this.pos, this)
+            }
         }
 
         this.onSyncPartUpdated(key)
@@ -165,7 +168,7 @@ abstract class SyncTileEntity(private val entityTypeId: Int = 0): TileEntity(), 
         }
 
         if (this.syncKeys.count() > 0) {
-            val set = this.syncKeys.toSet()
+            val set = this.syncKeys
             val nbt = this.writePartialNBT(set)
             if (nbt.keySet.any { !it.startsWith("__") }) {
 //                TeslaCoreLib.logger.info("Partial TileEntity Sync [${set.joinToString(", ")}] at: ${this.pos}")
