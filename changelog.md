@@ -20,6 +20,7 @@ if (entry != null) {
 </pre>
 
 #1.0.18
+- merged tth05's pull request for performance improvement
 
 #1.0.17
 
